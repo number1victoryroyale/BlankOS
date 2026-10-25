@@ -125,7 +125,7 @@ jobs:
           sudo --preserve-env=LFS,SRC,OUT tools/build-repo.sh core
 
       - name: Build test disk image
-        run: sudo --preserve-env=LFS,SRC,OUT image/mkimage.sh --test
+        run: sudo --preserve-env=LFS,SRC,OUT image/mkimage.sh --test --pkgs "base base-devel linux grub"
 
       - name: Boot test (QEMU, UEFI)
         run: sudo python3 tests/boot-test.py "$OUT/image/blankos.img" --log "$OUT/boot-test.log" --timeout 1500

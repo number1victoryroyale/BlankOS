@@ -6,7 +6,7 @@ managed with **pacman**, heading for a **KDE Plasma 6** desktop with a dark + el
 Everything is built from this repository by GitHub Actions: the LFS toolchain, every package, the disk/ISO images, and
 a QEMU boot test.
 
-> **Status:** Milestone 1 (bootable console system) is in progress. See [the roadmap](#roadmap).
+> **Status:** Milestone 1 (bootable console system) builds and passes its QEMU boot test locally; the cloud pipeline is being brought up. See [the roadmap](#roadmap).
 
 ## How it's built
 
@@ -40,7 +40,7 @@ config/      makepkg.conf, build settings
 sudo toolchain/host-prep.sh          # host packages, /bin/sh -> bash
 sudo toolchain/build-toolchain.sh    # ~2-3 h on 4 cores; resumable
 sudo tools/build-repo.sh core        # ~4-7 h; resumable, skips already-built packages
-sudo image/mkimage.sh --test         # out/image/blankos.img
+sudo image/mkimage.sh --test --pkgs "base base-devel linux grub"
 sudo tests/boot-test.py out/image/blankos.img
 ```
 
