@@ -3,12 +3,12 @@
 
 pkgname=shadow
 pkgver=4.20.2
-pkgrel=1
+pkgrel=2
 pkgdesc="Password and account management tool suite"
 arch=(x86_64)
 url='https://github.com/shadow-maint/shadow'
 license=('BSD-3-Clause')
-depends=('glibc' 'acl' 'attr' 'libxcrypt')
+depends=('glibc' 'bash' 'acl' 'attr' 'libxcrypt')
 backup=('etc/login.defs' 'etc/default/useradd' 'etc/subuid' 'etc/subgid')
 install=shadow.install
 source=("https://github.com/shadow-maint/shadow/releases/download/$pkgver/shadow-$pkgver.tar.xz"

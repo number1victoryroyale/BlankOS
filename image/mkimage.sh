@@ -50,11 +50,17 @@ LocalFileSigLevel = Never
 [core]
 Server = file:///repo/core
 EOF
-install -d "$root"/var/{lib/pacman,cache/pacman/pkg} "$root"/{dev,proc,sys,run,tmp}
+install -d "$root"/var/{lib/pacman,cache/pacman/pkg} "$root"/{dev,run}
+install -d -m555 "$root"/{proc,sys}
+install -d -m1777 "$root/tmp"
+# Like pacstrap: scriptlets and hooks (systemd-tmpfiles, ...) need the
+# virtual filesystems inside the target root.
+mount_vkfs "$LFS/target"
 # shellcheck disable=SC2086
 in_chroot "$LFS" pacman --root /target --config /tmp/image-pacman.conf \
 	--cachedir /target/var/cache/pacman/pkg --noconfirm -Sy $packages
 rm -rf "$root"/var/cache/pacman/pkg/*
+for m in $(findmnt -rno TARGET | grep "^$LFS/target/" | sort -r); do umount -l "$m"; done
 
 msg "Configuring the image"
 root_uuid=$(cat /proc/sys/kernel/random/uuid)

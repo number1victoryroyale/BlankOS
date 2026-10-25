@@ -1,0 +1,11 @@
+[Trigger]
+Type = Path
+Operation = Install
+Operation = Upgrade
+Target = etc/locale.gen
+Target = usr/share/i18n/locales/*
+
+[Action]
+Description = Generating locales...
+When = PostTransaction
+Exec = /usr/bin/locale-gen
