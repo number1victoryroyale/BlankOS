@@ -73,7 +73,9 @@ prune_old() {
 		re="^${name//+/\\+}-[^-]+-[^-]+-(x86_64|any)\.pkg\.tar\.zst$"
 		for f in "$outdir"/*.pkg.tar.zst; do
 			f=${f##*/}
-			[[ $f =~ $re && $f != "$file" ]] && rm -fv "$outdir/$f"
+			if [[ $f =~ $re && $f != "$file" ]]; then
+				rm -fv "$outdir/$f"
+			fi
 		done
 	done < <(bash "$BLANKOS_ROOT/tools/pkgsrc.sh" info "$dir")
 }
