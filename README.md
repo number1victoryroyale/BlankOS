@@ -6,7 +6,7 @@ managed with **pacman**, heading for a **KDE Plasma 6** desktop with a dark + el
 Everything is built from this repository by GitHub Actions: the LFS toolchain, every package, the disk/ISO images, and
 a QEMU boot test.
 
-> **Status:** Milestone 1 (bootable console system) builds and passes its QEMU boot test locally; the cloud pipeline is being brought up. See [the roadmap](#roadmap).
+> **Status:** Milestone 1 (bootable console system) is done: built from scratch in GitHub Actions, published as the `core` pacman repo, and boot-tested in QEMU on every build. Next: the live ISO. See [the roadmap](#roadmap).
 
 ## How it's built
 
@@ -75,8 +75,8 @@ Paths can be changed with `LFS=`, `SRC=` and `OUT=` (see `config/blankos.conf`).
 
 ## Roadmap
 
-1. **Bootable console system:** toolchain, pacman bootstrap, [core], UEFI disk image, CI boot test ← *in progress*
-2. Live ISO (dracut, GRUB BIOS+UEFI), TTY branding
+1. ~~Bootable console system: toolchain, pacman bootstrap, [core], UEFI disk image, CI boot test~~ ✅
+2. Live ISO (dracut, GRUB BIOS+UEFI), TTY branding ← *next*
 3. Graphics, audio and network stack: Wayland, Mesa, PipeWire, NetworkManager, BlueZ, Flatpak, GnuPG (signed packages)
 4. Plasma 6, SDDM, KDE apps, Firefox
 5. Gaming layer and the BlankOS Game Hub
