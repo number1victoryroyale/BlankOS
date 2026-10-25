@@ -59,6 +59,7 @@ build() {
 package() {
 	cd "$pkgname-$pkgver"
 	DESTDIR="$pkgdir" ninja -C build install
+	install -d "$pkgdir/usr/share/man"
 	tar -xf "$srcdir/systemd-man-pages-$pkgver.tar.xz" \
 		--no-same-owner --strip-components=1 -C "$pkgdir/usr/share/man"
 	install -Dm644 -t "$pkgdir/usr/share/libalpm/hooks" "$srcdir"/*.hook
