@@ -2,7 +2,7 @@
 
 pkgname=blankos-settings
 pkgver=0.1.0
-pkgrel=1
+pkgrel=2
 pkgdesc="BlankOS default system configuration"
 arch=(any)
 url='https://github.com/number1victoryroyale/BlankOS'
@@ -17,7 +17,7 @@ source=("80-blankos.preset"
 sha256sums=('f9e5a505b22b0e340180c32bf20b4d9c4c079ac2d151ea28591b9dd9875f94a0'
             '48dec8bc41cda7153184cc8015e2f685695d210ade50b4ed100784093c2b34be'
             '033252d5100cbb0028d7c15e075f63e4eb5ff7f1a923cd5cb547bcfd6b024f5b'
-            '2c09b43e51de87a82ff5eeb1c599ce25800b8d34810f14044bf73644e9f7b742'
+            '7ad163a516ec5237d73c506db175b3b4e3b291441ed3d4517cc1f8f2254531fe'
             '740691bcfa46a04bf644e81a170ed138544b1319a8d961e8465ca0877a767bd4')
 
 package() {

@@ -2,7 +2,7 @@
 
 pkgname=blankos-release
 pkgver=0.1.0
-pkgrel=1
+pkgrel=2
 pkgdesc="BlankOS release and branding files"
 arch=(any)
 url='https://github.com/number1victoryroyale/BlankOS'
@@ -10,10 +10,12 @@ license=('GPL-3.0-or-later')
 backup=('etc/issue')
 source=("os-release"
         "lsb-release"
-        "issue")
-sha256sums=('9692095ccfc99fbeace3b3aaf0a61ee190c73808957963abaac2b506ecdea381'
+        "issue"
+        "console-palette.cmdline")
+sha256sums=('a8bff7ebbbda7a2bab7585ee756b96a575159c6fc12156237b3fcc4fd4511d56'
             '85a6a06da4face9e644dcaae67c7748df67b89bf3fce1deb068528e42e3ce122'
-            '5eab132487791af793680d1692f5b15687221de2a334c7e1528636e56aff56ae')
+            '1bee2c30162f0c7ccb84f7416516f338de4f76681fca9013f1f763b31469b495'
+            'b192180b995a4ea14b2b930df778f237dabcd1cb54f2bc51c38539d3aec52d22')
 
 package() {
 	install -Dm644 "$srcdir/os-release" "$pkgdir/usr/lib/os-release"
@@ -22,4 +24,6 @@ package() {
 	echo "BlankOS $pkgver" > "$pkgdir/etc/blankos-release"
 	install -m644 "$srcdir/lsb-release" "$pkgdir/etc/lsb-release"
 	install -m644 "$srcdir/issue" "$pkgdir/etc/issue"
+	# kernel command line fragment for the violet console palette
+	install -Dm644 "$srcdir/console-palette.cmdline" "$pkgdir/usr/share/blankos/console-palette.cmdline"
 }

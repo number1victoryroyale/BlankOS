@@ -1,0 +1,122 @@
+#!/bin/bash
+# blankos-mkinitramfs: build the BlankOS initramfs.
+#
+#   blankos-mkinitramfs [-k KVER] [-o FILE] [--live]
+#   blankos-mkinitramfs --all        regenerate /boot/initramfs-<pkgbase>.img
+#                                    for every installed kernel (pacman hook)
+#
+# The image holds bash, a few util-linux/coreutils/kmod tools, the storage,
+# USB and filesystem modules and /usr/lib/blankos-initramfs/init.
+set -euo pipefail
+
+DATADIR=/usr/lib/blankos-initramfs
+BINARIES=(bash sh mount umount switch_root blkid losetup setsid modprobe kmod
+	sleep cat cp mkdir ls find xargs sort head seq dmesg uname)
+# Storage/USB/filesystem drivers a desktop or laptop boots from: SATA,
+# NVMe, USB sticks, SD cards, optical drives and virtual machines.
+MODULE_DIRS=(drivers/ata drivers/nvme drivers/mmc drivers/usb/host drivers/usb/storage
+	drivers/virtio fs/ext4 fs/fat fs/isofs fs/squashfs fs/overlayfs)
+MODULES=(sd_mod sr_mod virtio_blk virtio_scsi loop hid_generic usbhid
+	nls_cp437 nls_iso8859_1 nls_utf8)
+
+die() { echo "blankos-mkinitramfs: $*" >&2; exit 1; }
+
+copy_file() { # copy_file SRC DEST-IN-WORK (dereferencing symlinks)
+	[[ -e $work$2 ]] && return 0
+	install -D -m"$(stat -Lc %a "$1")" "$1" "$work$2"
+}
+
+copy_libs() {
+	local lib
+	while read -r lib; do
+		copy_file "$lib" "/usr/lib/${lib##*/}"
+	done < <(ldd "$1" 2>/dev/null | grep -oE '/[^ ]+\.so[^ ]*' | sort -u)
+}
+
+copy_bin() {
+	local path
+	path=$(command -v "$1") || die "required program not found: $1"
+	copy_file "$path" "/usr/bin/$1"
+	copy_libs "$path"
+}
+
+build() {
+	local kver=$1 out=$2 live=$3 moddir=/usr/lib/modules/$1 d f m
+	[[ -d $moddir ]] || die "no modules for kernel $kver"
+	work=$(mktemp -d /tmp/blankos-initramfs.XXXXXX)
+	trap 'rm -rf "$work"' EXIT
+
+	mkdir -p "$work"/{usr/bin,usr/lib,dev,proc,sys,run,newroot,etc,tmp}
+	# the kernel opens /dev/console before /init runs
+	mknod -m 600 "$work/dev/console" c 5 1
+	mknod -m 666 "$work/dev/null" c 1 3
+	ln -s usr/bin "$work/bin"
+	ln -s usr/bin "$work/sbin"
+	ln -s usr/lib "$work/lib"
+	ln -s usr/lib "$work/lib64"
+	ln -s bin "$work/usr/sbin"
+
+	for f in "${BINARIES[@]}"; do copy_bin "$f"; done
+
+	# Modules: whole driver classes plus everything they depend on.
+	local -a mods=()
+	for d in "${MODULE_DIRS[@]}"; do
+		[[ -d $moddir/kernel/$d ]] || continue
+		while IFS= read -r -d '' f; do mods+=("$f"); done < <(find "$moddir/kernel/$d" -name '*.ko*' -print0)
+	done
+	for f in "${mods[@]}"; do
+		m=${f##*/}; m=${m%%.ko*}
+		echo "$m"
+	done | cat - <(printf '%s\n' "${MODULES[@]}") | sort -u | while read -r m; do
+		modprobe -S "$kver" --show-depends "$m" 2>/dev/null |
+			awk '$1 == "insmod" { print $2 }'
+	done | sort -u | while read -r f; do
+		copy_file "$f" "$f"
+	done
+	for f in modules.order modules.builtin modules.builtin.modinfo; do
+		if [[ -f $moddir/$f ]]; then copy_file "$moddir/$f" "$moddir/$f"; fi
+	done
+	depmod -b "$work" "$kver"
+
+	install -m755 "$DATADIR/init" "$work/init"
+	echo "BLANKOS_INITRAMFS_LIVE=$live" > "$work/etc/blankos-initramfs.conf"
+
+	mkdir -p "$(dirname "$out")"
+	(cd "$work" && find . -mindepth 1 -print0 | LC_ALL=C sort -z |
+		bsdtar --null --no-recursion -cf - --format newc --uid 0 --gid 0 -T -) |
+		zstd -q -T0 -10 > "$out.tmp"
+	mv "$out.tmp" "$out"
+	rm -rf "$work"
+	trap - EXIT
+	echo "blankos-mkinitramfs: wrote $out ($(du -h "$out" | cut -f1))"
+}
+
+kver='' out='' live=0 all=0
+while (($#)); do
+	case $1 in
+		-k) kver=$2; shift ;;
+		-o) out=$2; shift ;;
+		--live) live=1 ;;
+		--all) all=1 ;;
+		-h|--help) sed -n '2,9p' "$0"; exit 0 ;;
+		*) die "unknown option: $1" ;;
+	esac
+	shift
+done
+
+if ((all)); then
+	shopt -s nullglob
+	for d in /usr/lib/modules/*/; do
+		d=${d%/}
+		[[ -f $d/pkgbase && -f $d/vmlinuz ]] || continue
+		build "${d##*/}" "/boot/initramfs-$(<"$d/pkgbase").img" 0
+	done
+	exit 0
+fi
+
+if [[ -z $kver ]]; then
+	kvers=(/usr/lib/modules/*/vmlinuz)
+	((${#kvers[@]} == 1)) && [[ -e ${kvers[0]} ]] || die "use -k to pick a kernel version"
+	kver=${kvers[0]%/vmlinuz}; kver=${kver##*/}
+fi
+build "$kver" "${out:-/boot/initramfs-$kver.img}" "$live"

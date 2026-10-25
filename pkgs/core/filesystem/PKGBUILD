@@ -3,7 +3,7 @@
 
 pkgname=filesystem
 pkgver=2026.10
-pkgrel=1
+pkgrel=2
 pkgdesc="BlankOS base filesystem layout and essential files"
 arch=(x86_64)
 url='https://github.com/number1victoryroyale/BlankOS'
@@ -32,7 +32,7 @@ sha256sums=('7817ee628fccd203d7f1bcc20f0afbbaaae615b5bc900314995da35764df0b47'
             '20e55f1f7231fc183e988fe166dedd22b2ef1480b73371362af177492b23485b'
             'fc8eb14141b33fdb9ffb0c6e26258961bd2a366d26479e4f36d81d788f5e6368'
             '380f5fe21d755923b44203b58ca3c8b9681c485d152bd5d7e3914f67d821d32a'
-            'eee77a5ea51f4b335e1aa6c7cf6e7d312d59eabff64cc6188fd5117b67349726'
+            '6e0ec90f8fc27aeaae88607f2db80593ed4dbfbec9f3c742e15ee69733c9f4c3'
             'e2d706ae5fbeb7570b38dbadab1b94b0bbfd5eb338be6faadcf3f11c914ac03c')
 
 package() {

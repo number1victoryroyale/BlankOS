@@ -89,6 +89,7 @@ curl
 pacman
 blankos-release
 blankos-settings
+blankos-initramfs
 linux
 base
 base-devel

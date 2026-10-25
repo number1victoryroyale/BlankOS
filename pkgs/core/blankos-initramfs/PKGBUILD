@@ -1,0 +1,22 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+
+pkgname=blankos-initramfs
+pkgver=1.0
+pkgrel=2
+pkgdesc="BlankOS initramfs generator (installed systems and the live ISO)"
+arch=(any)
+url='https://github.com/number1victoryroyale/BlankOS'
+license=('GPL-3.0-or-later')
+depends=('bash' 'coreutils' 'findutils' 'util-linux' 'kmod' 'libarchive' 'zstd' 'gawk' 'grep' 'glibc')
+source=("blankos-mkinitramfs"
+        "init"
+        "90-blankos-initramfs.hook")
+sha256sums=('53b1bcd76d85e08b1ea302379c4c5c5be43c52f81760017f64b4817ca660379d'
+            'de90a7d863ec995b32f417e8e6f1db9dbcf388f61842d4bcb567a245b2ad1ad8'
+            'c7a47770fa79829ca6c6dabdfabd65a329b63538f9380e27e7a59d7c2efce8bc')
+
+package() {
+	install -Dm755 "$srcdir/blankos-mkinitramfs" "$pkgdir/usr/bin/blankos-mkinitramfs"
+	install -Dm755 "$srcdir/init" "$pkgdir/usr/lib/blankos-initramfs/init"
+	install -Dm644 "$srcdir/90-blankos-initramfs.hook" "$pkgdir/usr/share/libalpm/hooks/90-blankos-initramfs.hook"
+}

@@ -1,0 +1,4 @@
+# BlankOS console palette (kernel command line fragment). Colour 5
+# (magenta) is the BlankOS violet #8B5CF6 and 13 the lighter #A78BFA, so
+# plain 16-colour escape codes (35/95) render in the accent colour.
+vt.default_red=11,239,34,234,59,139,6,212,82,248,74,250,96,167,34,250 vt.default_grn=10,68,197,179,130,92,182,212,82,113,222,204,165,139,211,250 vt.default_blu=16,68,94,8,246,246,212,216,91,113,128,21,250,250,238,250

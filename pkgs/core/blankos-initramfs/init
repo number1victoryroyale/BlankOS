@@ -1,0 +1,109 @@
+#!/usr/bin/bash
+# BlankOS initramfs /init.
+#
+# Finds the root filesystem and hands over to systemd. Two modes:
+#   installed:  root=UUID=...|LABEL=...|PARTUUID=...|/dev/...  [ro|rw]
+#   live:       blankos.live [blankos.live.label=LABEL] [blankos.copytoram]
+#               mounts the ISO, its squashfs image and a tmpfs overlay.
+# blankos.rescue drops to a shell before switching root.
+
+export PATH=/usr/bin
+mount -t proc -o nosuid,nodev,noexec proc /proc
+mount -t sysfs -o nosuid,nodev,noexec sysfs /sys
+mount -t devtmpfs -o mode=0755,nosuid devtmpfs /dev
+mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /run
+exec </dev/console >/dev/console 2>&1
+
+quiet=0 live=0 copytoram=0 rescue_requested=0
+root='' rootfstype='' rootflags='' rwmode=ro init=/usr/lib/systemd/systemd
+live_label=BLANKOS_LIVE
+read -r -a cmdline < /proc/cmdline
+for p in "${cmdline[@]}"; do
+	case $p in
+		root=*)               root=${p#root=} ;;
+		rootfstype=*)         rootfstype=${p#rootfstype=} ;;
+		rootflags=*)          rootflags=${p#rootflags=} ;;
+		ro|rw)                rwmode=$p ;;
+		init=*)               init=${p#init=} ;;
+		quiet)                quiet=1 ;;
+		blankos.live)         live=1 ;;
+		blankos.live.label=*) live=1 live_label=${p#blankos.live.label=} ;;
+		blankos.copytoram)    copytoram=1 ;;
+		blankos.rescue)       rescue_requested=1 ;;
+	esac
+done
+
+msg() { ((quiet)) || printf '\e[1;35m::\e[0m %s\n' "$*"; }
+
+rescue() {
+	printf '\e[1;31m:: %s\e[0m\n' "$*"
+	echo ':: Dropping to a rescue shell. Type "exit" to try to continue booting.'
+	setsid -c bash -i
+}
+
+# Load drivers for every device the kernel has found so far (modalias
+# coldplug); repeated while waiting because USB devices show up late.
+coldplug() {
+	find /sys/devices -name modalias -print0 2>/dev/null |
+		xargs -0 cat 2>/dev/null | sort -u |
+		xargs -r modprobe -qab 2>/dev/null || true
+}
+
+# find_dev SPEC: print the block device for UUID=/LABEL=/PARTUUID=/path.
+find_dev() {
+	case $1 in
+		/dev/*) [[ -b $1 ]] && echo "$1" ;;
+		*=*) blkid -c /dev/null -o device -t "$1" 2>/dev/null | head -n1 ;;
+	esac
+}
+
+wait_for() {
+	local spec=$1 dev i
+	for ((i = 0; i < 300; i++)); do
+		dev=$(find_dev "$spec")
+		if [[ -n $dev ]]; then
+			echo "$dev"
+			return 0
+		fi
+		((i % 10 == 0)) && coldplug
+		sleep 0.1
+	done
+	return 1
+}
+
+modprobe -qa loop squashfs overlay isofs ext4 vfat sr_mod sd_mod usb_storage uas 2>/dev/null
+coldplug
+
+if ((live)); then
+	msg "Looking for the BlankOS live medium ($live_label)"
+	dev=$(wait_for "LABEL=$live_label") || rescue "live medium labelled $live_label not found"
+	mkdir -p /run/live/medium /run/live/sfs /run/live/cow
+	mount -o ro "$dev" /run/live/medium || rescue "cannot mount $dev"
+	sfs=/run/live/medium/blankos/x86_64/rootfs.sfs
+	[[ -f $sfs ]] || rescue "$sfs is missing"
+	if ((copytoram)); then
+		msg "Copying the live system to RAM"
+		mount -t tmpfs -o size=90%,mode=0755 tmpfs /run/live/ram
+		cp "$sfs" /run/live/ram/rootfs.sfs || rescue "copy to RAM failed"
+		sfs=/run/live/ram/rootfs.sfs
+		umount /run/live/medium
+	fi
+	mount -t squashfs -o ro,loop "$sfs" /run/live/sfs || rescue "cannot mount the squashfs image"
+	mount -t tmpfs -o size=75%,mode=0755 tmpfs /run/live/cow
+	mkdir -p /run/live/cow/upper /run/live/cow/work
+	mount -t overlay overlay \
+		-o lowerdir=/run/live/sfs,upperdir=/run/live/cow/upper,workdir=/run/live/cow/work \
+		/newroot || rescue "cannot set up the overlay root"
+else
+	[[ -n $root ]] || rescue "no root= on the kernel command line"
+	msg "Waiting for root device $root"
+	dev=$(wait_for "$root") || rescue "root device $root not found"
+	opts=$rwmode${rootflags:+,$rootflags}
+	mount ${rootfstype:+-t "$rootfstype"} -o "$opts" "$dev" /newroot ||
+		rescue "cannot mount $dev on /newroot"
+fi
+
+((rescue_requested)) && rescue "rescue shell requested (blankos.rescue)"
+[[ -x /newroot$init || -L /newroot$init ]] || rescue "$init not found in the root filesystem"
+msg "Starting BlankOS"
+exec switch_root /newroot "$init"
