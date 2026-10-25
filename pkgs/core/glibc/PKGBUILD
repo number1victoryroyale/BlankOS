@@ -37,10 +37,12 @@ prepare() {
 
 build() {
 	cd "$pkgname-$pkgver"
-	# glibc does not build with these hardening/linker flags (as in Arch)
-	CFLAGS=${CFLAGS/-fno-plt/}
-	CXXFLAGS=${CXXFLAGS/-fno-plt/}
-	LDFLAGS=${LDFLAGS/-Wl,-z,now/}
+	# glibc is picky about compiler flags (e.g. -fcf-protection breaks the
+	# ld.so link, -fno-plt and -z now are rejected); like the book, only
+	# keep the architecture baseline and optimisation level.
+	CFLAGS="-march=x86-64-v2 -mtune=generic -O2 -pipe"
+	CXXFLAGS="$CFLAGS"
+	LDFLAGS=""
 	mkdir -p build && cd build
 	echo "rootsbindir=/usr/sbin" > configparms
 	../configure --prefix=/usr \
