@@ -1,0 +1,39 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.44
+
+pkgname=inetutils
+pkgver=2.8
+pkgrel=1
+pkgdesc="A collection of common network programs"
+arch=(x86_64)
+url='https://www.gnu.org/software/inetutils/'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'readline' 'ncurses' 'libcap')
+source=("https://ftpmirror.gnu.org/inetutils/inetutils-$pkgver.tar.gz")
+sha256sums=('57b3cf4f77555992881e5ba2a09a63b05aa2c56342a60ed4305b5f45938390b5')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	sed -i 's/def HAVE_TERMCAP_TGETENT/ 1/' telnet/telnet.c
+}
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr \
+	    --bindir=/usr/bin \
+	    --localstatedir=/var \
+	    --disable-logger \
+	    --disable-whois \
+	    --disable-rcp \
+	    --disable-rexec \
+	    --disable-rlogin \
+	    --disable-rsh \
+	    --disable-servers
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+	mv -v "$pkgdir"/usr/{,s}bin/ifconfig 2>/dev/null || true
+}

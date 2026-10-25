@@ -1,0 +1,40 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.81
+
+pkgname=util-linux
+pkgver=2.42.2
+pkgrel=1
+pkgdesc="Miscellaneous system utilities for Linux"
+arch=(x86_64)
+url='https://github.com/util-linux/util-linux'
+license=('GPL-2.0-only' 'GPL-2.0-or-later' 'LGPL-2.1-or-later' 'BSD-3-Clause')
+depends=('glibc' 'ncurses' 'readline' 'zlib' 'libxcrypt' 'libcap' 'sqlite')
+provides=('util-linux-libs' 'libblkid' 'libmount' 'libuuid' 'libfdisk' 'libsmartcols')
+source=("https://www.kernel.org/pub/linux/utils/util-linux/v${pkgver%.*}/util-linux-$pkgver.tar.xz")
+sha256sums=('03a05d3adf9602ef128f2da05b84b3205ce60c351e5737c0370f74000679ce8a')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --bindir=/usr/bin \
+	    --libdir=/usr/lib \
+	    --runstatedir=/run \
+	    --sbindir=/usr/sbin \
+	    --disable-chfn-chsh \
+	    --disable-login \
+	    --disable-nologin \
+	    --disable-su \
+	    --disable-setpriv \
+	    --disable-runuser \
+	    --disable-pylibmount \
+	    --disable-liblastlog2 \
+	    --disable-static \
+	    --without-python \
+	    ADJTIME_PATH=/var/lib/hwclock/adjtime \
+	    --docdir=/usr/share/doc/util-linux-$pkgver
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

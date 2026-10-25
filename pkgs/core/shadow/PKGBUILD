@@ -1,0 +1,48 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.30
+
+pkgname=shadow
+pkgver=4.20.2
+pkgrel=1
+pkgdesc="Password and account management tool suite"
+arch=(x86_64)
+url='https://github.com/shadow-maint/shadow'
+license=('BSD-3-Clause')
+depends=('glibc' 'acl' 'attr' 'libxcrypt')
+backup=('etc/login.defs' 'etc/default/useradd' 'etc/subuid' 'etc/subgid')
+install=shadow.install
+source=("https://github.com/shadow-maint/shadow/releases/download/$pkgver/shadow-$pkgver.tar.xz"
+        "useradd.defaults")
+sha256sums=('b89f432b75ae55a2d852b446d0365484795fdf533ab97d550e325fa15594a224'
+            '54429fbcecdc6a7450d0d907c661a4c7158f83a28d6ee3bb1c85c39dbfc677d1')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	# coreutils and man-pages provide these
+	sed -i 's/groups$(EXEEXT) //' src/Makefile.in || true
+	find man -name Makefile.in -exec sed -i 's/getspnam\.3 / /' {} \;
+	find man -name Makefile.in -exec sed -i 's/passwd\.5 / /' {} \;
+	sed -e 's:#ENCRYPT_METHOD SHA512:ENCRYPT_METHOD YESCRYPT:' \
+		-e 's:/var/spool/mail:/var/mail:' \
+		-e '/PATH=/{s@/sbin:@@;s@/bin:@@}' \
+		-i etc/login.defs
+}
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --sysconfdir=/etc \
+		--disable-static \
+		--with-{b,yes}crypt \
+		--without-libbsd \
+		--disable-logind \
+		--with-group-name-max-length=32
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make exec_prefix=/usr DESTDIR="$pkgdir" install
+	make -C man DESTDIR="$pkgdir" install-man
+	install -Dm600 "$srcdir/useradd.defaults" "$pkgdir/etc/default/useradd"
+	touch "$pkgdir"/etc/sub{u,g}id
+}

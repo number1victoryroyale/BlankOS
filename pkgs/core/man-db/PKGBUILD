@@ -1,0 +1,32 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.79
+
+pkgname=man-db
+pkgver=2.13.1
+pkgrel=1
+pkgdesc="A utility for reading man pages"
+arch=(x86_64)
+url='https://nongnu.org/man-db/'
+license=('GPL-2.0-or-later')
+depends=('glibc' 'bash' 'gdbm' 'groff' 'less' 'libpipeline' 'zlib')
+backup=('etc/man_db.conf')
+source=("https://download.savannah.gnu.org/releases/man-db/man-db-$pkgver.tar.xz")
+sha256sums=('8afebb6f7eb6bb8542929458841f5c7e6f240e30c86358c1fbcefbea076c87d9')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr \
+	    --docdir=/usr/share/doc/man-db-$pkgver \
+	    --sysconfdir=/etc \
+	    --disable-setuid \
+	    --enable-cache-owner=bin \
+	    --with-browser=/usr/bin/lynx \
+	    --with-vgrind=/usr/bin/vgrind \
+	    --with-grap=/usr/bin/grap
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

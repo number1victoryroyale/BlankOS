@@ -1,0 +1,19 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.3
+
+pkgname=man-pages
+pkgver=6.18
+pkgrel=1
+pkgdesc="Linux man pages"
+arch=(any)
+url='https://www.kernel.org/doc/man-pages/'
+license=('GPL-2.0-or-later' 'BSD-3-Clause')
+source=("https://www.kernel.org/pub/linux/docs/man-pages/man-pages-$pkgver.tar.xz")
+sha256sums=('c934fadc8b59748c68227a34f6581d2ddf8282b73cdcd52546c8cd88b74b24d1')
+
+package() {
+	cd "$pkgname-$pkgver"
+	# crypt(3) pages come with libxcrypt
+	rm -v man3/crypt*
+	make -R GIT=false prefix=/usr DESTDIR="$pkgdir" install
+}

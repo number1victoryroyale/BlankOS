@@ -1,0 +1,43 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.46
+
+pkgname=perl
+pkgver=5.44.0
+pkgrel=1
+pkgdesc="A highly capable, feature-rich programming language"
+arch=(x86_64)
+url='https://www.perl.org'
+license=('GPL-1.0-or-later' 'Artistic-1.0-Perl')
+depends=('glibc' 'gdbm' 'libxcrypt' 'zlib' 'bzip2')
+options=('!purge')
+source=("https://www.cpan.org/src/5.0/perl-$pkgver.tar.xz")
+sha256sums=('505cf43912e9480495c344c70260452e32aa2a73c546a026b3f100053b23ce91')
+
+build() {
+	cd "$pkgname-$pkgver"
+	export BUILD_ZLIB=False
+	export BUILD_BZIP2=0
+	sh Configure -des \
+		-D prefix=/usr \
+		-D vendorprefix=/usr \
+		-D privlib=/usr/lib/perl5/5.44/core_perl \
+		-D archlib=/usr/lib/perl5/5.44/core_perl \
+		-D sitelib=/usr/lib/perl5/5.44/site_perl \
+		-D sitearch=/usr/lib/perl5/5.44/site_perl \
+		-D vendorlib=/usr/lib/perl5/5.44/vendor_perl \
+		-D vendorarch=/usr/lib/perl5/5.44/vendor_perl \
+		-D man1dir=/usr/share/man/man1 \
+		-D man3dir=/usr/share/man/man3 \
+		-D pager="/usr/bin/less -isR" \
+		-D useshrplib \
+		-D usethreads \
+		-D optimize="$CFLAGS" \
+		-D lddlflags="-shared $LDFLAGS" \
+		-D ldflags="$LDFLAGS"
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

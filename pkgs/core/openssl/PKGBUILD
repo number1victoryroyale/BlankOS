@@ -1,0 +1,29 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.49
+
+pkgname=openssl
+pkgver=4.0.1
+pkgrel=1
+pkgdesc="The Open Source toolkit for Secure Sockets Layer and Transport Layer Security"
+arch=(x86_64)
+url='https://www.openssl.org'
+license=('Apache-2.0')
+depends=('glibc' 'zlib')
+backup=('etc/ssl/openssl.cnf')
+source=("https://github.com/openssl/openssl/releases/download/openssl-$pkgver/openssl-$pkgver.tar.gz")
+sha256sums=('2db3f3a0d6ea4b59e1f094ace2c8cd536dffb87cdc39084c5afa1e6f7f37dd09')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./config --prefix=/usr \
+		--openssldir=/etc/ssl \
+		--libdir=lib \
+		shared \
+		zlib-dynamic
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" INSTALL_LIBS= MANSUFFIX=ssl install
+}

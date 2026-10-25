@@ -1,0 +1,44 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.29
+
+pkgname=libxcrypt
+pkgver=4.5.2
+pkgrel=1
+pkgdesc="Modern library for one-way hashing of passwords"
+arch=(x86_64)
+url='https://github.com/besser82/libxcrypt'
+license=('LGPL-2.1-or-later')
+depends=('glibc')
+source=("https://github.com/besser82/libxcrypt/releases/download/v$pkgver/libxcrypt-$pkgver.tar.xz")
+sha256sums=('71513a31c01a428bccd5367a32fd95f115d6dac50fb5b60c779d5c7942aec071')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	sed -i '/strchr/s/const//' lib/crypt-{sm3,gost}-yescrypt.c
+	# second tree for the libcrypt.so.1 compatibility library
+	cp -a "$srcdir/$pkgname-$pkgver" "$srcdir/$pkgname-compat"
+}
+
+build() {
+	cd "$srcdir/$pkgname-$pkgver"
+	./configure --prefix=/usr \
+		--enable-hashes=strong,glibc \
+		--enable-obsolete-api=no \
+		--disable-static \
+		--disable-failure-tokens
+	make
+
+	cd "$srcdir/$pkgname-compat"
+	./configure --prefix=/usr \
+		--enable-hashes=strong,glibc \
+		--enable-obsolete-api=glibc \
+		--disable-static \
+		--disable-failure-tokens
+	make
+}
+
+package() {
+	cd "$srcdir/$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+	cp -av --remove-destination "$srcdir/$pkgname-compat"/.libs/libcrypt.so.1* "$pkgdir/usr/lib"
+}

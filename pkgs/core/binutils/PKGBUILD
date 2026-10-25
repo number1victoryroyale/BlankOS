@@ -1,0 +1,38 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.22
+
+pkgname=binutils
+pkgver=2.47
+pkgrel=1
+pkgdesc="A set of programs to assemble and manipulate binary and object files"
+arch=(x86_64)
+url='https://www.gnu.org/software/binutils/'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'zlib' 'zstd')
+backup=('etc/gprofng.rc')
+source=("https://sourceware.org/pub/binutils/releases/binutils-$pkgver.tar.xz")
+sha256sums=('154ab23b60070e8f27013c22977f1129425d67d1e8acd6e13010e617811e4cff')
+
+build() {
+	cd "$pkgname-$pkgver"
+	mkdir -p build && cd build
+	../configure --prefix=/usr \
+		--sysconfdir=/etc \
+		--enable-ld=default \
+		--enable-plugins \
+		--enable-shared \
+		--disable-werror \
+		--enable-64-bit-bfd \
+		--enable-new-dtags \
+		--with-system-zlib \
+		--with-lib-path=/usr/lib \
+		--enable-default-hash-style=gnu
+	make tooldir=/usr
+}
+
+package() {
+	cd "$pkgname-$pkgver/build"
+	make tooldir=/usr DESTDIR="$pkgdir" install
+	rm -rfv "$pkgdir"/usr/lib/lib{bfd,ctf,ctf-nobfd,gprofng,opcodes,sframe}.a \
+		"$pkgdir/usr/share/doc/gprofng/"
+}

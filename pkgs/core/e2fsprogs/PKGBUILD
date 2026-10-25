@@ -1,0 +1,34 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.82
+
+pkgname=e2fsprogs
+pkgver=1.47.4
+pkgrel=1
+pkgdesc="Ext2/3/4 filesystem utilities"
+arch=(x86_64)
+url='https://e2fsprogs.sourceforge.net'
+license=('GPL-2.0-or-later' 'LGPL-2.0-or-later' 'MIT')
+depends=('glibc' 'util-linux')
+backup=('etc/mke2fs.conf')
+source=("https://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v$pkgver/e2fsprogs-$pkgver.tar.gz")
+sha256sums=('2cec05f39c20ee621f14926195664e66e6017190ac8e4bbdb16d86082e43c5da')
+
+build() {
+	cd "$pkgname-$pkgver"
+	mkdir -p build && cd build
+	../configure --prefix=/usr \
+		--sysconfdir=/etc \
+		--enable-elf-shlibs \
+		--disable-libblkid \
+		--disable-libuuid \
+		--disable-uuidd \
+		--disable-fsck
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver/build"
+	make DESTDIR="$pkgdir" install
+	rm -fv "$pkgdir"/usr/lib/{libcom_err,libe2p,libext2fs,libss}.a
+	sed 's/metadata_csum_seed,//' -i "$pkgdir/etc/mke2fs.conf"
+}

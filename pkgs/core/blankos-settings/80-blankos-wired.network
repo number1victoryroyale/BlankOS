@@ -1,0 +1,7 @@
+# DHCP on every wired interface until NetworkManager arrives with the desktop.
+[Match]
+Type=ether
+Kind=!*
+
+[Network]
+DHCP=yes

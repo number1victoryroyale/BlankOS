@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.69
+
+pkgname=libpipeline
+pkgver=1.5.8
+pkgrel=1
+pkgdesc="C library for manipulating pipelines of subprocesses"
+arch=(x86_64)
+url='https://libpipeline.nongnu.org/'
+license=('GPL-3.0-or-later')
+depends=('glibc')
+source=("https://download.savannah.gnu.org/releases/libpipeline/libpipeline-$pkgver.tar.gz")
+sha256sums=('1b1203ca152ccd63983c3f2112f7fe6fa5afd453218ede5153d1b31e11bb8405')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

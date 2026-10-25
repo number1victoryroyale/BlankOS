@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.62
+
+pkgname=diffutils
+pkgver=3.12
+pkgrel=1
+pkgdesc="Utility programs used for creating patch files"
+arch=(x86_64)
+url='https://www.gnu.org/software/diffutils'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'bash')
+source=("https://ftpmirror.gnu.org/diffutils/diffutils-$pkgver.tar.xz")
+sha256sums=('7c8b7f9fc8609141fdea9cece85249d308624391ff61dedaf528fcb337727dfd')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

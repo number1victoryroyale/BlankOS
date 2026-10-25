@@ -1,0 +1,46 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.54
+
+pkgname=python
+pkgver=3.14.7
+pkgrel=1
+pkgdesc="The Python programming language"
+arch=(x86_64)
+url='https://www.python.org/'
+license=('PSF-2.0')
+depends=('glibc' 'bzip2' 'expat' 'gdbm' 'libffi' 'libxcrypt' 'mpdecimal' 'ncurses' 'openssl' 'readline' 'sqlite' 'xz' 'zlib')
+backup=('etc/pip.conf')
+options=('!lto')
+source=("https://www.python.org/ftp/python/$pkgver/Python-$pkgver.tar.xz"
+        "https://www.linuxfromscratch.org/patches/lfs/13.1/Python-$pkgver-openssl_4-1.patch")
+sha256sums=('3b48dac8fb59f62eaa67ac83c1eb12bda1b7a08406dd286e252c11a66be27f81'
+            '707a0c457192ac2f3b5b8a51481bc5ebd12db22d57c1dbe0256138ee6e070792')
+
+prepare() {
+	cd "Python-$pkgver"
+	patch -Np1 -i ../Python-$pkgver-openssl_4-1.patch
+}
+
+build() {
+	cd "Python-$pkgver"
+	./configure --prefix=/usr \
+		--enable-shared \
+		--with-system-expat \
+		--enable-optimizations \
+		--without-static-libpython
+	make
+}
+
+package() {
+	cd "Python-$pkgver"
+	make DESTDIR="$pkgdir" install
+	# BlankOS: unversioned names, as most distros (and PKGBUILDs) expect
+	ln -sfv python3 "$pkgdir/usr/bin/python"
+	ln -sfv pip3 "$pkgdir/usr/bin/pip"
+	ln -sfv python3-config "$pkgdir/usr/bin/python-config"
+	install -Dm644 /dev/stdin "$pkgdir/etc/pip.conf" << EOF
+[global]
+root-user-action = ignore
+disable-pip-version-check = true
+EOF
+}

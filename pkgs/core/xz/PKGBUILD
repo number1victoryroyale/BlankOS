@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.8
+
+pkgname=xz
+pkgver=5.8.3
+pkgrel=1
+pkgdesc="Library and command line tools for XZ and LZMA compressed files"
+arch=(x86_64)
+url='https://tukaani.org/xz/'
+license=('0BSD' 'GPL-2.0-or-later')
+depends=('glibc')
+source=("https://github.com/tukaani-project/xz/releases/download/v$pkgver/xz-$pkgver.tar.xz")
+sha256sums=('fff1ffcf2b0da84d308a14de513a1aa23d4e9aa3464d17e64b9714bfdd0bbfb6')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static --docdir=/usr/share/doc/xz-$pkgver
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

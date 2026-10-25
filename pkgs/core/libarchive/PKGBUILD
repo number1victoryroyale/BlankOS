@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+
+pkgname=libarchive
+pkgver=3.8.10
+pkgrel=1
+pkgdesc="Multi-format archive and compression library"
+arch=(x86_64)
+url='https://libarchive.org/'
+license=('BSD-2-Clause')
+depends=('glibc' 'acl' 'attr' 'bzip2' 'expat' 'lz4' 'openssl' 'xz' 'zlib' 'zstd')
+source=("https://www.libarchive.org/downloads/libarchive-$pkgver.tar.xz")
+sha256sums=('56cad765459d5ee25a3b761f90c47d99379d28297fbfb72d908880d6b875fb96')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static --without-xml2 --without-nettle --without-mbedtls
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

@@ -1,0 +1,27 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.5 (time zone data)
+
+pkgname=tzdata
+pkgver=2026c
+pkgrel=1
+pkgdesc="Sources for time zone and daylight saving time data"
+arch=(any)
+url='https://www.iana.org/time-zones'
+license=('LicenseRef-tz')
+source=("https://www.iana.org/time-zones/repository/releases/tzdata$pkgver.tar.gz")
+sha256sums=('e4a178a4477f3d0ea77cc31828ff72aa38feff8d61aa13e7e99e142e9d902be4')
+
+_zones=(etcetera southamerica northamerica europe africa antarctica asia australasia backward)
+
+package() {
+	cd "$srcdir"
+	local zoneinfo="$pkgdir/usr/share/zoneinfo" tz
+	install -d "$zoneinfo"/{posix,right}
+	for tz in "${_zones[@]}"; do
+		zic -L /dev/null   -d "$zoneinfo"       "$tz"
+		zic -L /dev/null   -d "$zoneinfo/posix" "$tz"
+		zic -L leapseconds -d "$zoneinfo/right" "$tz"
+	done
+	install -m644 zone.tab zone1970.tab iso3166.tab "$zoneinfo"
+	zic -d "$zoneinfo" -p America/New_York
+}

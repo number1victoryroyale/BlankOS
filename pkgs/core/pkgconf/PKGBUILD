@@ -1,0 +1,28 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.21
+
+pkgname=pkgconf
+pkgver=3.0.5
+pkgrel=1
+pkgdesc="Package compiler and linker metadata toolkit"
+arch=(x86_64)
+url='https://github.com/pkgconf/pkgconf'
+license=('ISC')
+depends=('glibc')
+makedepends=('meson' 'ninja')
+provides=('pkg-config')
+source=("https://distfiles.ariadne.space/pkgconf/pkgconf-$pkgver.tar.xz")
+sha256sums=('3acd3a8a3cce65a8d620321855d92fb602e026cbe8e13ee36bdec58483b59ace')
+
+build() {
+	cd "$pkgname-$pkgver"
+	meson setup build --prefix=/usr --buildtype=release
+	ninja -C build
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	DESTDIR="$pkgdir" ninja -C build install
+	ln -sv pkgconf "$pkgdir/usr/bin/pkg-config"
+	ln -sv pkgconf.1 "$pkgdir/usr/share/man/man1/pkg-config.1"
+}

@@ -1,0 +1,16 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+
+pkgname=base
+pkgver=3
+pkgrel=1
+pkgdesc="Minimal package set to define a basic BlankOS installation"
+arch=(any)
+url='https://github.com/number1victoryroyale/BlankOS'
+license=('GPL-3.0-or-later')
+depends=('filesystem' 'gcc' 'glibc' 'bash' 'bzip2' 'coreutils' 'file' 'findutils' 'gawk' 'gettext' 'grep' 'gzip' 'iana-etc' 'inetutils' 'iproute2' 'kbd' 'kmod' 'less' 'e2fsprogs' 'man-db' 'man-pages' 'procps-ng' 'psmisc' 'sed' 'shadow' 'systemd' 'dbus' 'tar' 'util-linux' 'xz' 'zstd' 'pacman' 'ca-certificates' 'curl' 'vim' 'blankos-release' 'blankos-settings')
+source=()
+sha256sums=()
+
+package() {
+	:
+}

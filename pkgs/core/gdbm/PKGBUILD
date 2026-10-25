@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.41
+
+pkgname=gdbm
+pkgver=1.26
+pkgrel=1
+pkgdesc="GNU database library"
+arch=(x86_64)
+url='https://www.gnu.org/software/gdbm/gdbm.html'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'readline')
+source=("https://ftpmirror.gnu.org/gdbm/gdbm-$pkgver.tar.gz")
+sha256sums=('6a24504a14de4a744103dcb936be976df6fbe88ccff26065e54c1c47946f4a5e')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static --enable-libgdbm-compat
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

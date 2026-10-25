@@ -1,0 +1,4 @@
+post_install() {
+	systemd-machine-id-setup >/dev/null 2>&1 || true
+	systemctl preset-all >/dev/null 2>&1 || true
+}

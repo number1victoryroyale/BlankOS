@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.48
+
+pkgname=automake
+pkgver=1.18.1
+pkgrel=1
+pkgdesc="A GNU tool for automatically creating Makefiles"
+arch=(any)
+url='https://www.gnu.org/software/automake'
+license=('GPL-2.0-or-later')
+depends=('perl' 'bash' 'autoconf')
+source=("https://ftpmirror.gnu.org/automake/automake-$pkgver.tar.xz")
+sha256sums=('168aa363278351b89af56684448f525a5bce5079d0b6842bd910fdd3f1646887')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --docdir=/usr/share/doc/automake-$pkgver
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

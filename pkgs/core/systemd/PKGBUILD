@@ -1,0 +1,71 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.77
+
+pkgname=systemd
+pkgver=261.2
+pkgrel=1
+pkgdesc="System and service manager"
+arch=(x86_64)
+url='https://systemd.io'
+license=('GPL-2.0-or-later' 'LGPL-2.1-or-later')
+depends=('glibc' 'acl' 'bash' 'kbd' 'kmod' 'libcap' 'libxcrypt' 'openssl' 'util-linux' 'xz' 'zstd' 'lz4' 'pcre2')
+makedepends=('meson' 'ninja' 'gperf' 'python-jinja')
+provides=('systemd-libs' 'udev' 'libudev' 'libsystemd')
+backup=('etc/systemd/journald.conf' 'etc/systemd/logind.conf' 'etc/systemd/networkd.conf' 'etc/systemd/resolved.conf' 'etc/systemd/sleep.conf' 'etc/systemd/system.conf' 'etc/systemd/timesyncd.conf' 'etc/systemd/user.conf' 'etc/udev/udev.conf')
+install=systemd.install
+source=("systemd-$pkgver.tar.gz::https://github.com/systemd/systemd/archive/v$pkgver/systemd-$pkgver.tar.gz"
+        "https://anduin.linuxfromscratch.org/LFS/systemd-man-pages-$pkgver.tar.xz"
+        "systemd-hook"
+        "20-systemd-sysusers.hook"
+        "30-systemd-tmpfiles.hook"
+        "30-systemd-hwdb.hook"
+        "30-systemd-daemon-reload.hook"
+        "30-systemd-udev-reload.hook")
+noextract=(systemd-man-pages-$pkgver.tar.xz)
+sha256sums=('ed1059ff964f5df35b6056434cc17cc83f86dc913f10489948a0b19b6081c5ec'
+            '9be13865c9c7f9fecba7b86fc5185aecef00164c87ed68b4f6884283aefebe50'
+            '0401b94a31fd73d24789fa5805c72dcfa20ad082ff3d8c263ede9a890961b0f0'
+            '332bbbcf2bfa13b4abd656863061e93e6cd168c608de415afa9a13b2baf174d0'
+            'a7b86c254c20e541f461a6991a3355ab0dc81aaeb4e92b6367fa49fc1da36c8c'
+            'b19b23467dc33b3e8267cabea10726b0d181e0de1b491ec538b9fb620bccf57f'
+            'e112fab7ff7134df71580617d03c59ce0cd74540facece6fa40ba05e4644e9bd'
+            'f6364443609b1d5a07f385e7228ace0eae5040ae3bbd4e00ed5033ef1b19e4b9')
+
+build() {
+	cd "$pkgname-$pkgver"
+	# BlankOS: sysusers enabled (packages ship sysusers.d snippets) and the
+	# 'render' group is kept (created by sysusers) instead of LFS's sed.
+	meson setup build \
+		--prefix=/usr \
+		--buildtype=release \
+		-D default-dnssec=no \
+		-D firstboot=false \
+		-D install-tests=false \
+		-D ldconfig=false \
+		-D sysusers=true \
+		-D rpmmacrosdir=no \
+		-D homed=disabled \
+		-D man=disabled \
+		-D mode=release \
+		-D pamconfdir=no \
+		-D dev-kvm-mode=0660 \
+		-D nobody-group=nogroup \
+		-D sysupdate=disabled \
+		-D ukify=disabled \
+		-D docdir=/usr/share/doc/systemd-$pkgver
+	ninja -C build
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	DESTDIR="$pkgdir" ninja -C build install
+	tar -xf "$srcdir/systemd-man-pages-$pkgver.tar.xz" \
+		--no-same-owner --strip-components=1 -C "$pkgdir/usr/share/man"
+	install -Dm644 -t "$pkgdir/usr/share/libalpm/hooks" "$srcdir"/*.hook
+	install -Dm755 "$srcdir/systemd-hook" "$pkgdir/usr/share/libalpm/scripts/systemd-hook"
+	# coredumps are capped (LFS 9.10)
+	install -Dm644 /dev/stdin "$pkgdir/usr/lib/systemd/coredump.conf.d/50-blankos.conf" << EOF
+[Coredump]
+MaxUse=5G
+EOF
+}

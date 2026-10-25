@@ -1,0 +1,49 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.32
+
+pkgname=gcc
+pkgver=16.2.0
+pkgrel=1
+pkgdesc="The GNU Compiler Collection - C and C++ frontends"
+arch=(x86_64)
+url='https://gcc.gnu.org'
+license=('GPL-3.0-with-GCC-exception' 'GFDL-1.3-or-later')
+depends=('glibc' 'binutils' 'gmp' 'mpfr' 'libmpc' 'zlib' 'zstd')
+provides=('gcc-libs')
+options=('staticlibs' '!lto')
+source=("https://ftpmirror.gnu.org/gcc/gcc-$pkgver/gcc-$pkgver.tar.xz")
+sha256sums=('e6738e29597f733270731aa90600f37ffdc045079dfc27ec7e8192cc81085c3e')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	sed -e '/m64=/s/lib64/lib/' -i.orig gcc/config/i386/t-linux64
+}
+
+build() {
+	cd "$pkgname-$pkgver"
+	mkdir -p build && cd build
+	../configure --prefix=/usr \
+		LD=ld \
+		--enable-languages=c,c++ \
+		--enable-default-pie \
+		--enable-default-ssp \
+		--enable-host-pie \
+		--enable-targets=all \
+		--disable-multilib \
+		--disable-bootstrap \
+		--disable-fixincludes \
+		--with-system-zlib
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver/build"
+	make DESTDIR="$pkgdir" install
+	ln -sv gcc "$pkgdir/usr/bin/cc"
+	ln -sv ../bin/cpp "$pkgdir/usr/lib/cpp"
+	ln -sv gcc.1 "$pkgdir/usr/share/man/man1/cc.1"
+	install -d "$pkgdir/usr/lib/bfd-plugins"
+	ln -sfv ../../libexec/gcc/$CHOST/$pkgver/liblto_plugin.so "$pkgdir/usr/lib/bfd-plugins/"
+	install -d "$pkgdir/usr/share/gdb/auto-load/usr/lib"
+	mv -v "$pkgdir"/usr/lib/*gdb.py "$pkgdir/usr/share/gdb/auto-load/usr/lib"
+}

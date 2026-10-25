@@ -1,0 +1,29 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.39
+
+pkgname=bash
+pkgver=5.3
+pkgrel=1
+pkgdesc="The GNU Bourne Again shell"
+arch=(x86_64)
+url='https://www.gnu.org/software/bash/'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'readline' 'ncurses')
+provides=('sh')
+source=("https://ftpmirror.gnu.org/bash/bash-$pkgver.tar.gz")
+sha256sums=('0d5cd86965f869a26cf64f4b71be7b96f90a3ba8b3d74e27e8e9d9d5550f31ba')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr \
+	    --without-bash-malloc \
+	    --with-installed-readline \
+	    --docdir=/usr/share/doc/bash-$pkgver
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+	ln -sv bash "$pkgdir/usr/bin/sh"
+}

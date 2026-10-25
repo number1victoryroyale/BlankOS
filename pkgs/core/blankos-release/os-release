@@ -1,0 +1,10 @@
+NAME="BlankOS"
+PRETTY_NAME="BlankOS"
+ID=blankos
+ID_LIKE=lfs
+BUILD_ID=rolling
+VERSION_ID=0.1.0
+ANSI_COLOR="38;2;139;92;246"
+HOME_URL="https://github.com/number1victoryroyale/BlankOS"
+BUG_REPORT_URL="https://github.com/number1victoryroyale/BlankOS/issues"
+LOGO=blankos

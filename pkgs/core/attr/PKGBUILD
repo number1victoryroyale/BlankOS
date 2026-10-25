@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.26
+
+pkgname=attr
+pkgver=2.6.0
+pkgrel=1
+pkgdesc="Extended attribute support library for ACL support"
+arch=(x86_64)
+url='https://savannah.nongnu.org/projects/attr'
+license=('LGPL-2.1-or-later' 'GPL-2.0-or-later')
+depends=('glibc')
+backup=('etc/xattr.conf')
+source=("https://download.savannah.gnu.org/releases/attr/attr-$pkgver.tar.gz")
+sha256sums=('d42fa374513180bb48cb11a46696f488240e5124ff1e6ad88b0abff706985612')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static --sysconfdir=/etc --docdir=/usr/share/doc/attr-$pkgver
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

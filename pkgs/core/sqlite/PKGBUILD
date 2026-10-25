@@ -1,0 +1,32 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.52
+
+pkgname=sqlite
+pkgver=3.53.4
+pkgrel=1
+pkgdesc="A C library that implements an SQL database engine"
+arch=(x86_64)
+url='https://www.sqlite.org/'
+license=('LicenseRef-Sqlite')
+depends=('glibc' 'readline' 'zlib')
+source=("https://sqlite.org/2026/sqlite-autoconf-3530400.tar.gz")
+sha256sums=('0e9483900e92cd5de8fd48d16bf9200145a61f7fd5be542a5ac81d8a9516eb9c')
+
+_srcver=3530400
+
+build() {
+	cd "sqlite-autoconf-$_srcver"
+	./configure --prefix=/usr \
+		--disable-static \
+		--enable-fts{4,5} \
+		CPPFLAGS="-D SQLITE_ENABLE_COLUMN_METADATA=1 \
+		          -D SQLITE_ENABLE_UNLOCK_NOTIFY=1 \
+		          -D SQLITE_ENABLE_DBSTAT_VTAB=1 \
+		          -D SQLITE_SECURE_DELETE=1"
+	make LDFLAGS.rpath=""
+}
+
+package() {
+	cd "sqlite-autoconf-$_srcver"
+	make DESTDIR="$pkgdir" install
+}

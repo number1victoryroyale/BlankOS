@@ -1,0 +1,3 @@
+# BlankOS package mirrors. Packages are published as GitHub release assets
+# by the BlankOS CI (one release per repository).
+Server = https://github.com/number1victoryroyale/BlankOS/releases/download/$repo

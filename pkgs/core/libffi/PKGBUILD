@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.51
+
+pkgname=libffi
+pkgver=3.8.0
+pkgrel=1
+pkgdesc="Portable foreign function interface library"
+arch=(x86_64)
+url='https://sourceware.org/libffi/'
+license=('MIT')
+depends=('glibc')
+source=("https://github.com/libffi/libffi/releases/download/v$pkgver/libffi-$pkgver.tar.gz")
+sha256sums=('7da3e2d9a171eb0a038f592ecad3ff2bb2550f3496d87b3b29ad0cf4430c0db4')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static --with-gcc-arch=x86-64-v2
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

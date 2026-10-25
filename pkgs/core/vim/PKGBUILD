@@ -1,0 +1,38 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.74
+
+pkgname=vim
+pkgver=9.2.1025
+pkgrel=1
+pkgdesc="Vi Improved, a highly configurable, improved version of the vi text editor"
+arch=(x86_64)
+url='https://www.vim.org'
+license=('Vim')
+depends=('glibc' 'ncurses' 'acl')
+backup=('etc/vimrc')
+source=("vim-$pkgver.tar.gz::https://github.com/vim/vim/archive/v$pkgver/vim-$pkgver.tar.gz"
+        "vimrc")
+sha256sums=('cb0dbf701f8550bb54940304fa4d8b875e078db84967e5b36a0eb7ebe8a6d0cc'
+            '172354dcc2a036d4b9ebee7be955d8307c56a6cdbba25edd4df6028b5bbd2bb7')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	echo '#define SYS_VIMRC_FILE "/etc/vimrc"' >> src/feature.h
+}
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+	ln -sv vim "$pkgdir/usr/bin/vi"
+	local L
+	for L in "$pkgdir"/usr/share/man/{,*/}man1/vim.1; do
+		ln -sv vim.1 "$(dirname "$L")/vi.1"
+	done
+	install -Dm644 "$srcdir/vimrc" "$pkgdir/etc/vimrc"
+}

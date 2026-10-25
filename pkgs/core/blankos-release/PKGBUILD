@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+
+pkgname=blankos-release
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="BlankOS release and branding files"
+arch=(any)
+url='https://github.com/number1victoryroyale/BlankOS'
+license=('GPL-3.0-or-later')
+backup=('etc/issue')
+source=("os-release"
+        "lsb-release"
+        "issue")
+sha256sums=('9692095ccfc99fbeace3b3aaf0a61ee190c73808957963abaac2b506ecdea381'
+            '85a6a06da4face9e644dcaae67c7748df67b89bf3fce1deb068528e42e3ce122'
+            '5eab132487791af793680d1692f5b15687221de2a334c7e1528636e56aff56ae')
+
+package() {
+	install -Dm644 "$srcdir/os-release" "$pkgdir/usr/lib/os-release"
+	install -d "$pkgdir/etc"
+	ln -s ../usr/lib/os-release "$pkgdir/etc/os-release"
+	echo "BlankOS $pkgver" > "$pkgdir/etc/blankos-release"
+	install -m644 "$srcdir/lsb-release" "$pkgdir/etc/lsb-release"
+	install -m644 "$srcdir/issue" "$pkgdir/etc/issue"
+}

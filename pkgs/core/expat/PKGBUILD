@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.43
+
+pkgname=expat
+pkgver=2.8.3
+pkgrel=1
+pkgdesc="An XML parser library"
+arch=(x86_64)
+url='https://libexpat.github.io/'
+license=('MIT')
+depends=('glibc')
+source=("https://github.com/libexpat/libexpat/releases/download/R_${pkgver//./_}/expat-$pkgver.tar.xz")
+sha256sums=('f6256df90c906773d344da084402b7d3e4f22ed41b1a59c989098a83d3ea0c85')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static --docdir=/usr/share/doc/expat-$pkgver
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

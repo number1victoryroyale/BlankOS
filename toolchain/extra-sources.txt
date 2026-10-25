@@ -1,0 +1,7 @@
+# sha256  url  -- sources needed by the toolchain/bootstrap stage that are
+# not part of the LFS book (or whose version differs from the book).
+87363c24f10e06321eb362765521094e94471f6bff8bce2d6b3e40f39f004953  https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-7.3.tar.xz
+56cad765459d5ee25a3b761f90c47d99379d28297fbfb72d908880d6b875fb96  https://www.libarchive.org/downloads/libarchive-3.8.10.tar.xz
+8dadd7d2536a314f982ad05a651b713f426bf7d02cc2c76cffb9796f2218e6c5  https://curl.se/download/curl-8.23.0.tar.xz
+86b0b75bf319ca42e525c098675b6ed10a06b76e69ec9ccf20ef5e03883b3a14  https://deb.debian.org/debian/pool/main/f/fakeroot/fakeroot_1.37.1.1.orig.tar.gz
+530e50d7edbb2a22581c6d6707d2113240276c1bec4ee39a99488e1243c32171  https://gitlab.archlinux.org/pacman/pacman/-/releases/v7.1.0/downloads/pacman-7.1.0.tar.xz

@@ -1,0 +1,17 @@
+# BlankOS bash defaults (shipped as /etc/bash.bashrc and ~/.bashrc).
+[[ $- != *i* ]] && return
+
+HISTCONTROL=ignoreboth
+HISTSIZE=5000
+shopt -s histappend checkwinsize
+
+alias ls='ls --color=auto'
+alias ll='ls -lh --color=auto'
+alias grep='grep --color=auto'
+
+# Violet BlankOS prompt: user@host dir $
+if [[ $EUID -eq 0 ]]; then
+	PS1='\[\e[1;31m\]\u\[\e[0m\]@\[\e[38;2;139;92;246m\]\h\[\e[0m\] \[\e[1m\]\w\[\e[0m\] # '
+else
+	PS1='\[\e[38;2;167;139;250m\]\u\[\e[0m\]@\[\e[38;2;139;92;246m\]\h\[\e[0m\] \[\e[1m\]\w\[\e[0m\] $ '
+fi

@@ -1,0 +1,33 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.68
+
+pkgname=kbd
+pkgver=2.10.0
+pkgrel=1
+pkgdesc="Keytable files and keyboard utilities"
+arch=(x86_64)
+url='https://kbd-project.org'
+license=('GPL-2.0-or-later')
+depends=('glibc')
+source=("https://www.kernel.org/pub/linux/utils/kbd/kbd-$pkgver.tar.xz"
+        "https://www.linuxfromscratch.org/patches/lfs/13.1/kbd-$pkgver-backspace-1.patch")
+sha256sums=('6e5ca4f8d76ee9e3a8db700b667f13e12aac9933828a64e1aaad93d26be9b479'
+            '8be28dcb11420624a500f2ea4fe975f771174bffee50e54ec8cd295a2dec104e')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	patch -Np1 -i ../kbd-$pkgver-backspace-1.patch
+	sed -i '/RESIZECONS_PROGS=/s/yes/no/' configure
+	sed -i 's/resizecons.8 //' docs/man/man8/Makefile.in
+}
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-vlock
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.34
+
+pkgname=sed
+pkgver=4.10
+pkgrel=1
+pkgdesc="GNU stream editor"
+arch=(x86_64)
+url='https://www.gnu.org/software/sed/'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'acl' 'attr')
+source=("https://ftpmirror.gnu.org/sed/sed-$pkgver.tar.xz")
+sha256sums=('b8e72182b2ec96a3574e2998c47b7aaa64cc20ce000d8e9ac313cc07cecf28c7')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

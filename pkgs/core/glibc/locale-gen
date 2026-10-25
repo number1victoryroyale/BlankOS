@@ -1,0 +1,21 @@
+#!/bin/bash
+# Generate the locales listed (uncommented) in /etc/locale.gen.
+set -e
+LOCALEGEN=/etc/locale.gen
+[[ -r $LOCALEGEN ]] || { echo "locale-gen: $LOCALEGEN not found" >&2; exit 1; }
+echo "Generating locales..."
+rm -f /usr/lib/locale/locale-archive
+while read -r locale charset; do
+	[[ -z $locale || $locale == \#* ]] && continue
+	input=$locale modifier=
+	if [[ $input == *@* ]]; then
+		modifier=${input##*@}
+		input=${input%%@*}
+	fi
+	input=${input%%.*}
+	[[ -n $modifier ]] && input+="@$modifier"
+	printf '  %s...' "$locale"
+	localedef -i "$input" -c -f "$charset" -A /usr/share/locale/locale.alias "$locale" 2>/dev/null || true
+	echo " done"
+done < "$LOCALEGEN"
+echo "Generation complete."

@@ -1,0 +1,90 @@
+# One pass of building a pacman repository. Passes are chained (see
+# build.yml): each pass resumes from the packages already published in the
+# repo's release, works for at most ~5.5 hours, then publishes what it
+# built. Later passes are no-ops once everything is up to date.
+name: repo stage
+
+on:
+  workflow_call:
+    inputs:
+      repo:
+        type: string
+        required: true
+      pass:
+        description: Pass number (used to keep artifact names unique)
+        type: string
+        required: true
+      final:
+        description: Fail if the repo is still incomplete after this pass
+        type: boolean
+        default: false
+
+env:
+  LFS: /mnt/blankos
+  SRC: /mnt/sources
+  OUT: /mnt/out
+  GH_TOKEN: ${{ github.token }}
+  GH_REPO: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare host
+        run: |
+          sudo mkdir -p "$SRC" "$OUT"
+          sudo chown "$USER" "$SRC" "$OUT"
+          sudo toolchain/host-prep.sh
+
+      - uses: actions/cache@v4
+        with:
+          path: /mnt/sources
+          key: sources-${{ hashFiles('toolchain/lfs-*/*', 'toolchain/extra-sources.txt', 'pkgs/**/PKGBUILD') }}
+          restore-keys: sources-
+
+      - name: Restore builder and published packages
+        run: |
+          tools/ci-release.sh fetch-builder
+          sudo mkdir -p "$LFS"
+          sudo tar --zstd -xpf "$OUT/builder-rootfs.tar.zst" -C "$LFS"
+          rm "$OUT/builder-rootfs.tar.zst"
+          tools/ci-release.sh fetch-repo "${{ inputs.repo }}"
+
+      - name: Build [${{ inputs.repo }}]
+        id: build
+        run: |
+          set +e
+          sudo --preserve-env=LFS,SRC,OUT timeout --signal=INT 320m \
+            tools/build-repo.sh "${{ inputs.repo }}"
+          rc=$?
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          if [ "$rc" -eq 124 ]; then
+            echo "::notice::time budget for this pass used up; the next pass continues"
+            exit 0
+          fi
+          exit "$rc"
+
+      - name: Publish [${{ inputs.repo }}]
+        if: always() && github.event_name != 'pull_request'
+        run: |
+          if [ -f "$OUT/repo/${{ inputs.repo }}/${{ inputs.repo }}.db.tar.gz" ]; then
+            tools/ci-release.sh publish-repo "${{ inputs.repo }}"
+          fi
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ inputs.repo }}-pass${{ inputs.pass }}-attempt${{ github.run_attempt }}
+          path: /mnt/out/logs
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Still incomplete
+        if: inputs.final && steps.build.outputs.rc == '124'
+        run: |
+          echo "::error::[${{ inputs.repo }}] is not complete after the final pass; re-run the workflow to continue"
+          exit 1

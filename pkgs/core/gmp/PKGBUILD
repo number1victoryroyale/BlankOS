@@ -1,0 +1,35 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.23
+
+pkgname=gmp
+pkgver=6.3.0
+pkgrel=1
+pkgdesc="A free library for arbitrary precision arithmetic"
+arch=(x86_64)
+url='https://gmplib.org/'
+license=('LGPL-3.0-or-later' 'GPL-2.0-or-later')
+depends=('gcc' 'glibc')
+source=("https://ftpmirror.gnu.org/gmp/gmp-$pkgver.tar.xz")
+sha256sums=('a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	sed -i '/long long t1;/,+1s/()/(...)/' configure
+}
+
+build() {
+	cd "$pkgname-$pkgver"
+	# BlankOS: --enable-fat builds every CPU-specific code path and picks
+	# one at runtime, instead of optimising for the build machine's CPU.
+	./configure --prefix=/usr \
+	    --enable-cxx \
+	    --enable-fat \
+	    --disable-static \
+	    --docdir=/usr/share/doc/gmp-$pkgver
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

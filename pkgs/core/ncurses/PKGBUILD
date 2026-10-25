@@ -1,0 +1,53 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.33
+
+pkgname=ncurses
+pkgver=6.6
+pkgrel=1
+pkgdesc="System V Release 4.0 curses emulation library"
+arch=(x86_64)
+url='https://invisible-island.net/ncurses/ncurses.html'
+license=('MIT-open-group')
+depends=('glibc' 'gcc')
+source=("https://invisible-mirror.net/archives/ncurses/ncurses-$pkgver.tar.gz")
+sha256sums=('355b4cbbed880b0381a04c46617b7656e362585d52e9cf84a67e2009b749ff11')
+
+prepare() {
+	# second tree for the ABI 5 compatibility libraries
+	cp -a "$pkgname-$pkgver" "$pkgname-compat"
+}
+
+build() {
+	cd "$srcdir/$pkgname-$pkgver"
+	./configure --prefix=/usr \
+		--mandir=/usr/share/man \
+		--with-shared \
+		--without-debug \
+		--without-normal \
+		--with-cxx-shared \
+		--enable-pc-files \
+		--with-pkg-config-libdir=/usr/lib/pkgconfig
+	make
+
+	cd "$srcdir/$pkgname-compat"
+	./configure --prefix=/usr \
+		--with-shared \
+		--without-normal \
+		--without-debug \
+		--without-cxx-binding \
+		--with-abi-version=5
+	make sources libs
+}
+
+package() {
+	cd "$srcdir/$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+	sed -e 's/^#if.*XOPEN.*$/#if 1/' -i "$pkgdir/usr/include/curses.h"
+	local lib
+	for lib in ncurses form panel menu; do
+		ln -sfv lib${lib}w.so "$pkgdir/usr/lib/lib${lib}.so"
+		ln -sfv ${lib}w.pc "$pkgdir/usr/lib/pkgconfig/${lib}.pc"
+	done
+	ln -sfv libncursesw.so "$pkgdir/usr/lib/libcurses.so"
+	cp -av "$srcdir/$pkgname-compat"/lib/lib*.so.5* "$pkgdir/usr/lib"
+}

@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.19
+
+pkgname=dejagnu
+pkgver=1.6.3
+pkgrel=1
+pkgdesc="Framework for testing other programs"
+arch=(any)
+url='https://www.gnu.org/software/dejagnu/'
+license=('GPL-3.0-or-later')
+depends=('expect')
+source=("https://ftpmirror.gnu.org/dejagnu/dejagnu-$pkgver.tar.gz")
+sha256sums=('87daefacd7958b4a69f88c6856dbd1634261963c414079d0c371f589cd66a2e3')
+
+build() {
+	cd "$pkgname-$pkgver"
+	mkdir -p build && cd build
+	../configure --prefix=/usr
+}
+
+package() {
+	cd "$pkgname-$pkgver/build"
+	make DESTDIR="$pkgdir" install
+}

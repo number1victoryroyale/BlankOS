@@ -1,0 +1,56 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.7
+
+pkgname=bzip2
+pkgver=1.0.8
+pkgrel=1
+pkgdesc="A high-quality data compression program"
+arch=(x86_64)
+url='https://sourceware.org/bzip2/'
+license=('bzip2-1.0.6')
+depends=('glibc')
+source=("https://www.sourceware.org/pub/bzip2/bzip2-$pkgver.tar.gz"
+        "https://www.linuxfromscratch.org/patches/lfs/13.1/bzip2-$pkgver-install_docs-1.patch")
+sha256sums=('ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269'
+            '35e3bbd9642af51fef2a8a83afba040d272da42d7e3a251d8e43255a7b496702')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	patch -Np1 -i ../bzip2-$pkgver-install_docs-1.patch
+	sed -i 's@\(ln -s -f \)$(PREFIX)/bin/@\1@' Makefile
+	sed -i "s@(PREFIX)/man@(PREFIX)/share/man@g" Makefile
+}
+
+build() {
+	cd "$pkgname-$pkgver"
+	make -f Makefile-libbz2_so
+	make clean
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make PREFIX="$pkgdir/usr" install
+	cp -av libbz2.so.* "$pkgdir/usr/lib"
+	ln -sfv libbz2.so.$pkgver "$pkgdir/usr/lib/libbz2.so"
+	ln -sfv libbz2.so.$pkgver "$pkgdir/usr/lib/libbz2.so.1"
+	cp -v bzip2-shared "$pkgdir/usr/bin/bzip2"
+	local i
+	for i in bzcat bunzip2; do
+		ln -sfv bzip2 "$pkgdir/usr/bin/$i"
+	done
+	rm -fv "$pkgdir/usr/lib/libbz2.a"
+	install -Dm644 /dev/stdin "$pkgdir/usr/lib/pkgconfig/bzip2.pc" << EOF
+prefix=/usr
+exec_prefix=/usr
+bindir=\${exec_prefix}/bin
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: bzip2
+Description: A file compression library
+Version: $pkgver
+Libs: -L\${libdir} -lbz2
+Cflags: -I\${includedir}
+EOF
+}

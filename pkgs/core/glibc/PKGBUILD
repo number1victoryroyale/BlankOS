@@ -1,0 +1,69 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.5
+
+pkgname=glibc
+pkgver=2.44
+pkgrel=1
+pkgdesc="GNU C Library"
+arch=(x86_64)
+url='https://www.gnu.org/software/libc'
+license=('GPL-2.0-or-later' 'LGPL-2.1-or-later')
+depends=('linux-api-headers' 'filesystem' 'tzdata')
+backup=('etc/ld.so.conf' 'etc/nsswitch.conf' 'etc/locale.gen')
+options=('!strip' 'staticlibs' '!lto')
+install=glibc.install
+source=("https://ftpmirror.gnu.org/glibc/glibc-$pkgver.tar.xz"
+        "https://www.linuxfromscratch.org/patches/lfs/13.1/glibc-fhs-1.patch"
+        "https://www.linuxfromscratch.org/patches/lfs/13.1/glibc-$pkgver-upstream_fixes-1.patch"
+        "ld.so.conf"
+        "nsswitch.conf"
+        "locale.gen"
+        "locale-gen")
+sha256sums=('37f600f2bef3c5e8300147059568b2a2e40a7ad6ccc65ce942556d49429cc667'
+            '643552db030e2f2d7ffde4f558e0f5f83d3fabf34a2e0e56ebdb49750ac27b0d'
+            '500567ff0a22e295bfe3b55e9b397796f71a19f01e1ff7fb29c9189482ee1809'
+            '4a3df9ff082d25f80615f4d1cb067862bdaf41ce16cd547038ddbe57d46c2942'
+            '90af658e675b814b1515124839a3567c41ccba01eaf2072eed7a4ee6ba418ba0'
+            '07d4bb735ef9699b273db3dd96779ae5bd6def65048bcdcb2d9683fe534e9b8b'
+            '4695278654c6e6bd31e53e022d129b73f186d0c9ffc196f1622b93b6d9a1deaf')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	patch -Np1 -i ../glibc-fhs-1.patch
+	patch -Np1 -i ../glibc-$pkgver-upstream_fixes-1.patch
+	# don't run the test-installation step against the real system
+	sed '/test-installation/s@$(PERL)@echo not running@' -i Makefile
+}
+
+build() {
+	cd "$pkgname-$pkgver"
+	# glibc does not build with these hardening/linker flags (as in Arch)
+	CFLAGS=${CFLAGS/-fno-plt/}
+	CXXFLAGS=${CXXFLAGS/-fno-plt/}
+	LDFLAGS=${LDFLAGS/-Wl,-z,now/}
+	mkdir -p build && cd build
+	echo "rootsbindir=/usr/sbin" > configparms
+	../configure --prefix=/usr \
+		--disable-werror \
+		--disable-nscd \
+		libc_cv_slibdir=/usr/lib \
+		--enable-stack-protector=strong \
+		--enable-kernel=5.10
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver/build"
+	make install_root="$pkgdir" install
+	sed '/RTLDLIST=/s@/usr@@g' -i "$pkgdir/usr/bin/ldd"
+	install -dm755 "$pkgdir/etc/ld.so.conf.d"
+	install -m644 "$srcdir/ld.so.conf" "$pkgdir/etc/ld.so.conf"
+	install -m644 "$srcdir/nsswitch.conf" "$pkgdir/etc/nsswitch.conf"
+	install -m644 "$srcdir/locale.gen" "$pkgdir/etc/locale.gen"
+	install -m755 "$srcdir/locale-gen" "$pkgdir/usr/bin/locale-gen"
+	rm -f "$pkgdir/etc/ld.so.cache"
+	# LFS 5.5: the x86_64 ABI loader path
+	install -d "$pkgdir/lib64"
+	ln -sfv ../lib/ld-linux-x86-64.so.2 "$pkgdir/lib64/ld-linux-x86-64.so.2"
+	ln -sfv ../lib/ld-linux-x86-64.so.2 "$pkgdir/lib64/ld-lsb-x86-64.so.3"
+}

@@ -1,0 +1,9 @@
+" /etc/vimrc (LFS 8.74)
+source $VIMRUNTIME/defaults.vim
+let skip_defaults_vim=1
+
+set nocompatible
+set backspace=2
+set mouse=
+syntax on
+set background=dark

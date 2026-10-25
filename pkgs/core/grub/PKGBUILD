@@ -1,0 +1,44 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.65
+
+pkgname=grub
+pkgver=2.14
+pkgrel=1
+pkgdesc="GNU GRand Unified Bootloader (BIOS and x86_64 UEFI)"
+arch=(x86_64)
+url='https://www.gnu.org/software/grub/'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'xz' 'gettext')
+backup=('etc/default/grub' 'etc/grub.d/40_custom')
+options=('!strip' '!lto')
+source=("https://ftpmirror.gnu.org/grub/grub-$pkgver.tar.xz"
+        "grub.default")
+sha256sums=('bc8d3c73535b8838d8c8e2654d73edc4e6ae8c8acdb45d5df5dc9a1547446d43'
+            '3fc478cb98a95b52c08b21410723d8c02d7ca350accbf3ef1f3bf1488c9e3675')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	sed 's/--image-base/--nonexist-linker-option/' -i configure
+	cp -a "$srcdir/$pkgname-$pkgver" "$srcdir/$pkgname-efi"
+}
+
+build() {
+	unset {C,CPP,CXX,LD}FLAGS
+	cd "$srcdir/$pkgname-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --disable-efiemu --disable-werror
+	make
+
+	cd "$srcdir/$pkgname-efi"
+	./configure --prefix=/usr --sysconfdir=/etc \
+		--target=x86_64 --with-platform=efi \
+		--disable-efiemu --disable-werror
+	make
+}
+
+package() {
+	cd "$srcdir/$pkgname-efi"
+	make DESTDIR="$pkgdir" install
+	cd "$srcdir/$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+	install -Dm644 "$srcdir/grub.default" "$pkgdir/etc/default/grub"
+}

@@ -1,0 +1,9 @@
+post_install() {
+	pwconv
+	grpconv
+}
+
+post_upgrade() {
+	pwconv
+	grpconv
+}

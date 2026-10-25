@@ -1,0 +1,7 @@
+post_install() {
+	depmod 7.3.0-blankos
+}
+
+post_upgrade() {
+	depmod 7.3.0-blankos
+}

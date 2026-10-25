@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.27
+
+pkgname=acl
+pkgver=2.4.0
+pkgrel=1
+pkgdesc="Access control list utilities, libraries and headers"
+arch=(x86_64)
+url='https://savannah.nongnu.org/projects/acl'
+license=('LGPL-2.1-or-later' 'GPL-2.0-or-later')
+depends=('attr')
+source=("https://download.savannah.gnu.org/releases/acl/acl-$pkgver.tar.xz")
+sha256sums=('e661131456d2708a01c614a0f400e11d7d1bfaeb6f3e74b75bb980b72f0161a3')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static --docdir=/usr/share/doc/acl-$pkgver
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

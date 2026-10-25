@@ -1,0 +1,74 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §4.2, §7.5-7.6, §9.8-9.9
+
+pkgname=filesystem
+pkgver=2026.10
+pkgrel=1
+pkgdesc="BlankOS base filesystem layout and essential files"
+arch=(x86_64)
+url='https://github.com/number1victoryroyale/BlankOS'
+license=('GPL-3.0-or-later')
+backup=('etc/passwd' 'etc/group' 'etc/shadow' 'etc/gshadow' 'etc/shells' 'etc/profile' 'etc/inputrc' 'etc/fstab' 'etc/hosts' 'etc/host.conf' 'etc/bash.bashrc')
+options=('emptydirs')
+source=("passwd"
+        "group"
+        "shadow"
+        "gshadow"
+        "shells"
+        "profile"
+        "inputrc"
+        "fstab"
+        "hosts"
+        "host.conf"
+        "bashrc"
+        "bash_profile")
+sha256sums=('7817ee628fccd203d7f1bcc20f0afbbaaae615b5bc900314995da35764df0b47'
+            'f849124df7e75f23e48183be9797201a9bccbc51e3db576ac2dcbbc6d65a445b'
+            '1ca39957fae61905d199fde6a69d81cd1adb4e40d53984eac63e47378095a5f8'
+            '6223375f44c775194bca07c6f78d364baf9a4c24d49211227cf011b3d53db703'
+            '0cf3a0c45523b8abab55bc41c6376c4121078fa024b7fc1f706a42054fade5e2'
+            'f37e1b5402951b12f00c086d1278036554d6d2018195cb951e9660dd88e50ef8'
+            '5e42a23b7d3bcd24d88275eb64cb6b170b511c4ea2ca956a1dd148057b70987f'
+            '20e55f1f7231fc183e988fe166dedd22b2ef1480b73371362af177492b23485b'
+            'fc8eb14141b33fdb9ffb0c6e26258961bd2a366d26479e4f36d81d788f5e6368'
+            '380f5fe21d755923b44203b58ca3c8b9681c485d152bd5d7e3914f67d821d32a'
+            'eee77a5ea51f4b335e1aa6c7cf6e7d312d59eabff64cc6188fd5117b67349726'
+            'e2d706ae5fbeb7570b38dbadab1b94b0bbfd5eb338be6faadcf3f11c914ac03c')
+
+package() {
+	cd "$pkgdir"
+	# LFS 4.2 / 7.5 layout, merged /usr.
+	install -d -m755 etc/{opt,sysconfig,profile.d,skel,ld.so.conf.d} \
+		home mnt opt srv boot media/{floppy,cdrom} \
+		usr/{bin,lib,sbin,include,src} usr/lib/{firmware,locale} lib64 \
+		usr/local/{bin,lib,sbin,include,src,share} \
+		usr/share/{color,dict,doc,info,locale,man,misc,terminfo,zoneinfo} \
+		usr/share/man/man{1..8} usr/local/share/man/man{1..8} \
+		var/{cache,local,log,mail,opt,spool,empty} var/lib/{color,misc,locate,hwclock}
+	install -d -m0750 root
+	install -d -m1777 tmp var/tmp var/spool/mail
+	install -d -m0555 proc sys
+	install -d -m0755 dev run
+	# LFS layout: /bin, /lib, /sbin point into /usr; /lib64 is a real
+	# directory holding only the dynamic loader links (owned by glibc).
+	ln -s usr/bin bin
+	ln -s usr/lib lib
+	ln -s usr/sbin sbin
+	ln -s ../run var/run
+	ln -s ../run/lock var/lock
+	ln -s ../proc/self/mounts etc/mtab
+
+	local f
+	for f in passwd group shells profile inputrc fstab hosts host.conf; do
+		install -m644 "$srcdir/$f" etc/$f
+	done
+	install -m600 "$srcdir/shadow" etc/shadow
+	install -m600 "$srcdir/gshadow" etc/gshadow
+	install -m644 "$srcdir/bashrc" etc/bash.bashrc
+	install -m644 "$srcdir/bashrc" etc/skel/.bashrc
+	install -m644 "$srcdir/bash_profile" etc/skel/.bash_profile
+	touch var/log/{btmp,lastlog,faillog,wtmp}
+	chmod 600 var/log/btmp
+	chmod 664 var/log/lastlog
+	chgrp 13 var/log/lastlog
+}

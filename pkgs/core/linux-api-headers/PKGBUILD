@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §5.4
+
+pkgname=linux-api-headers
+pkgver=7.3
+pkgrel=1
+pkgdesc="Kernel headers sanitized for use in userspace"
+arch=(x86_64)
+url='https://www.kernel.org'
+license=('GPL-2.0-only')
+source=("https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-$pkgver.tar.xz")
+sha256sums=('87363c24f10e06321eb362765521094e94471f6bff8bce2d6b3e40f39f004953')
+
+build() {
+	cd "linux-$pkgver"
+	make mrproper
+	make headers
+	find usr/include -type f ! -name '*.h' -delete
+}
+
+package() {
+	cd "linux-$pkgver"
+	install -d "$pkgdir/usr"
+	cp -r usr/include "$pkgdir/usr"
+}

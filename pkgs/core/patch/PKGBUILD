@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.71
+
+pkgname=patch
+pkgver=2.8
+pkgrel=1
+pkgdesc="A utility to apply patch files to original sources"
+arch=(x86_64)
+url='https://www.gnu.org/software/patch/'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'attr')
+source=("https://ftpmirror.gnu.org/patch/patch-$pkgver.tar.xz")
+sha256sums=('f87cee69eec2b4fcbf60a396b030ad6aa3415f192aa5f7ee84cad5e11f7f5ae3')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

@@ -1,0 +1,53 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+
+pkgname=linux
+pkgver=7.3
+pkgrel=1
+pkgdesc="The BlankOS Linux kernel and modules"
+arch=(x86_64)
+url='https://www.kernel.org'
+license=('GPL-2.0-only')
+depends=('kmod' 'coreutils')
+makedepends=('bc' 'perl' 'flex' 'bison' 'libelf' 'openssl' 'python' 'zstd' 'xz' 'tar')
+options=('!strip' '!debug' '!lto')
+install=linux.install
+source=("https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-$pkgver.tar.xz"
+        "config.base"
+        "config.blankos")
+sha256sums=('87363c24f10e06321eb362765521094e94471f6bff8bce2d6b3e40f39f004953'
+            'f16adcb6dc1dc241ea90e23ca920697d00e4618df1b72d914ff15bc55ab4051f'
+            'ca25df9a5f50bbe06917cd7ffd2e7ef1a8dc496960d3094a9b07e5ca784b83d8')
+
+_kver=${pkgver}.0-blankos
+
+prepare() {
+	cd "linux-$pkgver"
+	cp "$srcdir/config.base" .config
+	scripts/kconfig/merge_config.sh -m .config "$srcdir/config.blankos"
+	make olddefconfig
+	# Make sure the options BlankOS relies on survived dependency resolution.
+	local opt
+	for opt in EXT4_FS VIRTIO_BLK BLK_DEV_NVME SATA_AHCI VFAT_FS PREEMPT HZ_1000; do
+		grep -q "^CONFIG_$opt=y" .config || { echo "CONFIG_$opt is not built in" >&2; return 1; }
+	done
+	[[ $(make -s kernelrelease) == "$_kver" ]] || { echo "unexpected kernelrelease" >&2; return 1; }
+}
+
+build() {
+	cd "linux-$pkgver"
+	make all
+}
+
+package() {
+	cd "linux-$pkgver"
+	local modulesdir="$pkgdir/usr/lib/modules/$_kver"
+	make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 DEPMOD=/doesnt/exist modules_install
+	rm -f "$modulesdir"/build
+	install -Dm644 "$(make -s image_name)" "$modulesdir/vmlinuz"
+	install -Dm644 .config "$modulesdir/config"
+	install -Dm644 System.map "$modulesdir/System.map"
+	echo "$pkgbase" > "$modulesdir/pkgbase"
+	# Until the initramfs/dracut integration lands, the kernel lives in /boot
+	# directly (root filesystem drivers are built in).
+	install -Dm644 "$(make -s image_name)" "$pkgdir/boot/vmlinuz-linux"
+}

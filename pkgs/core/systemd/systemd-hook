@@ -1,0 +1,12 @@
+#!/bin/sh
+# Actions for systemd's pacman hooks. When running inside a chroot or an
+# image build (no systemd as PID 1), only the offline-safe parts run.
+running() { [ -d /run/systemd/system ]; }
+case "$1" in
+	sysusers)      systemd-sysusers ;;
+	tmpfiles)      systemd-tmpfiles --create ;;
+	hwdb)          systemd-hwdb --usr update ;;
+	daemon-reload) running && systemctl daemon-reload ;;
+	udev-reload)   running && udevadm control --reload ;;
+esac
+exit 0

@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.63
+
+pkgname=findutils
+pkgver=4.11.0
+pkgrel=1
+pkgdesc="GNU utilities to locate files"
+arch=(x86_64)
+url='https://www.gnu.org/software/findutils/'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'sh')
+source=("https://ftpmirror.gnu.org/findutils/findutils-$pkgver.tar.xz")
+sha256sums=('bfd19cb06cc71f3352d567e90284d8cdac02ac89774bbeadf0b533b0c11432fd')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --localstatedir=/var/lib/locate
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

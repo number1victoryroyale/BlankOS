@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.40
+
+pkgname=libtool
+pkgver=2.6.2
+pkgrel=1
+pkgdesc="A generic library support script"
+arch=(x86_64)
+url='https://www.gnu.org/software/libtool'
+license=('GPL-2.0-or-later')
+depends=('sh' 'tar' 'glibc')
+source=("https://ftpmirror.gnu.org/libtool/libtool-$pkgver.tar.xz")
+sha256sums=('2ef1067c16c97db930fd740cc9bc3d3ba9a583804ae5ac42cc3e8719e49e191e')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+	rm -fv "$pkgdir/usr/lib/libltdl.a"
+}

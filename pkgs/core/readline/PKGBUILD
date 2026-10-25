@@ -1,0 +1,36 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.12
+
+pkgname=readline
+pkgver=8.3
+pkgrel=1
+pkgdesc="GNU readline library"
+arch=(x86_64)
+url='https://tiswww.case.edu/php/chet/readline/rltop.html'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'ncurses')
+source=("https://ftpmirror.gnu.org/readline/readline-$pkgver.tar.gz")
+sha256sums=('fe5383204467828cd495ee8d1d3c037a7eba1389c22bc6a041f627976f9061cc')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	sed -i '/MV.*old/d' Makefile.in
+	sed -i '/{OLDSUFF}/c:' support/shlib-install
+	sed -i 's/-Wl,-rpath,[^ ]*//' support/shobj-conf
+	sed -e '270a\
+	     else\
+	       chars_avail = 1;' \
+	    -e '288i\   result = -1;' \
+	    -i.orig input.c
+}
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static --with-curses --docdir=/usr/share/doc/readline-$pkgver
+	make SHLIB_LIBS="-lncursesw"
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make SHLIB_LIBS="-lncursesw" DESTDIR="$pkgdir" install
+}

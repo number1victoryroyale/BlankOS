@@ -1,0 +1,9 @@
+post_install() {
+	ldconfig -r .
+	locale-gen
+}
+
+post_upgrade() {
+	ldconfig -r .
+	locale-gen
+}

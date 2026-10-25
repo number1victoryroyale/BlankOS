@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.36
+
+pkgname=gettext
+pkgver=1.0
+pkgrel=1
+pkgdesc="GNU internationalization library"
+arch=(x86_64)
+url='https://www.gnu.org/software/gettext/'
+license=('GPL-3.0-or-later' 'LGPL-2.1-or-later')
+depends=('glibc' 'gcc' 'acl' 'ncurses' 'libxcrypt')
+source=("https://ftpmirror.gnu.org/gettext/gettext-$pkgver.tar.xz")
+sha256sums=('71132a3fb71e68245b8f2ac4e9e97137d3e5c02f415636eb508ae607bc01add7')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static --docdir=/usr/share/doc/gettext-$pkgver
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+	chmod -v 0755 "$pkgdir/usr/lib/preloadable_libintl.so"
+}

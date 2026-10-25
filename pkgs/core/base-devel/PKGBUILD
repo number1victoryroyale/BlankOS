@@ -1,0 +1,16 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+
+pkgname=base-devel
+pkgver=1
+pkgrel=1
+pkgdesc="Basic tools to build BlankOS packages"
+arch=(any)
+url='https://github.com/number1victoryroyale/BlankOS'
+license=('GPL-3.0-or-later')
+depends=('autoconf' 'automake' 'binutils' 'bison' 'fakeroot' 'file' 'findutils' 'flex' 'gawk' 'gcc' 'gettext' 'grep' 'groff' 'gzip' 'libtool' 'm4' 'make' 'patch' 'pkgconf' 'sed' 'texinfo' 'meson' 'ninja' 'python')
+source=()
+sha256sums=()
+
+package() {
+	:
+}

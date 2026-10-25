@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.9
+
+pkgname=lz4
+pkgver=1.10.0
+pkgrel=1
+pkgdesc="Extremely fast compression algorithm"
+arch=(x86_64)
+url='https://lz4.org'
+license=('BSD-2-Clause' 'GPL-2.0-or-later')
+depends=('glibc')
+source=("https://github.com/lz4/lz4/releases/download/v$pkgver/lz4-$pkgver.tar.gz")
+sha256sums=('537512904744b35e232912055ccf8ec66d768639ff3abe5788d90d792ec5f48b')
+
+build() {
+	cd "$pkgname-$pkgver"
+	make BUILD_STATIC=no PREFIX=/usr
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make BUILD_STATIC=no PREFIX=/usr DESTDIR="$pkgdir" install
+}

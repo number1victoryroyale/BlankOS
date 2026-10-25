@@ -1,0 +1,30 @@
+# /etc/profile -- BlankOS system-wide login shell setup.
+
+umask 022
+
+# Locale (LFS 9.7): use C.UTF-8 on the Linux console, the configured
+# locale everywhere else.
+for i in $(locale 2>/dev/null); do
+	unset "${i%=*}"
+done
+if [[ $TERM = linux ]]; then
+	export LANG=C.UTF-8
+elif [[ -r /etc/locale.conf ]]; then
+	source /etc/locale.conf
+	for i in $(locale 2>/dev/null); do
+		key=${i%=*}
+		[[ -v $key ]] && export "$key"
+	done
+fi
+unset i key
+
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin
+
+for script in /etc/profile.d/*.sh; do
+	[[ -r $script ]] && source "$script"
+done
+unset script
+
+if [[ -n $BASH_VERSION && -r /etc/bash.bashrc && $- == *i* ]]; then
+	source /etc/bash.bashrc
+fi

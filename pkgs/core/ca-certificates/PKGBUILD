@@ -1,0 +1,16 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+
+pkgname=ca-certificates
+pkgver=20261020
+pkgrel=1
+pkgdesc="Mozilla CA certificate bundle (as extracted by curl)"
+arch=(any)
+url='https://curl.se/docs/caextract.html'
+license=('MPL-2.0')
+source=("https://curl.se/ca/cacert-2026-10-20.pem")
+sha256sums=('796f1389bfea13c0ed78f663b765baaff54a508e5483786bd6ece73c5e3e3cbe')
+
+package() {
+	install -Dm644 "$srcdir/cacert-2026-10-20.pem" "$pkgdir/etc/ssl/certs/ca-certificates.crt"
+	ln -s certs/ca-certificates.crt "$pkgdir/etc/ssl/cert.pem"
+}

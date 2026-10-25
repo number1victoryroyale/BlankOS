@@ -1,0 +1,37 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.18
+
+pkgname=expect
+pkgver=5.45.4
+pkgrel=1
+pkgdesc="A tool for automating interactive applications"
+arch=(x86_64)
+url='https://core.tcl.tk/expect/'
+license=('LicenseRef-PublicDomain')
+depends=('tcl')
+source=("https://prdownloads.sourceforge.net/expect/expect$pkgver.tar.gz"
+        "https://www.linuxfromscratch.org/patches/lfs/13.1/expect-$pkgver-gcc15-1.patch")
+sha256sums=('49a7da83b0bdd9f46d04a04deec19c7767bb9a323e40c4781f89caf760b92c34'
+            'ab5fc0af9e2e0f80d7623c1a3a3dbeb1da3d8c9134276792199df401f9eb2cec')
+
+prepare() {
+	cd "expect$pkgver"
+	patch -Np1 -i ../expect-$pkgver-gcc15-1.patch
+}
+
+build() {
+	cd "expect$pkgver"
+	./configure --prefix=/usr \
+	      --with-tcl=/usr/lib \
+	      --enable-shared \
+	      --disable-rpath \
+	      --mandir=/usr/share/man \
+	      --with-tclinclude=/usr/include
+	make
+}
+
+package() {
+	cd "expect$pkgver"
+	make DESTDIR="$pkgdir" install
+	ln -svf expect$pkgver/libexpect$pkgver.so "$pkgdir/usr/lib"
+}

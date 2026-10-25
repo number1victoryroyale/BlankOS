@@ -1,0 +1,31 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.72
+
+pkgname=tar
+pkgver=1.35
+pkgrel=1
+pkgdesc="Utility used to store, backup, and transport files"
+arch=(x86_64)
+url='https://www.gnu.org/software/tar/'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'acl' 'attr')
+source=("https://ftpmirror.gnu.org/tar/tar-$pkgver.tar.xz"
+        "https://www.linuxfromscratch.org/patches/lfs/13.1/tar-$pkgver-acl_fix-1.patch")
+sha256sums=('4d62ff37342ec7aed748535323930c7cf94acf71c3591882b26a7ea50f3edc16'
+            '51cadccfcb2f29cfdb4ec18015360100aa167179a72ece040a6a8612aeec5081')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	patch -Np1 -i ../tar-$pkgver-acl_fix-1.patch
+}
+
+build() {
+	cd "$pkgname-$pkgver"
+	FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=/usr
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

@@ -1,0 +1,37 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on LFS 13.1 §8.61
+
+pkgname=coreutils
+pkgver=9.11
+pkgrel=1
+pkgdesc="The basic file, shell and text manipulation utilities of the GNU operating system"
+arch=(x86_64)
+url='https://www.gnu.org/software/coreutils/'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'acl' 'attr' 'gmp' 'libcap' 'openssl')
+source=("https://ftpmirror.gnu.org/coreutils/coreutils-$pkgver.tar.xz"
+        "https://www.linuxfromscratch.org/patches/lfs/13.1/coreutils-$pkgver-i18n-1.patch")
+sha256sums=('394024eda0a5955217ceda9cd1201e65dc8fa3aa29c2951135a49521d57c3cc3'
+            '7c2aecf9ae24b87b019595e382b9f41d2c96de7f95abe95ad8cacc7e2ce1bbcc')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	patch -Np1 -i ../coreutils-$pkgver-i18n-1.patch
+	autoreconf -fv
+	automake -af
+}
+
+build() {
+	cd "$pkgname-$pkgver"
+	FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=/usr
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+	mv -v "$pkgdir/usr/bin/chroot" "$pkgdir/usr/sbin" 2>/dev/null || true
+	install -d "$pkgdir/usr/share/man/man8"
+	mv -v "$pkgdir/usr/share/man/man1/chroot.1" "$pkgdir/usr/share/man/man8/chroot.8"
+	sed -i 's/"1"/"8"/' "$pkgdir/usr/share/man/man8/chroot.8"
+}

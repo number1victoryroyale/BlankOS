@@ -1,0 +1,29 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+
+pkgname=curl
+pkgver=8.23.0
+pkgrel=1
+pkgdesc="Command line tool and library for transferring data with URLs"
+arch=(x86_64)
+url='https://curl.se'
+license=('curl')
+depends=('glibc' 'openssl' 'zlib' 'zstd' 'ca-certificates')
+source=("https://curl.se/download/curl-$pkgver.tar.xz")
+sha256sums=('8dadd7d2536a314f982ad05a651b713f426bf7d02cc2c76cffb9796f2218e6c5')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr \
+	    --disable-static \
+	    --with-openssl \
+	    --with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
+	    --without-libpsl \
+	    --disable-ldap \
+	    --with-zstd
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

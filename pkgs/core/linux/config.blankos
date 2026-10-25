@@ -1,0 +1,42 @@
+# BlankOS kernel configuration on top of config.base (Arch's x86_64 config).
+CONFIG_LOCALVERSION="-blankos"
+# CONFIG_LOCALVERSION_AUTO is not set
+CONFIG_DEFAULT_HOSTNAME="blankos"
+
+# --- gaming / desktop latency (mostly already in the base config)
+CONFIG_PREEMPT=y
+CONFIG_PREEMPT_DYNAMIC=y
+CONFIG_HZ_1000=y
+CONFIG_NTSYNC=m
+CONFIG_TCP_CONG_BBR=m
+CONFIG_NET_SCH_FQ=m
+CONFIG_ZRAM=m
+
+# --- boot without an initramfs (for now): storage + root fs built in
+CONFIG_EXT4_FS=y
+CONFIG_VIRTIO=y
+CONFIG_VIRTIO_PCI=y
+CONFIG_VIRTIO_BLK=y
+CONFIG_SCSI_VIRTIO=y
+CONFIG_BLK_DEV_NVME=y
+CONFIG_NVME_CORE=y
+CONFIG_ATA=y
+CONFIG_SATA_AHCI=y
+CONFIG_SCSI=y
+CONFIG_BLK_DEV_SD=y
+CONFIG_FAT_FS=y
+CONFIG_VFAT_FS=y
+CONFIG_NLS_CODEPAGE_437=y
+CONFIG_NLS_ISO8859_1=y
+CONFIG_EFIVAR_FS=y
+
+# --- not available in the BlankOS toolchain yet (no pahole/rustc/cpio)
+CONFIG_DEBUG_INFO_NONE=y
+# CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT is not set
+# CONFIG_DEBUG_INFO_DWARF5 is not set
+# CONFIG_DEBUG_INFO_BTF is not set
+# CONFIG_RUST is not set
+# CONFIG_IKHEADERS is not set
+# CONFIG_MODULE_SIG is not set
+# CONFIG_MODULE_SIG_ALL is not set
+# CONFIG_SCHED_CLASS_EXT is not set
