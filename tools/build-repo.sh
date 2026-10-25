@@ -64,6 +64,20 @@ link_sources() {
 	done
 }
 
+# Delete superseded package files of the packages built from DIR. (Not
+# repo-add -R: it deletes the db's previous file even when that is the
+# very file just rebuilt with the same version.)
+prune_old() {
+	local dir=$1 name file f re
+	while read -r name file; do
+		re="^${name//+/\\+}-[^-]+-[^-]+-(x86_64|any)\.pkg\.tar\.zst$"
+		for f in "$outdir"/*.pkg.tar.zst; do
+			f=${f##*/}
+			[[ $f =~ $re && $f != "$file" ]] && rm -fv "$outdir/$f"
+		done
+	done < <(bash "$BLANKOS_ROOT/tools/pkgsrc.sh" info "$dir")
+}
+
 build_one() {
 	local name=$1 dir=$pkgroot/$1 files f missing=()
 	[[ -f $dir/PKGBUILD ]] || die "no PKGBUILD for $name"
@@ -94,7 +108,8 @@ build_one() {
 		for f in "${files[@]}"; do
 			[[ -f $outdir/$f ]] || die "$name: makepkg did not produce $f"
 		done
-		in_chroot "$LFS" repo-add -q -R "/repo/$repo.db.tar.gz" "${files[@]/#//repo/}"
+		in_chroot "$LFS" repo-add -q "/repo/$repo.db.tar.gz" "${files[@]/#//repo/}"
+		prune_old "$dir"
 	else
 		msg2 "[$repo] $name is up to date"
 	fi
@@ -114,6 +129,6 @@ done
 # Make sure the database lists every package (also after partial runs).
 mapfile -t all < <(cd "$outdir" && ls -- *.pkg.tar.zst 2>/dev/null)
 if ((${#all[@]})); then
-	in_chroot "$LFS" repo-add -q -R "/repo/$repo.db.tar.gz" "${all[@]/#//repo/}" || true
+	in_chroot "$LFS" repo-add -q "/repo/$repo.db.tar.gz" "${all[@]/#//repo/}" || true
 fi
 msg "[$repo] done: ${#pkgs[@]} packages"
