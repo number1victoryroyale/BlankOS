@@ -125,6 +125,7 @@ read -r root_sector root_sectors <<< "$root_start"
 esp=$work/esp.img
 rm -f "$esp"
 mkfs.vfat -C -F 32 -n BLANKOS -i "${esp_id/-/}" "$esp" $((esp_mb * 1024)) > /dev/null
+export MTOOLS_SKIP_CHECK=1
 mmd -i "$esp" ::/EFI ::/EFI/BOOT
 mcopy -i "$esp" "$LFS/tmp/BOOTX64.EFI" ::/EFI/BOOT/BOOTX64.EFI
 dd if="$esp" of="$img" bs=1M seek=1 conv=notrunc status=none
