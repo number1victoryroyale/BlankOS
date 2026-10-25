@@ -128,6 +128,12 @@ if [[ ! -x /usr/bin/gettext ]]; then
 	printf '#!/bin/sh\nprintf "%%s" "$1"\n' > /usr/bin/gettext
 	chmod 755 /usr/bin/gettext
 fi
+# makepkg exports CHOST=x86_64-pc-linux-gnu and some configure scripts
+# (zlib, ...) look for $CHOST-gcc. The temporary gcc only has the
+# x86_64-lfs-linux-gnu names; the final gcc package replaces these links.
+for t in gcc g++ c++ cc; do
+	ln -sfv "$([[ $t == c++ || $t == g++ ]] && echo g++ || echo gcc)" "/usr/bin/x86_64-pc-linux-gnu-$t"
+done
 install -m644 /blankos-toolchain/makepkg.conf /etc/makepkg.conf
 install -m644 /blankos-toolchain/pacman-builder.conf /etc/pacman.conf
 install -d /var/lib/pacman /var/cache/pacman/pkg /etc/pacman.d/hooks
