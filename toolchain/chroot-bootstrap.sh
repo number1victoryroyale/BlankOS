@@ -69,6 +69,13 @@ curl_boot() {
 	make install
 }
 
+# fakeroot wraps capset() and needs <sys/capability.h>.
+libcap_boot() {
+	sed -i '/install -m.*STA/d' libcap/Makefile
+	make prefix=/usr lib=lib
+	make prefix=/usr lib=lib RAISE_SETFCAP=no install
+}
+
 fakeroot_boot() {
 	./configure --prefix=/usr --libdir=/usr/lib/libfakeroot \
 		--disable-static --with-ipc=sysv
@@ -101,6 +108,7 @@ step pkgconf-3.0.5.tar.xz        pkgconf_boot
 step openssl-4.0.1.tar.gz        openssl_boot
 step libarchive-3.8.10.tar.xz    libarchive_boot
 step curl-8.23.0.tar.xz          curl_boot
+step libcap-2.78.tar.xz          libcap_boot
 step fakeroot_1.37.1.1.orig.tar.gz fakeroot_boot
 step pacman-7.1.0.tar.xz         pacman_boot
 
