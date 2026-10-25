@@ -50,7 +50,18 @@ ensure_builder() {
 		grep -q "^builder:" /etc/group  || echo "builder:x:1000:" >> /etc/group
 		grep -q "^builder:" /etc/passwd || echo "builder:x:1000:1000:BlankOS package builder:/home/builder:/bin/bash" >> /etc/passwd
 		if [ -e /etc/shadow ] && ! grep -q "^builder:" /etc/shadow; then echo "builder:!:20000::::::" >> /etc/shadow; fi
-		install -d -o 1000 -g 1000 /home/builder /build/pkg'
+		install -d -o 1000 -g 1000 /home/builder /build/pkg
+		install -d /etc/pacman.d/hooks /var/lib/pacman /var/cache/pacman/pkg'
+}
+
+# makepkg wants a writable SRCDEST; give it a builder-owned directory of
+# symlinks into the read-only source cache.
+link_sources() {
+	local d=$LFS/build/srcdest f
+	install -d -o 1000 -g 1000 "$d"
+	for f in "$SRC"/*; do
+		ln -sfn "/sources/${f##*/}" "$d/${f##*/}"
+	done
 }
 
 build_one() {
@@ -62,6 +73,7 @@ build_one() {
 	if ((${#missing[@]})); then
 		msg "[$repo] building $name"
 		bash "$BLANKOS_ROOT/tools/pkgsrc.sh" fetch "$dir"
+		link_sources
 		rm -rf "$LFS/build/pkg/$name"
 		cp -rL "$dir" "$LFS/build/pkg/$name"
 		chown -R 1000:1000 "$LFS/build/pkg/$name"
@@ -70,7 +82,7 @@ build_one() {
 			HOME=/home/builder TERM="${TERM:-xterm}" LANG=C.UTF-8 \
 			PATH=/usr/bin:/usr/sbin \
 			MAKEFLAGS="-j$JOBS" NINJAJOBS="$JOBS" \
-			SRCDEST=/sources PKGDEST=/repo LOGDEST=/build/logs \
+			SRCDEST=/build/srcdest PKGDEST=/repo LOGDEST=/build/logs \
 			BUILDDIR=/build/pkg/"$name"/work \
 			/bin/bash -c "cd /build/pkg/$name && makepkg --cleanbuild --force --nodeps --noconfirm --log --nocolor" \
 			> "$logdir/$name.makepkg.log" 2>&1; then

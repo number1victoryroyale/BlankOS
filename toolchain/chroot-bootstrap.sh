@@ -24,6 +24,14 @@ zstd_boot() {
 	rm -v /usr/lib/libzstd.a
 }
 
+# The chapter 6 `file` cannot look inside compressed files, but makepkg
+# relies on `file -z` to recognise .tar.{gz,xz,bz2,zst} sources.
+file_boot() {
+	./configure --prefix=/usr
+	make
+	make install
+}
+
 ninja_boot() {
 	python3 configure.py --bootstrap --verbose
 	install -vm755 ninja /usr/bin/
@@ -102,6 +110,7 @@ pacman_boot() {
 
 step bzip2-1.0.8.tar.gz          bzip2_boot
 step zstd-1.5.7.tar.gz           zstd_boot
+step file-5.48.tar.gz            file_boot
 step ninja-1.13.2.tar.gz         ninja_boot
 step meson-1.12.0.tar.gz         meson_boot
 step pkgconf-3.0.5.tar.xz        pkgconf_boot
@@ -121,7 +130,7 @@ if [[ ! -x /usr/bin/gettext ]]; then
 fi
 install -m644 /blankos-toolchain/makepkg.conf /etc/makepkg.conf
 install -m644 /blankos-toolchain/pacman-builder.conf /etc/pacman.conf
-install -d /var/lib/pacman /var/cache/pacman/pkg
+install -d /var/lib/pacman /var/cache/pacman/pkg /etc/pacman.d/hooks
 # Shadow's configure needs passwd to already exist at its final path
 # (LFS 8.30).
 touch /usr/bin/passwd

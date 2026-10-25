@@ -73,6 +73,7 @@ save_builder() {
 	rm -rf "$LFS/build/work" "$LFS/build/cross-work"
 	tar --zstd -cpf "$OUT/builder-rootfs.tar.zst.part" -C "$LFS" \
 		--exclude=./sources --exclude=./proc/* --exclude=./sys/* \
+		--exclude=./build/pkg --exclude=./build/srcdest --exclude=./repo --exclude=./target \
 		--exclude=./dev/* --exclude=./run/* .
 	mv "$OUT/builder-rootfs.tar.zst.part" "$OUT/builder-rootfs.tar.zst"
 	msg "Builder saved: $(du -h "$OUT/builder-rootfs.tar.zst" | cut -f1)"
