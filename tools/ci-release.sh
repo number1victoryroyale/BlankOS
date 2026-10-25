@@ -17,8 +17,9 @@ source "$(dirname "$0")/../config/blankos.conf"
 source "$BLANKOS_ROOT/tools/lib.sh"
 
 builder_key() {
-	(cd "$BLANKOS_ROOT" && cat toolchain/* toolchain/lfs-*/* config/blankos.conf \
-		config/makepkg.conf config/pacman-builder.conf) | sha256sum | cut -c1-16
+	(cd "$BLANKOS_ROOT" &&
+		find toolchain config/blankos.conf config/makepkg.conf config/pacman-builder.conf -type f |
+		LC_ALL=C sort | xargs sha256sum) | sha256sum | cut -c1-16
 }
 
 ensure_release() {
@@ -47,7 +48,7 @@ case ${1:-} in
 		gh release upload builder "$OUT/builder-rootfs-$key.tar.zst" --clobber
 		# keep only the current builder
 		gh release view builder --json assets -q '.assets[].name' |
-			grep -vx "builder-rootfs-$key.tar.zst" |
+			{ grep -vx "builder-rootfs-$key.tar.zst" || true; } |
 			while read -r a; do gh release delete-asset builder "$a" --yes; done
 		;;
 	fetch-repo)
@@ -78,7 +79,7 @@ case ${1:-} in
 		done
 		((${#new[@]})) && gh release upload "$repo" "${new[@]}" --clobber
 		# drop assets for package versions that are no longer in the repo
-		grep '\.pkg\.tar\.zst$' <<< "$existing" | while read -r a; do
+		{ grep '\.pkg\.tar\.zst$' <<< "$existing" || true; } | while read -r a; do
 			[[ -f $dir/$a ]] || gh release delete-asset "$repo" "$a" --yes
 		done
 		rm -rf "$dbdir"
