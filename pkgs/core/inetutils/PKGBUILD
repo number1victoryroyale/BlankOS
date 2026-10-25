@@ -3,7 +3,7 @@
 
 pkgname=inetutils
 pkgver=2.8
-pkgrel=1
+pkgrel=2
 pkgdesc="A collection of common network programs"
 arch=(x86_64)
 url='https://www.gnu.org/software/inetutils/'
@@ -35,5 +35,6 @@ build() {
 package() {
 	cd "$pkgname-$pkgver"
 	make DESTDIR="$pkgdir" install
-	mv -v "$pkgdir"/usr/{,s}bin/ifconfig 2>/dev/null || true
+	install -d "$pkgdir/usr/sbin"
+	mv -v "$pkgdir/usr/bin/ifconfig" "$pkgdir/usr/sbin/"
 }

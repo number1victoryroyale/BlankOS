@@ -30,7 +30,8 @@ build() {
 package() {
 	cd "$pkgname-$pkgver"
 	make DESTDIR="$pkgdir" install
-	mv -v "$pkgdir/usr/bin/chroot" "$pkgdir/usr/sbin" 2>/dev/null || true
+	install -d "$pkgdir/usr/sbin"
+	mv -v "$pkgdir/usr/bin/chroot" "$pkgdir/usr/sbin/"
 	install -d "$pkgdir/usr/share/man/man8"
 	mv -v "$pkgdir/usr/share/man/man1/chroot.1" "$pkgdir/usr/share/man/man8/chroot.8"
 	sed -i 's/"1"/"8"/' "$pkgdir/usr/share/man/man8/chroot.8"
