@@ -109,6 +109,12 @@ build_one() {
 		msg2 "$name built in $((SECONDS - start))s"
 		for f in "${files[@]}"; do
 			[[ -f $outdir/$f ]] || die "$name: makepkg did not produce $f"
+			# Everything must be root-owned; anything else means fakeroot
+			# did not intercept the install step.
+			if tar --zstd -tvf "$outdir/$f" | grep -q ' builder/'; then
+				rm -f "$outdir/$f"
+				die "$name: package contains files owned by 'builder' (fakeroot problem)"
+			fi
 		done
 		in_chroot "$LFS" repo-add -q "/repo/$repo.db.tar.gz" "${files[@]/#//repo/}"
 		prune_old "$dir"

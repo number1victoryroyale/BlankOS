@@ -60,6 +60,7 @@ python-wheel
 python-setuptools
 meson
 kmod
+fakeroot
 coreutils
 diffutils
 findutils
@@ -85,7 +86,6 @@ e2fsprogs
 ca-certificates
 libarchive
 curl
-fakeroot
 pacman
 blankos-release
 blankos-settings
