@@ -16,7 +16,7 @@ sha256sums=('e298929f39729e84a70f6be6941f3e7f3fc2ee3c83cb3ea1b1b5b280a8fe3a24')
 build() {
 	meson setup build "AppStream-$pkgver" --prefix=/usr --buildtype=release \
 		-D apidocs=false -D docs=false -D install-docs=false -D bash-completion=false \
-		-D stemming=false -D gir=false -D vapi=false -D qt=false -D compose=false
+		-D stemming=false -D gir=false -D vapi=false -D qt=false -D compose=false -D man=false
 	ninja -C build
 }
 
