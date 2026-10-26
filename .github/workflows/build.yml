@@ -35,6 +35,8 @@ jobs:
             pkgs/core/blankos-initramfs/{init,blankos-mkinitramfs} pkgs/core/blankos-settings/zram-setup
       - name: PKGBUILD syntax
         run: for f in pkgs/*/*/PKGBUILD; do bash -n "$f" || exit 1; done
+      - name: Checksums of in-tree sources
+        run: tools/pkgsrc.sh check pkgs/*/*/
 
   toolchain:
     needs: lint

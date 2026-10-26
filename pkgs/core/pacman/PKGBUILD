@@ -16,7 +16,7 @@ source=("https://gitlab.archlinux.org/pacman/pacman/-/releases/v$pkgver/download
         "mirrorlist")
 sha256sums=('530e50d7edbb2a22581c6d6707d2113240276c1bec4ee39a99488e1243c32171'
             '49a79474aab218e65d96b21bb3779b6d6a2966e82b90db183bfa10252895e8e6'
-            'e42e9b2402775af5d5f6d330ddd9118133fd98aedf00f4841b91420b7fdd4b04'
+            '60c8e4f989ffc9d47fc66f36186050ad2bf9e886452fc558dbb425690e4c63c3'
             'fe29da89ff54253c117802a4a3ffcf738853e632670dba82ffa4c1ac6797819c')
 
 build() {

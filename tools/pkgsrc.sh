@@ -6,6 +6,7 @@
 #   tools/pkgsrc.sh fetch pkgs/core/zlib ...   download sources into $SRC
 #   tools/pkgsrc.sh sums  pkgs/core/zlib ...   rewrite sha256sums=() from them
 #   tools/pkgsrc.sh info  pkgs/core/zlib       print "pkgname pkgfile" lines
+#   tools/pkgsrc.sh check pkgs/core/*          verify sums of in-tree (local) sources
 set -euo pipefail
 source "$(dirname "$0")/../config/blankos.conf"
 source "$BLANKOS_ROOT/tools/lib.sh"
@@ -70,6 +71,28 @@ EOF
 	done
 }
 
+# Local sources live in git, so a stale checksum would otherwise only show
+# up hours into a CI build. Positions follow source=() order.
+cmd_check() {
+	local dir name url i bad=0
+	local -a sums
+	for dir in "$@"; do
+		mapfile -t sums < <(cd "$dir" && (
+			# shellcheck disable=SC1091
+			source ./PKGBUILD; printf '%s\n' "${sha256sums[@]}"))
+		i=0
+		while IFS=$'\t' read -r name url; do
+			if [[ $url == - && ${sums[i]:-} != SKIP &&
+				$(sha256sum "$dir/$name" | cut -d' ' -f1) != "${sums[i]:-}" ]]; then
+				warn "$dir: checksum mismatch for $name (run: tools/pkgsrc.sh sums $dir)"
+				bad=1
+			fi
+			i=$((i + 1))
+		done < <(list_sources "$dir")
+	done
+	return $bad
+}
+
 cmd_info() (
 	cd "$1"
 	# shellcheck disable=SC1091
@@ -84,5 +107,6 @@ case ${1:-} in
 	fetch) shift; cmd_fetch "$@" ;;
 	sums)  shift; cmd_sums "$@" ;;
 	info)  shift; cmd_info "$@" ;;
-	*) die "usage: $0 fetch|sums|info PKGDIR..." ;;
+	check) shift; cmd_check "$@" ;;
+	*) die "usage: $0 fetch|sums|info|check PKGDIR..." ;;
 esac
