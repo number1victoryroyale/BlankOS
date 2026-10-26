@@ -1,0 +1,17 @@
+[Unit]
+Description=Compressed swap in RAM (zram)
+Documentation=https://github.com/number1victoryroyale/BlankOS
+DefaultDependencies=no
+After=systemd-modules-load.service
+Before=swap.target shutdown.target
+Conflicts=shutdown.target
+ConditionVirtualization=!container
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/lib/blankos/zram-setup start
+ExecStop=/usr/lib/blankos/zram-setup stop
+
+[Install]
+WantedBy=swap.target

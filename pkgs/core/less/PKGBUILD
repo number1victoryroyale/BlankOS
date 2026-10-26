@@ -3,7 +3,7 @@
 
 pkgname=less
 pkgver=704
-pkgrel=1
+pkgrel=2
 pkgdesc="A terminal based program for viewing text files"
 arch=(x86_64)
 url='https://www.greenwoodsoftware.com/less/'

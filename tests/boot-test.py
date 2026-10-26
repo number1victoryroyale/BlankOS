@@ -30,12 +30,16 @@ def main():
     ap.add_argument("--memory", default="4096")
     ap.add_argument("--cdrom", action="store_true", help="attach the image as a CD-ROM (live ISO)")
     ap.add_argument("--bios", action="store_true", help="boot with legacy BIOS (SeaBIOS) instead of UEFI")
+    ap.add_argument("--no-kvm", action="store_true",
+                    help="force software emulation (needed for --cpu to reject newer instructions)")
+    ap.add_argument("--cpu", help="QEMU CPU model, e.g. core2duo to prove old laptops work "
+                                  "(default: the host CPU with KVM, 'max' otherwise)")
     args = ap.parse_args()
 
     tmp = tempfile.mkdtemp()
     vars_copy = os.path.join(tmp, "vars.fd")
     shutil.copy(first(OVMF_VARS), vars_copy)
-    kvm = os.access("/dev/kvm", os.R_OK | os.W_OK)
+    kvm = os.access("/dev/kvm", os.R_OK | os.W_OK) and not args.no_kvm
     cmd = ["qemu-system-x86_64", "-machine", "q35", "-m", args.memory,
            "-smp", str(min(4, os.cpu_count() or 1))]
     if not args.bios:
@@ -47,9 +51,10 @@ def main():
         cmd += ["-drive", f"file={args.image},if=virtio,format=raw,snapshot=on"]
     cmd += ["-nic", "user,model=virtio-net-pci",
            "-display", "none", "-monitor", "none", "-serial", "stdio", "-no-reboot"]
-    cmd += ["-enable-kvm", "-cpu", "host"] if kvm else ["-cpu", "max"]
+    cmd += ["-enable-kvm"] if kvm else []
+    cmd += ["-cpu", args.cpu or ("host" if kvm else "max")]
     print(f"boot-test: {'BIOS' if args.bios else 'UEFI'}, {'cdrom' if args.cdrom else 'disk'}, "
-          f"{'KVM' if kvm else 'TCG (no KVM, slow)'}; timeout {args.timeout}s", flush=True)
+          f"{'KVM' if kvm else 'TCG (no KVM, slow)'}, cpu {args.cpu or 'default'}; timeout {args.timeout}s", flush=True)
 
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     log = open(args.log, "wb")

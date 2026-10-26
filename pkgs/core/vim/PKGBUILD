@@ -3,7 +3,7 @@
 
 pkgname=vim
 pkgver=9.2.1025
-pkgrel=1
+pkgrel=2
 pkgdesc="Vi Improved, a highly configurable, improved version of the vi text editor"
 arch=(x86_64)
 url='https://www.vim.org'

@@ -3,7 +3,7 @@
 
 pkgname=libpipeline
 pkgver=1.5.8
-pkgrel=1
+pkgrel=2
 pkgdesc="C library for manipulating pipelines of subprocesses"
 arch=(x86_64)
 url='https://libpipeline.nongnu.org/'

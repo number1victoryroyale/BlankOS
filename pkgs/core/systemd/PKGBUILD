@@ -3,7 +3,7 @@
 
 pkgname=systemd
 pkgver=261.2
-pkgrel=1
+pkgrel=2
 pkgdesc="System and service manager"
 arch=(x86_64)
 url='https://systemd.io'

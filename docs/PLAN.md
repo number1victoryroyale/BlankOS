@@ -181,3 +181,22 @@ SOF audio, IPU6 cameras). Userspace follows with the stack it belongs to:
 - milestones 4/6: iio-sensor-proxy (auto-rotate), tablet mode + on-screen keyboard, libwacom (pens),
   fprintd (fingerprint readers), Plasma battery charge limits
 - milestone 7: hardware self-test covering these drivers on real Dell/Lenovo machines
+
+## Addendum: old laptops and the Razer Blade 15
+**Old laptops (a friend's machines):**
+- Plain x86-64 compiler baseline instead of x86-64-v2: runs on every 64-bit CPU (Core 2, Athlon 64,
+  early Pentium Dual-Core). CI proves it by booting the live ISO on an emulated Core 2 Duo. 32-bit-only
+  CPUs (most pre-2006 laptops) cannot run BlankOS.
+- Live ISO boots on legacy BIOS from CD and from USB sticks, as well as UEFI.
+- zram swap (compressed RAM, half of RAM up to 8 GiB) on by default for 2-4 GB machines.
+- Later: old GPUs through Mesa (Intel GMA/crocus, Radeon r300/r600, nouveau), Broadcom Wi-Fi
+  (b43 firmware / broadcom-wl), Atheros/Realtek firmware via linux-firmware, a lighter Plasma profile.
+
+**Razer Blade 15 (the user's laptop for now):**
+- Kernel side already present: Intel/AMD pstate, i2c-hid precision touchpad, iwlwifi, SOF/HDA audio.
+- NVIDIA RTX + Intel iGPU: same NVIDIA/PRIME offload plan as the Quadro laptop; MUX-switch models
+  can run the NVIDIA GPU directly.
+- Keyboard RGB, backlight and fan/performance modes: OpenRazer (kernel module built per kernel +
+  daemon) with Polychromatic or OpenRGB as the GUI, in [gaming].
+- Model-specific quirks (suspend, screen flicker, speaker routing) get DMI-matched entries in a
+  blankos-hwquirks package once the exact model year is known.

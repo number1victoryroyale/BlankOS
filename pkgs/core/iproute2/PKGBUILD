@@ -3,7 +3,7 @@
 
 pkgname=iproute2
 pkgver=7.1.0
-pkgrel=1
+pkgrel=2
 pkgdesc="IP Routing Utilities"
 arch=(x86_64)
 url='https://wiki.linuxfoundation.org/networking/iproute2'

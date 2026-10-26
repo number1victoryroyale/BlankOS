@@ -3,7 +3,7 @@
 
 pkgname=procps-ng
 pkgver=4.0.7
-pkgrel=1
+pkgrel=2
 pkgdesc="Utilities for monitoring your system and its processes"
 arch=(x86_64)
 url='https://gitlab.com/procps-ng/procps'

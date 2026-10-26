@@ -3,7 +3,7 @@
 
 pkgname=pcre2
 pkgver=10.47
-pkgrel=1
+pkgrel=2
 pkgdesc="Perl Compatible Regular Expressions, version 2"
 arch=(x86_64)
 url='https://github.com/PCRE2Project/pcre2'

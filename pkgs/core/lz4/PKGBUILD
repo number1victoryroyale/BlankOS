@@ -3,7 +3,7 @@
 
 pkgname=lz4
 pkgver=1.10.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Extremely fast compression algorithm"
 arch=(x86_64)
 url='https://lz4.org'

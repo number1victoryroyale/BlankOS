@@ -2,7 +2,7 @@
 
 pkgname=blankos-initramfs
 pkgver=1.0
-pkgrel=2
+pkgrel=3
 pkgdesc="BlankOS initramfs generator (installed systems and the live ISO)"
 arch=(any)
 url='https://github.com/number1victoryroyale/BlankOS'
@@ -12,7 +12,7 @@ source=("blankos-mkinitramfs"
         "init"
         "90-blankos-initramfs.hook")
 sha256sums=('53b1bcd76d85e08b1ea302379c4c5c5be43c52f81760017f64b4817ca660379d'
-            'de90a7d863ec995b32f417e8e6f1db9dbcf388f61842d4bcb567a245b2ad1ad8'
+            '8b5b64220606c8a0915bec621c1f032b43142abca0a3882285ed5fab5b3273d9'
             'c7a47770fa79829ca6c6dabdfabd65a329b63538f9380e27e7a59d7c2efce8bc')
 
 package() {

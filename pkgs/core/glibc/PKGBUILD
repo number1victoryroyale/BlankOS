@@ -3,7 +3,7 @@
 
 pkgname=glibc
 pkgver=2.44
-pkgrel=2
+pkgrel=3
 pkgdesc="GNU C Library"
 arch=(x86_64)
 url='https://www.gnu.org/software/libc'
@@ -41,7 +41,7 @@ build() {
 	# glibc is picky about compiler flags (e.g. -fcf-protection breaks the
 	# ld.so link, -fno-plt and -z now are rejected); like the book, only
 	# keep the architecture baseline and optimisation level.
-	CFLAGS="-march=x86-64-v2 -mtune=generic -O2 -pipe"
+	CFLAGS="-march=x86-64 -mtune=generic -O2 -pipe"
 	CXXFLAGS="$CFLAGS"
 	LDFLAGS=""
 	mkdir -p build && cd build

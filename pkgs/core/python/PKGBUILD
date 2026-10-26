@@ -3,7 +3,7 @@
 
 pkgname=python
 pkgver=3.14.7
-pkgrel=1
+pkgrel=2
 pkgdesc="The Python programming language"
 arch=(x86_64)
 url='https://www.python.org/'

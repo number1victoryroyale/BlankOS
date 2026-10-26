@@ -3,7 +3,7 @@
 
 pkgname=pkgconf
 pkgver=3.0.5
-pkgrel=1
+pkgrel=2
 pkgdesc="Package compiler and linker metadata toolkit"
 arch=(x86_64)
 url='https://github.com/pkgconf/pkgconf'

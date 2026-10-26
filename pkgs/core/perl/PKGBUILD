@@ -3,7 +3,7 @@
 
 pkgname=perl
 pkgver=5.44.0
-pkgrel=1
+pkgrel=2
 pkgdesc="A highly capable, feature-rich programming language"
 arch=(x86_64)
 url='https://www.perl.org'

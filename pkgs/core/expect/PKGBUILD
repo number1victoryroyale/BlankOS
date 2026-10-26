@@ -3,7 +3,7 @@
 
 pkgname=expect
 pkgver=5.45.4
-pkgrel=1
+pkgrel=2
 pkgdesc="A tool for automating interactive applications"
 arch=(x86_64)
 url='https://core.tcl.tk/expect/'

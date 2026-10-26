@@ -2,7 +2,7 @@
 
 pkgname=fakeroot
 pkgver=1.37.1.1
-pkgrel=1
+pkgrel=2
 pkgdesc="Tool for simulating superuser privileges"
 arch=(x86_64)
 url='https://salsa.debian.org/clint/fakeroot'

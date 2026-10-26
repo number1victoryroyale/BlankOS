@@ -2,23 +2,27 @@
 
 pkgname=blankos-settings
 pkgver=0.1.0
-pkgrel=2
+pkgrel=4
 pkgdesc="BlankOS default system configuration"
 arch=(any)
 url='https://github.com/number1victoryroyale/BlankOS'
 license=('GPL-3.0-or-later')
-depends=('systemd')
+depends=('systemd' 'util-linux' 'kmod' 'gawk')
 backup=('etc/locale.conf' 'etc/vconsole.conf' 'etc/hostname')
 source=("80-blankos.preset"
         "80-blankos-wired.network"
         "locale.conf"
         "vconsole.conf"
-        "50-blankos-gaming.conf")
-sha256sums=('f9e5a505b22b0e340180c32bf20b4d9c4c079ac2d151ea28591b9dd9875f94a0'
+        "50-blankos-gaming.conf"
+        "zram-setup"
+        "blankos-zram.service")
+sha256sums=('c430ba745e8535fd8d9229a79485e3dab2b290249b7b518164128bdd7b7fe19c'
             '48dec8bc41cda7153184cc8015e2f685695d210ade50b4ed100784093c2b34be'
             '033252d5100cbb0028d7c15e075f63e4eb5ff7f1a923cd5cb547bcfd6b024f5b'
             '7ad163a516ec5237d73c506db175b3b4e3b291441ed3d4517cc1f8f2254531fe'
-            '740691bcfa46a04bf644e81a170ed138544b1319a8d961e8465ca0877a767bd4')
+            '8c76fa6dcd6a8770fb0e64a0fe618537d1098f1e30fe5f8334c3efd7d433f645'
+            'f7826bf632ffd5ba9b7625ac4e4a434a4b3e24fccdfc2ae4e30a615459130bb9'
+            '7b9a71d3f38ad71b4789128ad97f90a6625d343f8fb38eedecb47d93fd31cd74')
 
 package() {
 	install -Dm644 "$srcdir/80-blankos.preset" "$pkgdir/usr/lib/systemd/system-preset/80-blankos.preset"
@@ -28,6 +32,8 @@ package() {
 	echo blankos > "$srcdir/hostname"
 	install -Dm644 "$srcdir/hostname" "$pkgdir/etc/hostname"
 	install -Dm644 "$srcdir/50-blankos-gaming.conf" "$pkgdir/usr/lib/sysctl.d/50-blankos-gaming.conf"
+	install -Dm755 "$srcdir/zram-setup" "$pkgdir/usr/lib/blankos/zram-setup"
+	install -Dm644 "$srcdir/blankos-zram.service" "$pkgdir/usr/lib/systemd/system/blankos-zram.service"
 	# getty on tty1 keeps the boot messages (LFS 9.10)
 	install -Dm644 /dev/stdin "$pkgdir/usr/lib/systemd/system/getty@tty1.service.d/noclear.conf" << EOF
 [Service]

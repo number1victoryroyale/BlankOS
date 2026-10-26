@@ -31,7 +31,8 @@ jobs:
       - name: shellcheck
         run: |
           sudo apt-get install -y -qq shellcheck
-          shellcheck -x -S warning toolchain/*.sh tools/*.sh image/*.sh tests/*.sh
+          shellcheck -x -S warning toolchain/*.sh tools/*.sh image/*.sh iso/*.sh tests/*.sh \
+            pkgs/core/blankos-initramfs/{init,blankos-mkinitramfs} pkgs/core/blankos-settings/zram-setup
       - name: PKGBUILD syntax
         run: for f in pkgs/*/*/PKGBUILD; do bash -n "$f" || exit 1; done
 
@@ -146,3 +147,60 @@ jobs:
             /mnt/out/blankos-test.qcow2
           if-no-files-found: ignore
           retention-days: 7
+
+  iso:
+    needs: core-3
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare host
+        run: |
+          sudo mkdir -p "$SRC" "$OUT"
+          sudo chown "$USER" "$SRC" "$OUT"
+          sudo toolchain/host-prep.sh
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' |
+            sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Restore builder and [core]
+        run: |
+          tools/ci-release.sh fetch-builder
+          sudo mkdir -p "$LFS"
+          sudo tar --zstd -xpf "$OUT/builder-rootfs.tar.zst" -C "$LFS"
+          rm "$OUT/builder-rootfs.tar.zst"
+          tools/ci-release.sh fetch-repo core
+          sudo --preserve-env=LFS,SRC,OUT tools/build-repo.sh core
+
+      - name: Build test ISO
+        run: |
+          sudo --preserve-env=LFS,SRC,OUT iso/mkiso.sh --test
+          sudo mv "$(readlink -f "$OUT/blankos-live.iso")" "$OUT/blankos-test.iso"
+
+      - name: Boot test - UEFI, CD/DVD
+        run: sudo python3 tests/boot-test.py "$OUT/blankos-test.iso" --cdrom --log "$OUT/boot-iso-uefi.log" --timeout 900
+
+      - name: Boot test - legacy BIOS, USB stick
+        run: sudo python3 tests/boot-test.py "$OUT/blankos-test.iso" --bios --log "$OUT/boot-iso-bios.log" --timeout 900
+
+      - name: Boot test - old laptop CPU (Core 2 Duo, emulated)
+        # Software emulation rejects instructions the CPU model lacks, so this
+        # proves BlankOS runs on pre-2009 64-bit CPUs.
+        run: sudo python3 tests/boot-test.py "$OUT/blankos-test.iso" --bios --no-kvm --cpu core2duo --log "$OUT/boot-iso-core2.log" --timeout 2400
+
+      - name: Build release ISO
+        run: sudo --preserve-env=LFS,SRC,OUT iso/mkiso.sh
+
+      - name: Publish ISO
+        if: github.event_name != 'pull_request'
+        run: tools/ci-release.sh publish-iso "$(readlink -f "$OUT/blankos-live.iso")"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: iso-boot-tests
+          path: /mnt/out/boot-iso-*.log
+          if-no-files-found: ignore
+          retention-days: 14

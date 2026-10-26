@@ -85,7 +85,20 @@ case ${1:-} in
 		rm -rf "$dbdir"
 		msg2 "published [$repo]: ${#new[@]} files uploaded"
 		;;
+	publish-iso)
+		iso=${2:?iso file}
+		[[ -f $iso ]] || die "no such file: $iso"
+		ensure_release live "BlankOS live ISO (latest build)"
+		sumfile=$(mktemp -d)/${iso##*/}.sha256
+		(cd "$(dirname "$iso")" && sha256sum "${iso##*/}") > "$sumfile"
+		gh release upload live "$iso" "$sumfile" --clobber
+		# keep only the newest ISO
+		gh release view live --json assets -q '.assets[].name' |
+			{ grep -vxF -e "${iso##*/}" -e "${iso##*/}.sha256" || true; } |
+			while read -r a; do gh release delete-asset live "$a" --yes; done
+		msg2 "published ${iso##*/}"
+		;;
 	*)
-		die "usage: $0 builder-key|fetch-builder|publish-builder|fetch-repo REPO|publish-repo REPO"
+		die "usage: $0 builder-key|fetch-builder|publish-builder|fetch-repo REPO|publish-repo REPO|publish-iso FILE"
 		;;
 esac

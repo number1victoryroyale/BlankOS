@@ -51,10 +51,23 @@ coldplug() {
 
 # find_dev SPEC: print the block device for UUID=/LABEL=/PARTUUID=/path.
 find_dev() {
+	local dev key=${1%%=*} val=${1#*=} b
 	case $1 in
-		/dev/*) [[ -b $1 ]] && echo "$1" ;;
-		*=*) blkid -c /dev/null -o device -t "$1" 2>/dev/null | head -n1 ;;
+		/dev/*) [[ -b $1 ]] && echo "$1"; return ;;
 	esac
+	dev=$(blkid -c /dev/null -o device -t "$1" 2>/dev/null | head -n1)
+	if [[ -z $dev && ($key == LABEL || $key == UUID) ]]; then
+		# A hybrid ISO written to a USB stick carries its filesystem on the
+		# whole disk next to a partition table; libblkid skips whole disks
+		# with partitions unless probed directly (-p).
+		for b in /sys/class/block/*; do
+			if [[ $(blkid -p -o value -s "$key" "/dev/${b##*/}" 2>/dev/null) == "$val" ]]; then
+				dev=/dev/${b##*/}
+				break
+			fi
+		done
+	fi
+	[[ -n $dev ]] && echo "$dev"
 }
 
 wait_for() {

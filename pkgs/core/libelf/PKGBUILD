@@ -3,7 +3,7 @@
 
 pkgname=libelf
 pkgver=0.195
-pkgrel=1
+pkgrel=2
 pkgdesc="ELF object file access library (from elfutils)"
 arch=(x86_64)
 url='https://sourceware.org/elfutils/'

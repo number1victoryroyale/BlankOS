@@ -3,7 +3,7 @@
 
 pkgname=gcc
 pkgver=16.2.0
-pkgrel=1
+pkgrel=2
 pkgdesc="The GNU Compiler Collection - C and C++ frontends"
 arch=(x86_64)
 url='https://gcc.gnu.org'

@@ -6,7 +6,20 @@ managed with **pacman**, heading for a **KDE Plasma 6** desktop with a dark + el
 Everything is built from this repository by GitHub Actions: the LFS toolchain, every package, the disk/ISO images, and
 a QEMU boot test.
 
-> **Status:** Milestone 1 (bootable console system) is done: built from scratch in GitHub Actions, published as the `core` pacman repo, and boot-tested in QEMU on every build. Next: the live ISO. See [the roadmap](#roadmap).
+> **Status:** Milestone 1 (bootable console system) is done. Milestone 2 (live ISO for UEFI + old BIOS PCs, violet console) is being verified in CI. See [the roadmap](#roadmap).
+
+## Try it
+
+Download the latest ISO (and its `.sha256`) from the
+[**live** release](https://github.com/number1victoryroyale/BlankOS/releases/tag/live). Then either:
+
+- **USB stick, Windows:** write it with [Rufus](https://rufus.ie) (choose **DD image** mode when asked) or
+  [balenaEtcher](https://etcher.balena.io).
+- **USB stick, Linux:** `sudo dd if=blankos-*.iso of=/dev/sdX bs=4M status=progress oflag=sync`.
+- **VM:** use the ISO directly in VirtualBox, virt-manager or QEMU.
+
+The ISO boots on UEFI and on old BIOS-only PCs, and runs on any 64-bit CPU (Core 2 / Athlon 64 and newer).
+For now it's a console-only live system that logs in automatically; the desktop comes in later milestones.
 
 ## How it's built
 
@@ -64,7 +77,7 @@ Paths can be changed with `LFS=`, `SRC=` and `OUT=` (see `config/blankos.conf`).
 
 | Area | Choice |
 |---|---|
-| Base | LFS 13.1 systemd book, merged `/usr` layout, x86-64-v2 compiler baseline |
+| Base | LFS 13.1 systemd book, merged `/usr` layout, plain x86-64 baseline (runs on any 64-bit PC, old laptops included) |
 | Packages | pacman 7.1 + makepkg, with Arch-style PKGBUILDs and package names |
 | Kernel | Latest stable (7.3), built from Arch's config plus `pkgs/core/linux/config.blankos`: full preemption, 1000 Hz, NTSYNC for Wine |
 | Desktop | KDE Plasma 6 (Wayland), SDDM, Calamares installer |
@@ -82,8 +95,9 @@ Paths can be changed with `LFS=`, `SRC=` and `OUT=` (see `config/blankos.conf`).
 5. Gaming layer and the BlankOS Game Hub
 6. Full branding and the Calamares installer
 7. Hardware polish: NVIDIA/Optimus tuning, Turtle Beach Stealth 500 (Bluetooth first), the custom browser,
-   and Dell / Lenovo (ThinkPad, Yoga, IdeaPad) laptop support: SOF audio firmware, power profiles, thermald,
-   fwupd firmware updates, 2-in-1 rotation/tablet mode/pen, fingerprint login, battery charge limits
+   and laptop support: Dell / Lenovo (ThinkPad, Yoga, IdeaPad) and Razer Blade (OpenRazer RGB/fans,
+   NVIDIA MUX/Optimus): SOF audio firmware, power profiles, thermald, fwupd firmware updates, 2-in-1
+   rotation/tablet mode/pen, fingerprint login, battery charge limits; old-laptop GPUs and Broadcom Wi-Fi
 
 The full plan is in [docs/PLAN.md](docs/PLAN.md).
 

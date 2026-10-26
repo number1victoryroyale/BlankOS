@@ -35,6 +35,7 @@ check "dhcp address on ethernet"    bash -c 'for i in $(seq 30); do ip -4 -o add
 check "en_US.UTF-8 locale"          bash -c 'locale -a | grep -qi "^en_US.utf8$"'
 check "gaming sysctls applied"      bash -c '[[ $(sysctl -n vm.max_map_count) == 2147483642 ]]'
 check "ntsync module available"     modinfo ntsync
+check "zram swap active"            bash -c 'swapon --show=NAME --noheadings | grep -q zram'
 check "violet console palette"      bash -c 'grep -q "vt.default_red=11,239" /proc/cmdline'
 check "C/C++ toolchain works"       bash -c 'cd /tmp && printf "#include <iostream>\nint main(){std::cout<<\"hi\";}\n" > t.cc && g++ -O2 t.cc -o t && [[ $(./t) == hi ]]'
 if command -v python3 > /dev/null; then

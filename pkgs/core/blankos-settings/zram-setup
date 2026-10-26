@@ -1,0 +1,30 @@
+#!/bin/bash
+# Compressed swap in RAM (zram). Half of the RAM, at most 8 GiB, zstd.
+# Keeps low-memory laptops usable and absorbs memory spikes in games.
+set -euo pipefail
+case ${1:-} in
+	start)
+		mem_kib=$(awk '/^MemTotal:/ { print $2 }' /proc/meminfo)
+		size_kib=$((mem_kib / 2))
+		((size_kib > 8 * 1024 * 1024)) && size_kib=$((8 * 1024 * 1024))
+		# Configure through sysfs: zramctl waits for udev, which may not be
+		# running this early in boot.
+		modprobe zram num_devices=1
+		sys=/sys/block/zram0
+		for _ in $(seq 50); do [[ -e $sys/disksize && -b /dev/zram0 ]] && break; sleep 0.1; done
+		echo zstd > "$sys/comp_algorithm"
+		echo "$((size_kib * 1024))" > "$sys/disksize"
+		mkswap -L zram-swap /dev/zram0 > /dev/null
+		swapon --discard --priority 100 /dev/zram0
+		echo /dev/zram0 > /run/blankos-zram
+		;;
+	stop)
+		if [[ -f /run/blankos-zram ]]; then
+			dev=$(< /run/blankos-zram)
+			swapoff "$dev" || true
+			echo 1 > "/sys/block/${dev##*/}/reset" || true
+			rm -f /run/blankos-zram
+		fi
+		;;
+	*) echo "usage: $0 start|stop" >&2; exit 2 ;;
+esac
