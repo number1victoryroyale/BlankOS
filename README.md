@@ -6,9 +6,10 @@ managed with **pacman**, heading for a **KDE Plasma 6** desktop with a dark + el
 Everything is built from this repository by GitHub Actions: the LFS toolchain, every package, the disk/ISO images, and
 a QEMU boot test.
 
-> **Status:** Milestones 1 and 2 are done: a bootable console system and a live ISO for UEFI and old BIOS PCs, with the
-> violet console. CI boot-tests every ISO as a UEFI CD, a BIOS USB stick and on an emulated Core 2 Duo. Next up is
-> milestone 3 (graphics, audio, network). See [the roadmap](#roadmap).
+> **Status:** Milestones 1–3 are done: the base system, a live ISO for UEFI and old BIOS PCs, and the system stack
+> (Mesa/Vulkan graphics, PipeWire sound, Bluetooth, NetworkManager with Wi-Fi, firmware, Flatpak with Flathub). CI
+> boot-tests every ISO as a UEFI CD, a BIOS USB stick and on an emulated Core 2 Duo. Next up is milestone 4 (the KDE
+> Plasma desktop). See [the roadmap](#roadmap).
 
 ## Try it
 
@@ -20,16 +21,23 @@ Download the latest ISO (and its `.sha256`) from the
 - **USB stick, Linux:** `sudo dd if=blankos-*.iso of=/dev/sdX bs=4M status=progress oflag=sync`.
 - **VM:** use the ISO directly in VirtualBox, virt-manager or QEMU.
 
-The ISO boots on UEFI and on old BIOS-only PCs, and runs on any 64-bit CPU (Core 2 / Athlon 64 and newer).
-For now it's a console-only live system that logs in automatically; the desktop comes in later milestones.
+The ISO (about 1.1 GB) boots on UEFI and on old BIOS-only PCs, and runs on any 64-bit CPU (Core 2 / Athlon 64 and
+newer). Turn Secure Boot off first. For now it's a console-only live system that logs in automatically; the desktop
+comes in milestone 4. On the console:
+
+- **Wi-Fi:** `nmtui` (wired networks connect by themselves)
+- **Bluetooth:** `bluetoothctl` (`power on`, `scan on`, `pair <address>`, `connect <address>`)
+- **Apps:** `flatpak install flathub com.valvesoftware.Steam` etc. (installing works; running them needs the desktop)
+- **Hardware:** `lspci`, `lsusb`, `vulkaninfo --summary`
 
 ## How it's built
 
 ```
 toolchain/   LFS ch. 5-7 (cross toolchain + temporary tools) and a pacman/makepkg bootstrap
              -> builder-rootfs.tar.zst: the chroot every package is built in
-pkgs/core/   one PKGBUILD per package: LFS ch. 8 (+ kernel, pacman, BlankOS bits)
+pkgs/core/   one PKGBUILD per package: LFS ch. 8 (+ kernel, pacman, GnuPG, BlankOS bits)
              ORDER = build order (same order as the book)
+pkgs/extra/  graphics, sound, Bluetooth, networking, firmware, Flatpak (BLFS-based; DEPENDS: core)
 tools/       build-repo.sh (build a repo inside the builder), pkgsrc.sh (fetch sources,
              pin checksums), ci-release.sh (GitHub Releases as pacman repos)
 image/       mkimage.sh: UEFI disk image from the [core] repo
@@ -64,7 +72,8 @@ Paths can be changed with `LFS=`, `SRC=` and `OUT=` (see `config/blankos.conf`).
 
 ### Cloud build
 
-`.github/workflows/build.yml` runs `lint → toolchain → core (3 chained passes) → disk image + ISO, each boot-tested`.
+`.github/workflows/build.yml` runs `lint → toolchain → core → extra (3 chained passes each) → disk image + ISO, each
+boot-tested`.
 The ISO is tested three ways (UEFI CD, BIOS USB stick, emulated Core 2 Duo) and then published to the `live` release.
 
 - **Packages:** published as release assets, one release per repo (tag `core`, …). Pacman uses them directly:
@@ -94,8 +103,8 @@ The ISO is tested three ways (UEFI CD, BIOS USB stick, emulated Core 2 Duo) and 
 
 1. ~~Bootable console system: toolchain, pacman bootstrap, [core], UEFI disk image, CI boot test~~ ✅
 2. ~~Live ISO (own initramfs, GRUB BIOS+UEFI), TTY branding, old-laptop CPUs, zram~~ ✅
-3. Graphics, audio and network stack: Wayland, Mesa, PipeWire, NetworkManager, BlueZ, Flatpak, GnuPG (signed packages) ← *next*
-4. Plasma 6, SDDM, KDE apps, Firefox
+3. ~~Graphics, audio and network stack: Wayland, Mesa, PipeWire, NetworkManager, BlueZ, Flatpak, GnuPG, firmware~~ ✅
+4. Plasma 6, SDDM, KDE apps, Firefox; Linux-PAM, xdg-desktop-portal ← *next*
 5. Gaming layer and the BlankOS Game Hub
 6. Full branding and the Calamares installer
 7. Hardware polish: NVIDIA/Optimus tuning, Turtle Beach Stealth 500 (Bluetooth first), the custom browser,
@@ -107,9 +116,12 @@ The full plan is in [docs/PLAN.md](docs/PLAN.md).
 
 ### Known gaps
 
-- **Unsigned packages:** pacman is built without gpgme until the GnuPG stack lands (milestone 3), so repos use
-  `SigLevel = Never` for now.
+- **Unsigned packages:** pacman can verify signatures now, but the repos are not signed yet (needs a CI signing key
+  and a blankos-keyring package), so they use `SigLevel = Never`.
+- **No PAM yet (milestone 4):** console logins don't open logind sessions. The live ISO works around it with a
+  `live` user whose services (PipeWire) start at boot; a drop-in sets `XDG_RUNTIME_DIR` for user managers.
+- **NVIDIA:** nouveau only (Mesa GL, no NVK yet); the NVIDIA driver and PRIME offload come in milestone 7.
 - **Secure Boot:** not signed yet, so turn Secure Boot off in the firmware settings to boot the ISO.
 - **Live only:** the installer (Calamares) arrives in milestone 6; the live system keeps no changes after reboot.
 - **Disabled kernel features:** BTF/sched_ext and Rust kernel modules are off until pahole and rustc are packaged.
-- **Missing pieces:** no PAM yet, and test suites (`check()`) are not run in CI.
+- **Missing pieces:** test suites (`check()`) are not run in CI; xdg-desktop-portal (milestone 4).
