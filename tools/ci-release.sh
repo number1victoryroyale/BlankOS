@@ -72,15 +72,20 @@ case ${1:-} in
 		cp "$dir/$repo.db.tar.gz" "$dbdir/$repo.db"
 		cp "$dir/$repo.files.tar.gz" "$dbdir/$repo.files"
 		existing=$(gh release view "$repo" --json assets -q '.assets[].name')
+		# Only the package files the database lists: a split package whose
+		# build failed half way can leave files that were never added.
+		indb=$(tar -xzOf "$dir/$repo.db.tar.gz" --wildcards '*/desc' |
+			awk '/^%FILENAME%$/ { getline; print }')
 		new=("$dbdir"/*)
-		for f in "$dir"/*.pkg.tar.zst; do
+		while read -r f; do
 			# packages are immutable per version: upload only new ones
-			grep -qxF "${f##*/}" <<< "$existing" || new+=("$f")
-		done
+			[[ -n $f ]] || continue
+			grep -qxF "$f" <<< "$existing" || new+=("$dir/$f")
+		done <<< "$indb"
 		((${#new[@]})) && gh release upload "$repo" "${new[@]}" --clobber
-		# drop assets for package versions that are no longer in the repo
+		# drop assets for package files the database does not list
 		{ grep '\.pkg\.tar\.zst$' <<< "$existing" || true; } | while read -r a; do
-			[[ -f $dir/$a ]] || gh release delete-asset "$repo" "$a" --yes
+			grep -qxF "$a" <<< "$indb" || gh release delete-asset "$repo" "$a" --yes
 		done
 		rm -rf "$dbdir"
 		msg2 "published [$repo]: ${#new[@]} files uploaded"
