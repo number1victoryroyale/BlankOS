@@ -115,7 +115,8 @@ package_linux-firmware() {
 	         'linux-firmware-realtek' 'linux-firmware-atheros' 'linux-firmware-broadcom'
 	         'linux-firmware-mediatek' 'linux-firmware-other')
 	cd "linux-firmware-$pkgver"
-	install -Dm644 -t "$pkgdir/usr/share/licenses/linux-firmware" WHENCE LICEN[CS]E*
+	install -Dm644 -t "$pkgdir/usr/share/licenses/linux-firmware" WHENCE
+	find . -maxdepth 1 -type f -name 'LICEN[CS]E*' -exec install -m644 -t "$pkgdir/usr/share/licenses/linux-firmware" {} +
 	if [[ -d LICENSES ]]; then cp -r LICENSES "$pkgdir/usr/share/licenses/linux-firmware/"; fi
 }
 
