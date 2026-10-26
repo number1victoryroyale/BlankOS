@@ -45,6 +45,15 @@ pacstrap_root "$root" $packages
 msg "Configuring the live system"
 cp -a "$BLANKOS_ROOT/iso/airootfs/." "$root/"
 chroot "$root" /usr/bin/passwd -d root > /dev/null
+# Unprivileged live user. Lingering starts its user manager at boot, so
+# PipeWire (which refuses to run as root) is up even without a login
+# session; the desktop will log this user in automatically.
+if [[ -x $root/usr/bin/pipewire ]]; then
+	chroot "$root" /usr/sbin/useradd -m -G wheel,audio,video,render,input -c "BlankOS live user" live
+	chroot "$root" /usr/bin/passwd -d live > /dev/null
+	install -d "$root/var/lib/systemd/linger"
+	touch "$root/var/lib/systemd/linger/live"
+fi
 systemctl_preset_root "$root"
 ((test_iso)) && add_test_hooks "$root"
 

@@ -49,7 +49,7 @@ check "gnupg and pacman with gpgme" bash -c 'gpg --version >/dev/null && ldd /us
 # The system stack from [extra] (milestone 3), when installed.
 if pacman -Q blankos-system > /dev/null 2>&1; then
 	check "NetworkManager connected"   bash -c 'for i in $(seq 45); do [[ $(nmcli -t -f STATE general) == connected* ]] && exit 0; sleep 1; done; nmcli general; nmcli device; exit 1'
-	check "systemd-networkd handed over" bash -c '! systemctl is-active -q systemd-networkd.service'
+	check "systemd-networkd handed over" bash -c '! systemctl is-active -q systemd-networkd.service || { systemctl list-units "systemd-networkd*" --no-pager; exit 1; }'
 	check "Wi-Fi tools and regulatory db" bash -c 'iw --version && wpa_supplicant -v | head -1 && test -e /usr/lib/firmware/regulatory.db'
 	check "polkit answers"             bash -c 'pkaction | grep -q org.freedesktop.NetworkManager'
 	check "Vulkan driver (lavapipe)"   bash -c 'vulkaninfo --summary 2>&1 | tee /tmp/vk.txt | grep -qi llvmpipe || { cat /tmp/vk.txt; exit 1; }'
@@ -57,12 +57,18 @@ if pacman -Q blankos-system > /dev/null 2>&1; then
 	check "GPU drivers for old and new" bash -c 'for f in /usr/share/vulkan/icd.d/{intel,radeon,lvp}_icd.x86_64.json; do test -e $f || { echo missing $f; exit 1; }; done'
 	check "Bluetooth stack"            bash -c 'bluetoothctl --version && test -x /usr/libexec/bluetooth/bluetoothd && grep -qx "Experimental = true" /etc/bluetooth/main.conf'
 	check "PipeWire Bluetooth codecs"  bash -c 'for c in sbc aac lc3; do ls /usr/lib/spa-0.2/bluez5/libspa-codec-bluez5-$c.so || exit 1; done'
-	# no PAM until milestone 4, so the console login does not start the
-	# user manager by itself: start it the way logind would
-	check "PipeWire and WirePlumber run" bash -c 'systemctl start user@0.service && export XDG_RUNTIME_DIR=/run/user/0 && for i in $(seq 30); do wpctl status 2>/dev/null | grep -q "Audio" && systemctl --user -q is-active wireplumber.service && exit 0; sleep 1; done; systemctl --user status pipewire wireplumber --no-pager; exit 1'
+	# PipeWire refuses to run as root: the live user's (lingering) session
+	check "PipeWire and WirePlumber run" bash -c 'u=$(id -u live) || exit 1
+		aslive() { su live -s /bin/bash -c "XDG_RUNTIME_DIR=/run/user/$u $*"; }
+		for i in $(seq 30); do
+			aslive wpctl status 2>/dev/null | grep -q Audio && aslive systemctl --user -q is-active wireplumber.service && exit 0
+			sleep 1
+		done
+		aslive systemctl --user status pipewire wireplumber --no-pager; exit 1'
 	check "Flatpak with Flathub"       bash -c 'flatpak --version && flatpak remotes --system --columns=name | grep -qx flathub'
 	check "firmware and microcode"     bash -c 'ls /usr/lib/firmware/intel/iwlwifi/ /usr/lib/firmware/amdgpu/ /usr/lib/firmware/intel/sof* >/dev/null && ls /boot/intel-ucode.img /boot/amd-ucode.img || ls /run/live/medium/boot/intel-ucode.img'
-	check "lspci and lsusb"            bash -c 'lspci | grep -qi "host bridge" && lsusb >/dev/null'
+	# (VMs may have no USB bus at all, so lsusb only has to be there)
+	check "lspci and lsusb"            bash -c 'lspci | grep -qi "host bridge" && command -v lsusb'
 fi
 
 echo "SELFTEST-DONE failures=$fails"

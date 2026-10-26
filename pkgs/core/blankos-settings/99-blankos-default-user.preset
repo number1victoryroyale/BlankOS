@@ -1,0 +1,2 @@
+# Anything not named in an earlier user preset file stays disabled.
+disable *

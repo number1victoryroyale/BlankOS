@@ -9,4 +9,5 @@
     [35mflatpak search[0m   browse Flathub (flatpak install flathub ...)
     [35mlspci[0m, [35mlsusb[0m     see what hardware BlankOS found
     [35mvulkaninfo --summary[0m   GPU drivers in use
+    [35msu - live[0m        the unprivileged live user (sound runs as this user)
 

@@ -2,7 +2,7 @@
 
 pkgname=blankos-settings
 pkgver=0.1.0
-pkgrel=4
+pkgrel=5
 pkgdesc="BlankOS default system configuration"
 arch=(any)
 url='https://github.com/number1victoryroyale/BlankOS'
@@ -15,17 +15,29 @@ source=("80-blankos.preset"
         "vconsole.conf"
         "50-blankos-gaming.conf"
         "zram-setup"
-        "blankos-zram.service")
+        "blankos-zram.service"
+        "99-blankos-default.preset"
+        "80-blankos-user.preset"
+        "99-blankos-default-user.preset"
+        "user-runtime-dir.conf")
 sha256sums=('c430ba745e8535fd8d9229a79485e3dab2b290249b7b518164128bdd7b7fe19c'
             '48dec8bc41cda7153184cc8015e2f685695d210ade50b4ed100784093c2b34be'
             '033252d5100cbb0028d7c15e075f63e4eb5ff7f1a923cd5cb547bcfd6b024f5b'
             '7ad163a516ec5237d73c506db175b3b4e3b291441ed3d4517cc1f8f2254531fe'
             '8c76fa6dcd6a8770fb0e64a0fe618537d1098f1e30fe5f8334c3efd7d433f645'
             'f7826bf632ffd5ba9b7625ac4e4a434a4b3e24fccdfc2ae4e30a615459130bb9'
-            '7b9a71d3f38ad71b4789128ad97f90a6625d343f8fb38eedecb47d93fd31cd74')
+            '7b9a71d3f38ad71b4789128ad97f90a6625d343f8fb38eedecb47d93fd31cd74'
+            '65e1edc5f390458771ba17f48718771ac15e0f8ccc4b6241b298d301aa16de7a'
+            'df1f3aaed3f25f99813d3a32f55d53687a8b0c18ec30e28a9e8507bb7bf4f208'
+            '0f0feaefb16fdde7abd89c09f17ce366342e7623ac15f61ca75db5c25f30ddc0'
+            '921927b0eaf454c14b2997c19f606f5ba0e48ab636d9216fbd085c67b31aa06d')
 
 package() {
 	install -Dm644 "$srcdir/80-blankos.preset" "$pkgdir/usr/lib/systemd/system-preset/80-blankos.preset"
+	install -Dm644 "$srcdir/99-blankos-default.preset" "$pkgdir/usr/lib/systemd/system-preset/99-blankos-default.preset"
+	install -Dm644 "$srcdir/80-blankos-user.preset" "$pkgdir/usr/lib/systemd/user-preset/80-blankos.preset"
+	install -Dm644 "$srcdir/99-blankos-default-user.preset" "$pkgdir/usr/lib/systemd/user-preset/99-blankos-default.preset"
+	install -Dm644 "$srcdir/user-runtime-dir.conf" "$pkgdir/usr/lib/systemd/system/user@.service.d/10-blankos-runtime-dir.conf"
 	install -Dm644 "$srcdir/80-blankos-wired.network" "$pkgdir/usr/lib/systemd/network/80-blankos-wired.network"
 	install -Dm644 "$srcdir/locale.conf" "$pkgdir/etc/locale.conf"
 	install -Dm644 "$srcdir/vconsole.conf" "$pkgdir/etc/vconsole.conf"

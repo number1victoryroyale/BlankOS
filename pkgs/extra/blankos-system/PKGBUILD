@@ -6,7 +6,7 @@
 
 pkgname=blankos-system
 pkgver=0.3.0
-pkgrel=1
+pkgrel=2
 pkgdesc="BlankOS system stack: firmware, graphics, sound, Bluetooth, networking and Flatpak"
 arch=(any)
 url='https://github.com/number1victoryroyale/BlankOS'
@@ -26,7 +26,7 @@ depends=('base'
          'gnupg' 'pciutils' 'usbutils')
 source=("70-blankos-system.preset"
         "70-blankos-system-user.preset")
-sha256sums=('53570f8c4698cef8801c6218e46e2564f9d7f65d6de974697d0a95909a51bc00'
+sha256sums=('07b223aee63f8ef9575d9351bd6d8a45b6071a3b3d4ccd8b47bb741cf0674c49'
             '8717e8889b69dcacbd54c4e46dfaa3cf15847247a38f81d30a60f529200a9aa8')
 
 package() {
