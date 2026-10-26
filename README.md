@@ -6,7 +6,9 @@ managed with **pacman**, heading for a **KDE Plasma 6** desktop with a dark + el
 Everything is built from this repository by GitHub Actions: the LFS toolchain, every package, the disk/ISO images, and
 a QEMU boot test.
 
-> **Status:** Milestone 1 (bootable console system) is done. Milestone 2 (live ISO for UEFI + old BIOS PCs, violet console) is being verified in CI. See [the roadmap](#roadmap).
+> **Status:** Milestones 1 and 2 are done: a bootable console system and a live ISO for UEFI and old BIOS PCs, with the
+> violet console. CI boot-tests every ISO as a UEFI CD, a BIOS USB stick and on an emulated Core 2 Duo. Next up is
+> milestone 3 (graphics, audio, network). See [the roadmap](#roadmap).
 
 ## Try it
 
@@ -31,6 +33,7 @@ pkgs/core/   one PKGBUILD per package: LFS ch. 8 (+ kernel, pacman, BlankOS bits
 tools/       build-repo.sh (build a repo inside the builder), pkgsrc.sh (fetch sources,
              pin checksums), ci-release.sh (GitHub Releases as pacman repos)
 image/       mkimage.sh: UEFI disk image from the [core] repo
+iso/         mkiso.sh: hybrid live ISO (BIOS + UEFI, CD or USB stick)
 tests/       boot-test.py + selftest.sh: boot the image in QEMU and check it
 config/      makepkg.conf, build settings
 ```
@@ -61,7 +64,8 @@ Paths can be changed with `LFS=`, `SRC=` and `OUT=` (see `config/blankos.conf`).
 
 ### Cloud build
 
-`.github/workflows/build.yml` runs `lint → toolchain → core (3 chained passes) → image + boot test`.
+`.github/workflows/build.yml` runs `lint → toolchain → core (3 chained passes) → disk image + ISO, each boot-tested`.
+The ISO is tested three ways (UEFI CD, BIOS USB stick, emulated Core 2 Duo) and then published to the `live` release.
 
 - **Packages:** published as release assets, one release per repo (tag `core`, …). Pacman uses them directly:
   `Server = https://github.com/<owner>/BlankOS/releases/download/$repo`.
@@ -89,8 +93,8 @@ Paths can be changed with `LFS=`, `SRC=` and `OUT=` (see `config/blankos.conf`).
 ## Roadmap
 
 1. ~~Bootable console system: toolchain, pacman bootstrap, [core], UEFI disk image, CI boot test~~ ✅
-2. Live ISO (dracut, GRUB BIOS+UEFI), TTY branding ← *next*
-3. Graphics, audio and network stack: Wayland, Mesa, PipeWire, NetworkManager, BlueZ, Flatpak, GnuPG (signed packages)
+2. ~~Live ISO (own initramfs, GRUB BIOS+UEFI), TTY branding, old-laptop CPUs, zram~~ ✅
+3. Graphics, audio and network stack: Wayland, Mesa, PipeWire, NetworkManager, BlueZ, Flatpak, GnuPG (signed packages) ← *next*
 4. Plasma 6, SDDM, KDE apps, Firefox
 5. Gaming layer and the BlankOS Game Hub
 6. Full branding and the Calamares installer
@@ -101,11 +105,11 @@ Paths can be changed with `LFS=`, `SRC=` and `OUT=` (see `config/blankos.conf`).
 
 The full plan is in [docs/PLAN.md](docs/PLAN.md).
 
-### Known gaps in Milestone 1
+### Known gaps
 
 - **Unsigned packages:** pacman is built without gpgme until the GnuPG stack lands (milestone 3), so repos use
   `SigLevel = Never` for now.
-- **Boot:** no initramfs yet; the root filesystem and storage drivers are built into the kernel. The image is UEFI only;
-  BIOS boot comes with the ISO.
+- **Secure Boot:** not signed yet, so turn Secure Boot off in the firmware settings to boot the ISO.
+- **Live only:** the installer (Calamares) arrives in milestone 6; the live system keeps no changes after reboot.
 - **Disabled kernel features:** BTF/sched_ext and Rust kernel modules are off until pahole and rustc are packaged.
 - **Missing pieces:** no PAM yet, and test suites (`check()`) are not run in CI.
