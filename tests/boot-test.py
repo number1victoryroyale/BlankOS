@@ -28,6 +28,8 @@ def main():
     ap.add_argument("--timeout", type=int, default=1200)
     ap.add_argument("--log", default="boot-test.log")
     ap.add_argument("--memory", default="4096")
+    ap.add_argument("--cdrom", action="store_true", help="attach the image as a CD-ROM (live ISO)")
+    ap.add_argument("--bios", action="store_true", help="boot with legacy BIOS (SeaBIOS) instead of UEFI")
     args = ap.parse_args()
 
     tmp = tempfile.mkdtemp()
@@ -35,14 +37,19 @@ def main():
     shutil.copy(first(OVMF_VARS), vars_copy)
     kvm = os.access("/dev/kvm", os.R_OK | os.W_OK)
     cmd = ["qemu-system-x86_64", "-machine", "q35", "-m", args.memory,
-           "-smp", str(min(4, os.cpu_count() or 1)),
-           "-drive", f"if=pflash,format=raw,readonly=on,file={first(OVMF_CODE)}",
-           "-drive", f"if=pflash,format=raw,file={vars_copy}",
-           "-drive", f"file={args.image},if=virtio,format=raw,snapshot=on",
-           "-nic", "user,model=virtio-net-pci",
+           "-smp", str(min(4, os.cpu_count() or 1))]
+    if not args.bios:
+        cmd += ["-drive", f"if=pflash,format=raw,readonly=on,file={first(OVMF_CODE)}",
+                "-drive", f"if=pflash,format=raw,file={vars_copy}"]
+    if args.cdrom:
+        cmd += ["-drive", f"file={args.image},media=cdrom,readonly=on", "-boot", "d"]
+    else:
+        cmd += ["-drive", f"file={args.image},if=virtio,format=raw,snapshot=on"]
+    cmd += ["-nic", "user,model=virtio-net-pci",
            "-display", "none", "-monitor", "none", "-serial", "stdio", "-no-reboot"]
     cmd += ["-enable-kvm", "-cpu", "host"] if kvm else ["-cpu", "max"]
-    print(f"boot-test: {'KVM' if kvm else 'TCG (no KVM, slow)'}; timeout {args.timeout}s", flush=True)
+    print(f"boot-test: {'BIOS' if args.bios else 'UEFI'}, {'cdrom' if args.cdrom else 'disk'}, "
+          f"{'KVM' if kvm else 'TCG (no KVM, slow)'}; timeout {args.timeout}s", flush=True)
 
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     log = open(args.log, "wb")

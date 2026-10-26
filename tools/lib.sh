@@ -54,3 +54,48 @@ in_chroot() {
 		MAKEFLAGS="-j$JOBS" NINJAJOBS="$JOBS" \
 		"$@"
 }
+
+# pacstrap_root ROOT PKG...: install packages from $REPO_OUT into ROOT with
+# the builder's pacman (like pacstrap). Leaves the builder's virtual
+# filesystems mounted; ROOT's own mounts are released again.
+pacstrap_root() {
+	local root=$1 m; shift
+	mkdir -p "$root"
+	mount_vkfs "$LFS"
+	mkdir -p "$LFS/repo" "$LFS/target"
+	mountpoint -q "$LFS/repo"   || mount --bind "$REPO_OUT" "$LFS/repo"
+	mountpoint -q "$LFS/target" || mount --bind "$root" "$LFS/target"
+	msg "Installing into $root: $*"
+	printf '%s\n' '[options]' 'Architecture = x86_64' 'SigLevel = Never' \
+		'LocalFileSigLevel = Never' '[core]' 'Server = file:///repo/core' \
+		> "$LFS/tmp/image-pacman.conf"
+	install -d "$root"/var/{lib/pacman,cache/pacman/pkg} "$root"/{dev,run}
+	install -d -m555 "$root"/{proc,sys}
+	install -d -m1777 "$root/tmp"
+	# scriptlets and hooks (systemd-tmpfiles, initramfs, ...) need the
+	# virtual filesystems inside the target root
+	mount_vkfs "$LFS/target"
+	in_chroot "$LFS" pacman --root /target --config /tmp/image-pacman.conf \
+		--cachedir /target/var/cache/pacman/pkg --noconfirm -Sy "$@"
+	rm -rf "$root"/var/cache/pacman/pkg/*
+	for m in $(findmnt -rno TARGET | grep "^$LFS/target/" | sort -r); do umount -l "$m"; done
+}
+
+# First boot: systemd generates the machine id; enable preset units.
+systemctl_preset_root() {
+	printf 'uninitialized\n' > "$1/etc/machine-id"
+	in_chroot "$LFS" systemctl --root=/target preset-all
+}
+
+# --test images: root autologin on the serial console + the self test.
+add_test_hooks() {
+	local root=$1
+	msg "Adding test hooks (serial autologin + self-test)"
+	install -d "$root/etc/systemd/system/serial-getty@ttyS0.service.d"
+	cat > "$root/etc/systemd/system/serial-getty@ttyS0.service.d/autologin.conf" << "EOF"
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin root --keep-baud 115200,57600,38400,9600 - $TERM
+EOF
+	install -Dm755 "$BLANKOS_ROOT/tests/selftest.sh" "$root/usr/local/bin/blankos-selftest"
+}

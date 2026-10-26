@@ -81,7 +81,9 @@ Paths can be changed with `LFS=`, `SRC=` and `OUT=` (see `config/blankos.conf`).
 4. Plasma 6, SDDM, KDE apps, Firefox
 5. Gaming layer and the BlankOS Game Hub
 6. Full branding and the Calamares installer
-7. Hardware polish: NVIDIA/Optimus tuning, Turtle Beach Stealth 500 (Bluetooth first), the custom browser
+7. Hardware polish: NVIDIA/Optimus tuning, Turtle Beach Stealth 500 (Bluetooth first), the custom browser,
+   and Dell / Lenovo (ThinkPad, Yoga, IdeaPad) laptop support: SOF audio firmware, power profiles, thermald,
+   fwupd firmware updates, 2-in-1 rotation/tablet mode/pen, fingerprint login, battery charge limits
 
 The full plan is in [docs/PLAN.md](docs/PLAN.md).
 

@@ -172,3 +172,12 @@ Screenshots of GRUB, Plymouth, SDDM and the desktop are uploaded as artifacts, a
   - Suspend/resume.
 
   That's the only real test for hardware and game performance.
+
+## Addendum: Dell / Lenovo laptop support (requested after approval)
+The kernel already has the vendor drivers (thinkpad_acpi, think-lmi, ideapad_laptop, lenovo-ymc,
+dell-laptop/wmi/smbios/sysman, dell-smm-hwmon, intel/amd pstate, platform profiles, i2c-hid,
+SOF audio, IPU6 cameras). Userspace follows with the stack it belongs to:
+- milestone 3: sof-firmware, linux-firmware, microcode, power-profiles-daemon, thermald, fwupd
+- milestones 4/6: iio-sensor-proxy (auto-rotate), tablet mode + on-screen keyboard, libwacom (pens),
+  fprintd (fingerprint readers), Plasma battery charge limits
+- milestone 7: hardware self-test covering these drivers on real Dell/Lenovo machines

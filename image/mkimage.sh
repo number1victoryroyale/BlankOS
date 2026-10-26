@@ -36,31 +36,8 @@ mkdir -p "$root"
 
 cleanup() { umount_vkfs "$LFS"; }
 trap cleanup EXIT
-mount_vkfs "$LFS"
-mkdir -p "$LFS/repo" "$LFS/target"
-mountpoint -q "$LFS/repo"   || mount --bind "$REPO_OUT" "$LFS/repo"
-mountpoint -q "$LFS/target" || mount --bind "$root" "$LFS/target"
-
-msg "Installing packages into the image: $packages"
-cat > "$LFS/tmp/image-pacman.conf" << EOF
-[options]
-Architecture = x86_64
-SigLevel = Never
-LocalFileSigLevel = Never
-[core]
-Server = file:///repo/core
-EOF
-install -d "$root"/var/{lib/pacman,cache/pacman/pkg} "$root"/{dev,run}
-install -d -m555 "$root"/{proc,sys}
-install -d -m1777 "$root/tmp"
-# Like pacstrap: scriptlets and hooks (systemd-tmpfiles, ...) need the
-# virtual filesystems inside the target root.
-mount_vkfs "$LFS/target"
 # shellcheck disable=SC2086
-in_chroot "$LFS" pacman --root /target --config /tmp/image-pacman.conf \
-	--cachedir /target/var/cache/pacman/pkg --noconfirm -Sy $packages
-rm -rf "$root"/var/cache/pacman/pkg/*
-for m in $(findmnt -rno TARGET | grep "^$LFS/target/" | sort -r); do umount -l "$m"; done
+pacstrap_root "$root" $packages
 
 msg "Configuring the image"
 root_uuid=$(cat /proc/sys/kernel/random/uuid)
@@ -74,9 +51,7 @@ UUID=$root_uuid      /          ext4    defaults,noatime   0      1
 UUID=$esp_id         /boot/efi  vfat    umask=0077         0      2
 EOF
 install -d "$root/boot/efi"
-# First boot: systemd generates the machine id and applies presets.
-printf 'uninitialized\n' > "$root/etc/machine-id"
-in_chroot "$LFS" systemctl --root=/target preset-all
+systemctl_preset_root "$root"
 
 # Boot through the initramfs (blankos-initramfs generated it via its pacman
 # hook) and paint the console in the BlankOS palette.
@@ -100,14 +75,7 @@ menuentry "BlankOS" {
 EOF
 
 if ((test_image)); then
-	msg "Adding test hooks (serial autologin + self-test)"
-	install -d "$root/etc/systemd/system/serial-getty@ttyS0.service.d"
-	cat > "$root/etc/systemd/system/serial-getty@ttyS0.service.d/autologin.conf" << "EOF"
-[Service]
-ExecStart=
-ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin root --keep-baud 115200,57600,38400,9600 - $TERM
-EOF
-	install -Dm755 "$BLANKOS_ROOT/tests/selftest.sh" "$root/usr/local/bin/blankos-selftest"
+	add_test_hooks "$root"
 fi
 
 msg "Building the EFI loader"

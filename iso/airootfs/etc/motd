@@ -1,0 +1,9 @@
+
+[1;35m  Welcome to the BlankOS live system.[0m
+
+  This is a console-only preview: the KDE Plasma desktop, the gaming
+  stack and the graphical installer arrive in later milestones.
+
+  Networking (DHCP) is up automatically. Have a look around:
+    [35mpacman -Q[0m   installed packages      [35mcat /etc/os-release[0m
+
