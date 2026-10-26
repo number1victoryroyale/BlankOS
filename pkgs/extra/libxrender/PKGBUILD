@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libxrender
+pkgver=0.9.12
+pkgrel=1
+pkgdesc="X Rendering Extension client library"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+depends=('libx11')
+makedepends=('xorgproto' 'xorg-util-macros')
+source=("https://www.x.org/pub/individual/lib/libXrender-$pkgver.tar.xz")
+sha256sums=('b832128da48b39c8d608224481743403ad1691bf4e554e4be9c174df171d1b97')
+
+build() {
+	cd "libXrender-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "libXrender-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

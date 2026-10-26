@@ -1,6 +1,6 @@
-# BlankOS cloud build: toolchain -> [core] (chained passes) -> disk image
-# -> QEMU boot test. Packages are published to GitHub Releases, so every
-# run only rebuilds what changed.
+# BlankOS cloud build: toolchain -> [core] -> [extra] (chained passes) ->
+# disk image + live ISO -> QEMU boot tests. Packages are published to
+# GitHub Releases, so every run only rebuilds what changed.
 name: BlankOS build
 
 on:
@@ -99,6 +99,19 @@ jobs:
     uses: ./.github/workflows/repo-stage.yml
     with: { repo: core, pass: "3", final: true }
 
+  extra-1:
+    needs: core-3
+    uses: ./.github/workflows/repo-stage.yml
+    with: { repo: extra, deps: core, pass: "1" }
+  extra-2:
+    needs: extra-1
+    uses: ./.github/workflows/repo-stage.yml
+    with: { repo: extra, deps: core, pass: "2" }
+  extra-3:
+    needs: extra-2
+    uses: ./.github/workflows/repo-stage.yml
+    with: { repo: extra, deps: core, pass: "3", final: true }
+
   image:
     needs: core-3
     runs-on: ubuntu-24.04
@@ -151,7 +164,7 @@ jobs:
           retention-days: 7
 
   iso:
-    needs: core-3
+    needs: extra-3
     runs-on: ubuntu-24.04
     timeout-minutes: 150
     steps:
@@ -167,14 +180,16 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Restore builder and [core]
+      - name: Restore builder, [core] and [extra]
         run: |
           tools/ci-release.sh fetch-builder
           sudo mkdir -p "$LFS"
           sudo tar --zstd -xpf "$OUT/builder-rootfs.tar.zst" -C "$LFS"
           rm "$OUT/builder-rootfs.tar.zst"
           tools/ci-release.sh fetch-repo core
-          sudo --preserve-env=LFS,SRC,OUT tools/build-repo.sh core
+          tools/ci-release.sh fetch-repo extra
+          # installs both repos (already built) into the builder
+          sudo --preserve-env=LFS,SRC,OUT tools/build-repo.sh extra
 
       - name: Build test ISO
         run: |

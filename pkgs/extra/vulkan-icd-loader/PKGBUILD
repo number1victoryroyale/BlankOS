@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=vulkan-icd-loader
+pkgver=1.4.357.0
+pkgrel=1
+pkgdesc="Vulkan Installable Client Driver (ICD) Loader"
+arch=(x86_64)
+url='https://www.vulkan.org/'
+license=('Apache-2.0')
+depends=('glibc')
+makedepends=('cmake' 'ninja' 'python' 'vulkan-headers' 'libx11' 'libxrandr' 'wayland')
+provides=('libvulkan.so')
+source=("Vulkan-Loader-vulkan-sdk-$pkgver.tar.gz::https://github.com/KhronosGroup/Vulkan-Loader/archive/vulkan-sdk-$pkgver/Vulkan-Loader-vulkan-sdk-$pkgver.tar.gz")
+sha256sums=('54f2537df22313768da0317dda2abdaaab7711b4081c48c869a79db343d0ae70')
+
+build() {
+	cmake -S "Vulkan-Loader-vulkan-sdk-$pkgver" -B build -G Ninja \
+		-D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_BUILD_TYPE=Release -D CMAKE_SKIP_INSTALL_RPATH=ON \
+		-D VULKAN_HEADERS_INSTALL_DIR=/usr -D BUILD_TESTS=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

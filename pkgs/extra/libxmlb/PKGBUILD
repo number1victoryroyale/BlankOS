@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libxmlb
+pkgver=0.3.29
+pkgrel=1
+pkgdesc="Library to help create and query binary XML blobs"
+arch=(x86_64)
+url='https://github.com/hughsie/libxmlb'
+license=('LGPL-2.1-or-later')
+depends=('glib2' 'xz' 'zstd')
+source=("https://github.com/hughsie/libxmlb/releases/download/$pkgver/libxmlb-$pkgver.tar.xz")
+sha256sums=('448294be33bfae62f00fa66e506f1cae80237ce71b7ab6530aefa75005eeb08a')
+
+build() {
+	meson setup build "$pkgname-$pkgver" --prefix=/usr --buildtype=release \
+		-D gtkdoc=false -D introspection=false -D stemmer=false -D tests=false -D cli=true
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

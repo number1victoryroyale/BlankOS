@@ -1,0 +1,38 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Arch Linux's flatpak package (not in BLFS)
+#
+# Flathub is preconfigured (system-wide), so Steam, Sober (Roblox) and
+# the rest are one `flatpak install flathub ...` away.
+
+pkgname=flatpak
+pkgver=1.18.4
+pkgrel=1
+pkgdesc="Linux application sandboxing and distribution framework (Flathub preconfigured)"
+arch=(x86_64)
+url='https://flatpak.org/'
+license=('LGPL-2.1-or-later')
+depends=('glib2' 'libarchive' 'curl' 'libxml2' 'zstd' 'systemd' 'polkit' 'fuse3' 'libxau' 'ostree'
+         'json-glib' 'appstream' 'gdk-pixbuf2' 'libseccomp' 'gpgme' 'libcap' 'bubblewrap'
+         'xdg-dbus-proxy' 'wayland')
+makedepends=('meson' 'ninja' 'python' 'python-pyparsing' 'wayland-protocols')
+source=("https://github.com/flatpak/flatpak/releases/download/$pkgver/flatpak-$pkgver.tar.xz"
+        "flathub.flatpakrepo")
+sha256sums=('b899a7a00c48d2c626cb8ec33fe556720b376c25805d7222430c0fdca4c6ac8d'
+            '3371dd250e61d9e1633630073fefda153cd4426f72f4afa0c3373ae2e8fea03a')
+
+build() {
+	meson setup build "flatpak-$pkgver" --prefix=/usr --buildtype=release \
+		-D system_bubblewrap=/usr/bin/bwrap \
+		-D system_dbus_proxy=/usr/bin/xdg-dbus-proxy \
+		-D system_helper=enabled -D systemd=enabled -D seccomp=enabled \
+		-D xauth=enabled -D wayland_security_context=enabled -D libzstd=enabled \
+		-D dconf=disabled -D malcontent=disabled -D selinux_module=disabled \
+		-D gir=disabled -D gtkdoc=disabled -D docbook_docs=disabled -D man=disabled \
+		-D tests=false -D installed_tests=false
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+	install -Dm644 flathub.flatpakrepo "$pkgdir/etc/flatpak/remotes.d/flathub.flatpakrepo"
+}

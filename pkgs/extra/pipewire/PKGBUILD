@@ -1,0 +1,57 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+#
+# One package for the server and its PulseAudio, ALSA and JACK front ends
+# (Arch splits these). Bluetooth: SBC, mSBC/LC3-SWB headset mics, AAC
+# and LC3 (LE Audio), for headsets like the Turtle Beach Stealth 500.
+
+pkgname=pipewire
+pkgver=1.6.8
+pkgrel=1
+pkgdesc="Low-latency audio/video router and processor (with PulseAudio, ALSA and JACK support)"
+arch=(x86_64)
+url='https://pipewire.org/'
+license=('MIT')
+depends=('alsa-lib' 'dbus' 'glib2' 'libsndfile' 'bluez' 'sbc' 'fdk-aac' 'liblc3' 'opus'
+         'ncurses' 'readline' 'systemd')
+makedepends=('meson' 'ninja' 'python')
+provides=('pulse-native-provider' 'pipewire-pulse' 'pipewire-alsa' 'pipewire-jack' 'libjack.so')
+source=("https://gitlab.freedesktop.org/pipewire/pipewire/-/archive/$pkgver/pipewire-$pkgver.tar.bz2")
+sha256sums=('efbaedf80450e5b08bb3196a4ca7ea17850d4a71ec1a8ae321e8937a7c95779e')
+
+build() {
+	# Explicit features, so the result does not depend on whatever else
+	# happens to be installed in the builder.
+	meson setup build "pipewire-$pkgver" --prefix=/usr --buildtype=release \
+		-D session-managers='[]' \
+		-D docs=disabled -D man=disabled -D tests=disabled -D examples=disabled \
+		-D libsystemd=enabled -D systemd-system-service=disabled -D systemd-user-service=enabled \
+		-D logind=enabled -D selinux=disabled -D snap=disabled \
+		-D alsa=enabled -D pipewire-alsa=enabled \
+		-D pipewire-jack=enabled -D jack-devel=true -D jack=disabled \
+		-D libpulse=disabled \
+		-D bluez5=enabled \
+		-D bluez5-codec-aac=enabled -D bluez5-codec-lc3=enabled -D bluez5-codec-opus=enabled \
+		-D bluez5-codec-ldac=disabled -D bluez5-codec-aptx=disabled -D bluez5-codec-lc3plus=disabled \
+		-D bluez5-backend-hsp-native=enabled -D bluez5-backend-hfp-native=enabled \
+		-D bluez5-backend-ofono=disabled -D bluez5-backend-hsphfpd=disabled \
+		-D opus=enabled -D sndfile=enabled -D readline=enabled -D flatpak=enabled \
+		-D v4l2=enabled -D libcamera=disabled -D libusb=disabled \
+		-D gstreamer=disabled -D ffmpeg=disabled -D vulkan=disabled -D sdl2=disabled \
+		-D x11=disabled -D x11-xfixes=disabled -D libcanberra=disabled \
+		-D avahi=disabled -D raop=disabled -D roc=disabled -D libffado=disabled \
+		-D lv2=disabled -D libmysofa=disabled -D echo-cancel-webrtc=disabled \
+		-D compress-offload=disabled -D gsettings=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+
+	# ALSA programs play through PipeWire by default (Arch: pipewire-alsa)
+	install -d "$pkgdir/etc/alsa/conf.d"
+	ln -s /usr/share/alsa/alsa.conf.d/50-pipewire.conf "$pkgdir/etc/alsa/conf.d/50-pipewire.conf"
+	ln -s /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf "$pkgdir/etc/alsa/conf.d/99-pipewire-default.conf"
+
+	install -Dm644 "pipewire-$pkgver/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

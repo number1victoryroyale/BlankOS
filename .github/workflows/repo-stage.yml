@@ -18,6 +18,10 @@ on:
         description: Fail if the repo is still incomplete after this pass
         type: boolean
         default: false
+      deps:
+        description: Space-separated repos this one builds on (fetched first; see pkgs/<repo>/DEPENDS)
+        type: string
+        default: ""
 
 env:
   LFS: /mnt/blankos
@@ -51,6 +55,7 @@ jobs:
           sudo mkdir -p "$LFS"
           sudo tar --zstd -xpf "$OUT/builder-rootfs.tar.zst" -C "$LFS"
           rm "$OUT/builder-rootfs.tar.zst"
+          for dep in ${{ inputs.deps }}; do tools/ci-release.sh fetch-repo "$dep"; done
           tools/ci-release.sh fetch-repo "${{ inputs.repo }}"
 
       - name: Build [${{ inputs.repo }}]

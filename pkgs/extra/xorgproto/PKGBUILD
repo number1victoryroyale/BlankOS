@@ -1,0 +1,22 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=xorgproto
+pkgver=2025.1
+pkgrel=1
+pkgdesc="combined X.Org X11 Protocol headers"
+arch=(any)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+makedepends=('xorg-util-macros')
+source=("https://xorg.freedesktop.org/archive/individual/proto/xorgproto-$pkgver.tar.xz")
+sha256sums=('56898c716c0578df8a2d828c9c3e5c528277705c0484381a81960fe1a67668e8')
+
+build() {
+	meson setup build "$pkgname-$pkgver" --prefix=/usr --buildtype=release
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

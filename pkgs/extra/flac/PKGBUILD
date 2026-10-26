@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=flac
+pkgver=1.5.0
+pkgrel=1
+pkgdesc="Free Lossless Audio Codec"
+arch=(x86_64)
+url='https://xiph.org/flac/'
+license=('BSD-3-Clause' 'GPL-2.0-or-later')
+depends=('libogg' 'gcc-libs')
+source=("https://github.com/xiph/flac/releases/download/$pkgver/flac-$pkgver.tar.xz")
+sha256sums=('f2c1c76592a82ffff8413ba3c4a1299b6c7ab06c734dee03fd88630485c2b920')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static --disable-thorough-tests
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

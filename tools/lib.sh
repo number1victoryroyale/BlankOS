@@ -6,6 +6,9 @@ msg2() { printf '\033[1;35m  ->\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m==> WARNING:\033[0m %s\n' "$*" >&2; }
 die()  { printf '\033[1;31m==> ERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 
+# pacman repositories images are installed from, in priority order
+BLANKOS_REPOS=${BLANKOS_REPOS:-core extra}
+
 need_root() { [[ $EUID -eq 0 ]] || die "this script must run as root"; }
 
 # download URL DEST: fetch with retries (no-op if DEST already exists).
@@ -59,16 +62,19 @@ in_chroot() {
 # the builder's pacman (like pacstrap). Leaves the builder's virtual
 # filesystems mounted; ROOT's own mounts are released again.
 pacstrap_root() {
-	local root=$1 m; shift
+	local root=$1 m r; shift
 	mkdir -p "$root"
 	mount_vkfs "$LFS"
 	mkdir -p "$LFS/repo" "$LFS/target"
 	mountpoint -q "$LFS/repo"   || mount --bind "$REPO_OUT" "$LFS/repo"
 	mountpoint -q "$LFS/target" || mount --bind "$root" "$LFS/target"
 	msg "Installing into $root: $*"
-	printf '%s\n' '[options]' 'Architecture = x86_64' 'SigLevel = Never' \
-		'LocalFileSigLevel = Never' '[core]' 'Server = file:///repo/core' \
-		> "$LFS/tmp/image-pacman.conf"
+	{
+		printf '%s\n' '[options]' 'Architecture = x86_64' 'SigLevel = Never' 'LocalFileSigLevel = Never'
+		for r in $BLANKOS_REPOS; do
+			[[ -f $REPO_OUT/$r/$r.db.tar.gz ]] && printf '[%s]\nServer = file:///repo/%s\n' "$r" "$r"
+		done
+	} > "$LFS/tmp/image-pacman.conf"
 	install -d "$root"/var/{lib/pacman,cache/pacman/pkg} "$root"/{dev,run}
 	install -d -m555 "$root"/{proc,sys}
 	install -d -m1777 "$root/tmp"
@@ -85,6 +91,8 @@ pacstrap_root() {
 systemctl_preset_root() {
 	printf 'uninitialized\n' > "$1/etc/machine-id"
 	in_chroot "$LFS" systemctl --root=/target preset-all
+	# user units too (PipeWire, WirePlumber)
+	in_chroot "$LFS" systemctl --root=/target --global preset-all
 }
 
 # --test images: root autologin on the serial console + the self test.

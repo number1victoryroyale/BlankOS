@@ -2,12 +2,12 @@
 
 pkgname=pacman
 pkgver=7.1.0
-pkgrel=2
+pkgrel=3
 pkgdesc="A library-based package manager with dependency support"
 arch=(x86_64)
 url='https://pacman.archlinux.page/'
 license=('GPL-2.0-or-later')
-depends=('bash' 'glibc' 'libarchive' 'curl' 'openssl' 'gettext' 'coreutils' 'gawk' 'grep' 'file' 'findutils' 'sed' 'tar' 'xz' 'zstd' 'bzip2' 'gzip')
+depends=('bash' 'glibc' 'libarchive' 'curl' 'openssl' 'gettext' 'coreutils' 'gawk' 'grep' 'file' 'findutils' 'sed' 'tar' 'xz' 'zstd' 'bzip2' 'gzip' 'gpgme')
 makedepends=('meson' 'ninja')
 backup=('etc/pacman.conf' 'etc/makepkg.conf' 'etc/pacman.d/mirrorlist')
 source=("https://gitlab.archlinux.org/pacman/pacman/-/releases/v$pkgver/downloads/pacman-$pkgver.tar.xz"
@@ -15,7 +15,7 @@ source=("https://gitlab.archlinux.org/pacman/pacman/-/releases/v$pkgver/download
         "makepkg.conf"
         "mirrorlist")
 sha256sums=('530e50d7edbb2a22581c6d6707d2113240276c1bec4ee39a99488e1243c32171'
-            '49a79474aab218e65d96b21bb3779b6d6a2966e82b90db183bfa10252895e8e6'
+            'c2015e5d208198513e825a565ef97f7aa1ffe204c884ba5054d15b4a7e70d2cc'
             '60c8e4f989ffc9d47fc66f36186050ad2bf9e886452fc558dbb425690e4c63c3'
             'fe29da89ff54253c117802a4a3ffcf738853e632670dba82ffa4c1ac6797819c')
 
@@ -23,7 +23,7 @@ build() {
 	cd "$pkgname-$pkgver"
 	meson setup build --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
 		--buildtype=release \
-		-Dcrypto=openssl -Dgpgme=disabled -Dcurl=enabled \
+		-Dcrypto=openssl -Dgpgme=enabled -Dcurl=enabled \
 		-Ddoc=disabled \
 		-Dscriptlet-shell=/usr/bin/bash \
 		-Dldconfig=/usr/sbin/ldconfig \

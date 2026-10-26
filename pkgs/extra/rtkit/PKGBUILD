@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Arch Linux's rtkit package (not in BLFS)
+
+pkgname=rtkit
+pkgver=0.14
+pkgrel=1
+pkgdesc="Realtime Policy and Watchdog Daemon (realtime audio for PipeWire)"
+arch=(x86_64)
+url='https://gitlab.freedesktop.org/pipewire/rtkit'
+license=('GPL-3.0-or-later' 'MIT')
+depends=('dbus' 'polkit' 'libcap' 'systemd')
+makedepends=('meson' 'ninja' 'vim')
+source=("https://gitlab.freedesktop.org/pipewire/rtkit/-/archive/v$pkgver/rtkit-v$pkgver.tar.bz2")
+sha256sums=('bd6c1a236e479c59658b1e7be072e5990ad97439a2ecac433b0edfeb2531b52c')
+
+build() {
+	meson setup build "rtkit-v$pkgver" --prefix=/usr --buildtype=release \
+		-D installed_tests=false -D libsystemd=enabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+	install -Dm644 /dev/stdin "$pkgdir/usr/lib/sysusers.d/rtkit.conf" <<< 'u rtkit - "RealtimeKit" /proc /usr/sbin/nologin'
+	install -Dm644 "rtkit-v$pkgver/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

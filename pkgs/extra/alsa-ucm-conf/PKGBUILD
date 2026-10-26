@@ -1,0 +1,19 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=alsa-ucm-conf
+pkgver=1.2.16.1
+pkgrel=1
+pkgdesc="ALSA Use Case Manager configuration (and topologies)"
+arch=(any)
+url='https://www.alsa-project.org/'
+license=('BSD-3-Clause')
+source=("https://www.alsa-project.org/files/pub/lib/alsa-ucm-conf-$pkgver.tar.bz2")
+sha256sums=('cf3d1c07e089a83c4ece2c20f05dd6a8aab7fcd108768c38811386880575492b')
+
+package() {
+	cd "$pkgname-$pkgver"
+	install -d "$pkgdir/usr/share/alsa"
+	cp -a ucm2 "$pkgdir/usr/share/alsa/"
+	install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

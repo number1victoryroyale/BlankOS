@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=p11-kit
+pkgver=0.26.5
+pkgrel=1
+pkgdesc="Loads and enumerates PKCS#11 modules"
+arch=(x86_64)
+url='https://p11-glue.github.io/p11-glue/p11-kit.html'
+license=('BSD-3-Clause')
+depends=('glibc' 'libtasn1' 'libffi' 'ca-certificates')
+source=("https://github.com/p11-glue/p11-kit/releases/download/$pkgver/p11-kit-$pkgver.tar.xz")
+sha256sums=('f2cc09111e44bf3fea58f023180b33acea90aa82d042d6fbb623fbc5ba033bb7')
+
+build() {
+	# BlankOS keeps the CA store as one PEM bundle (ca-certificates)
+	meson setup build "$pkgname-$pkgver" --prefix=/usr --sysconfdir=/etc --buildtype=release \
+		-D trust_paths=/etc/ssl/certs/ca-certificates.crt -D gtk_doc=false -D man=false -D nls=false
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

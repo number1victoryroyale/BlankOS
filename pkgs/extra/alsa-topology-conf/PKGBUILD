@@ -1,0 +1,19 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Arch Linux's alsa-topology-conf package
+
+pkgname=alsa-topology-conf
+pkgver=1.2.5.1
+pkgrel=1
+pkgdesc="ALSA topology configuration files"
+arch=(any)
+url='https://www.alsa-project.org/'
+license=('BSD-3-Clause')
+source=("https://www.alsa-project.org/files/pub/lib/alsa-topology-conf-$pkgver.tar.bz2")
+sha256sums=('f7c5bae1545abcd73824bc97f4e72c340e11abea188ba0f1c06f5e0ad776b179')
+
+package() {
+	cd "$pkgname-$pkgver"
+	install -d "$pkgdir/usr/share/alsa/topology"
+	cp -a topology/* "$pkgdir/usr/share/alsa/topology/"
+	install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

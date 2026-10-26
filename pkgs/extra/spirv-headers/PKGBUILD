@@ -1,0 +1,22 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=spirv-headers
+pkgver=1.4.357.0
+pkgrel=1
+pkgdesc="SPIR-V Headers"
+arch=(any)
+url='https://www.khronos.org/registry/spir-v/'
+license=('MIT')
+makedepends=('cmake' 'ninja')
+source=("SPIRV-Headers-vulkan-sdk-$pkgver.tar.gz::https://github.com/KhronosGroup/SPIRV-Headers/archive/vulkan-sdk-$pkgver/SPIRV-Headers-vulkan-sdk-$pkgver.tar.gz")
+sha256sums=('4d703067a7e06331ccb37bdfed3f9b7879cc61969a2689ae95c95db34a47ff07')
+
+build() {
+	cmake -S "SPIRV-Headers-vulkan-sdk-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

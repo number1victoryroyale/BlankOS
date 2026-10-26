@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=vulkan-headers
+pkgver=1.4.357.0
+pkgrel=1
+pkgdesc="Vulkan header files and API registry"
+arch=(any)
+url='https://www.vulkan.org/'
+license=('Apache-2.0 OR MIT')
+makedepends=('cmake' 'ninja')
+provides=("vulkan-hpp=$pkgver")
+source=("Vulkan-Headers-vulkan-sdk-$pkgver.tar.gz::https://github.com/KhronosGroup/Vulkan-Headers/archive/vulkan-sdk-$pkgver/Vulkan-Headers-vulkan-sdk-$pkgver.tar.gz")
+sha256sums=('e87dce08116151f6b6d7de6b6faf41498e87e6cf848ff16fa3bd5402190ad4a3')
+
+build() {
+	cmake -S "Vulkan-Headers-vulkan-sdk-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

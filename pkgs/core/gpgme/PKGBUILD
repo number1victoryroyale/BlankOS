@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=gpgme
+pkgver=2.1.2
+pkgrel=1
+pkgdesc="C library that offers easy access to GnuPG"
+arch=(x86_64)
+url='https://www.gnupg.org/related_software/gpgme/'
+license=('LGPL-2.1-or-later')
+depends=('glibc' 'gnupg' 'libassuan' 'libgpg-error')
+source=("https://www.gnupg.org/ftp/gcrypt/gpgme/gpgme-$pkgver.tar.bz2")
+sha256sums=('0687a95b299871c4141f507c0f740de6b429c9ac067d0fa4e062e3264df5fb77')
+
+build() {
+	mkdir -p build
+	cd build
+	../"$pkgname-$pkgver"/configure --prefix=/usr --disable-static --disable-gpg-test
+	make
+}
+
+package() {
+	cd build
+	make DESTDIR="$pkgdir" install
+}

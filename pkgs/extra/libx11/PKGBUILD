@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libx11
+pkgver=1.8.13
+pkgrel=1
+pkgdesc="X11 client-side library"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+depends=('libxcb')
+makedepends=('xorgproto' 'xorg-util-macros')
+source=("https://www.x.org/pub/individual/lib/libX11-$pkgver.tar.xz")
+sha256sums=('69606f485c2c07c14ef64f75b7bb326d48587af33795d9ab3e607c0b5f94f11c')
+
+build() {
+	cd "libX11-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "libX11-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

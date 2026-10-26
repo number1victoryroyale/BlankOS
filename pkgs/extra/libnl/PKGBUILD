@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libnl
+pkgver=3.12.0
+pkgrel=1
+pkgdesc="Library for applications dealing with netlink sockets"
+arch=(x86_64)
+url='https://github.com/thom311/libnl'
+license=('LGPL-2.1-or-later')
+depends=('glibc')
+backup=('etc/libnl/classid' 'etc/libnl/pktloc')
+source=("https://github.com/thom311/libnl/releases/download/libnl3_12_0/libnl-$pkgver.tar.gz")
+sha256sums=('fc51ca7196f1a3f5fdf6ffd3864b50f4f9c02333be28be4eeca057e103c0dd18')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --disable-static
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

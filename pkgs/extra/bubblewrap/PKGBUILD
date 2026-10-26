@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=bubblewrap
+pkgver=0.11.2
+pkgrel=1
+pkgdesc="Unprivileged sandboxing tool (used by Flatpak)"
+arch=(x86_64)
+url='https://github.com/containers/bubblewrap'
+license=('LGPL-2.0-or-later')
+depends=('libcap')
+source=("https://github.com/containers/bubblewrap/releases/download/v$pkgver/bubblewrap-$pkgver.tar.xz")
+sha256sums=('69abc30005d2186baf7737feacd8da35633b93cf5af38838ecff17c5f8e924f6')
+
+build() {
+	meson setup build "$pkgname-$pkgver" --prefix=/usr --buildtype=release \
+		-D man=disabled -D selinux=disabled -D tests=false
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

@@ -1,0 +1,18 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Arch Linux's wireless-regdb package
+
+pkgname=wireless-regdb
+pkgver=2026.09.03
+pkgrel=1
+pkgdesc="Central Regulatory Domain Database (lets Wi-Fi use the channels allowed in your country)"
+arch=(any)
+url='https://wireless.wiki.kernel.org/en/developers/regulatory/wireless-regdb'
+license=('ISC')
+source=("https://www.kernel.org/pub/software/network/wireless-regdb/wireless-regdb-$pkgver.tar.xz")
+sha256sums=('b22e0901227b820cd1c280abe681a15b773a5103a5e10dc442e94ebb34cbf58d')
+
+package() {
+	cd "$pkgname-$pkgver"
+	install -Dm644 -t "$pkgdir/usr/lib/firmware" regulatory.db regulatory.db.p7s
+	install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

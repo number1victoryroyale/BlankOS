@@ -1,0 +1,29 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=duktape
+pkgver=2.7.0
+pkgrel=1
+pkgdesc="Embeddable Javascript engine (for polkit rules)"
+arch=(x86_64)
+url='https://duktape.org/'
+license=('MIT')
+depends=('glibc')
+source=("https://duktape.org/duktape-$pkgver.tar.xz")
+sha256sums=('90f8d2fa8b5567c6899830ddef2c03f3c27960b11aca222fa17aa7ac613c2890')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	sed -i 's/-Os/-O2/' Makefile.sharedlibrary
+}
+
+build() {
+	cd "$pkgname-$pkgver"
+	make -f Makefile.sharedlibrary INSTALL_PREFIX=/usr
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make -f Makefile.sharedlibrary INSTALL_PREFIX=/usr DESTDIR="$pkgdir" install
+	install -Dm644 LICENSE.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE.txt"
+}

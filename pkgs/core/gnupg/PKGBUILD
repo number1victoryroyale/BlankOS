@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=gnupg
+pkgver=2.5.21
+pkgrel=1
+pkgdesc="Complete and free implementation of the OpenPGP standard"
+arch=(x86_64)
+url='https://www.gnupg.org/'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'bzip2' 'zlib' 'readline' 'sqlite' 'gnutls' 'libgcrypt' 'libgpg-error' 'libassuan' 'libksba' 'npth' 'pinentry')
+source=("https://www.gnupg.org/ftp/gcrypt/gnupg/gnupg-$pkgver.tar.bz2")
+sha256sums=('e3af2c8caa46a66a9329fa7c6880af260451914d819595beabc2c26597b31352')
+
+build() {
+	mkdir -p build
+	cd build
+	../"$pkgname-$pkgver"/configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc \
+		--libexecdir=/usr/lib/gnupg --disable-ldap
+	make
+}
+
+package() {
+	cd build
+	make DESTDIR="$pkgdir" install
+}

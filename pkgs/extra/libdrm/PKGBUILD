@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libdrm
+pkgver=2.4.134
+pkgrel=1
+pkgdesc="Userspace interface to kernel DRM services"
+arch=(x86_64)
+url='https://dri.freedesktop.org/'
+license=('MIT')
+depends=('glibc' 'libpciaccess' 'systemd')
+source=("https://dri.freedesktop.org/libdrm/libdrm-$pkgver.tar.xz")
+sha256sums=('ac5e74d157830eb8bee44c6a6bf3ad49774ef0dd2a72bdad74a8f20308b52a95')
+
+build() {
+	meson setup build "$pkgname-$pkgver" --prefix=/usr --buildtype=release \
+		-D udev=true -D valgrind=disabled -D tests=false -D man-pages=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

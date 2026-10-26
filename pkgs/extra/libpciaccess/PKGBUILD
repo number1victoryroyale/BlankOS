@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libpciaccess
+pkgver=0.19
+pkgrel=1
+pkgdesc="X11 PCI access library"
+arch=(x86_64)
+url='https://gitlab.freedesktop.org/xorg/lib/libpciaccess/'
+license=('MIT')
+depends=('glibc' 'zlib')
+makedepends=('xorg-util-macros')
+source=("https://www.x.org/pub/individual/lib/libpciaccess-$pkgver.tar.xz")
+sha256sums=('3c55aa86c82e54a4e3109786f0463530d53b36b6d1cfd14616454f985dd2aa43')
+
+build() {
+	meson setup build "$pkgname-$pkgver" --prefix=/usr --buildtype=release
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

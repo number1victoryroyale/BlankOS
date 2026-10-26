@@ -14,6 +14,10 @@
 #
 # The builder root is $LFS (created by toolchain/build-toolchain.sh or
 # extracted from builder-rootfs.tar.zst).
+#
+# pkgs/<repo>/DEPENDS lists repos whose packages must be in the builder
+# first (e.g. [extra] builds on [core]); they are brought up to date the
+# same way before this repo starts. SKIP_DEPS=1 skips that step.
 set -euo pipefail
 source "$(dirname "$0")/../config/blankos.conf"
 source "$BLANKOS_ROOT/tools/lib.sh"
@@ -29,6 +33,13 @@ if (($#)); then
 	pkgs=("$@")
 else
 	mapfile -t pkgs < <(grep -v '^#' "$pkgroot/ORDER" | grep .)
+fi
+
+if [[ -f $pkgroot/DEPENDS && -z ${SKIP_DEPS:-} ]]; then
+	for dep in $(grep -v '^#' "$pkgroot/DEPENDS"); do
+		msg "[$repo] needs [$dep] first"
+		"$0" "$dep"
+	done
 fi
 
 outdir=$REPO_OUT/$repo

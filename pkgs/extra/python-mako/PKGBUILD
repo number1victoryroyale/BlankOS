@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=python-mako
+pkgver=1.4.1
+pkgrel=1
+pkgdesc="Hyperfast and lightweight templating for the Python platform"
+arch=(any)
+url='https://www.makotemplates.org/'
+license=('MIT')
+depends=('python' 'python-markupsafe')
+source=("https://files.pythonhosted.org/packages/source/M/Mako/mako-$pkgver.tar.gz")
+sha256sums=('d7904710b662996425a21627710c4777c45053146942cf8a7aebf757c92b8c27')
+
+build() {
+	cd "mako-$pkgver"
+	pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps "$PWD"
+}
+
+package() {
+	cd "mako-$pkgver"
+	pip3 install --root="$pkgdir" --no-index --find-links dist \
+		--no-deps --ignore-installed --no-cache-dir --no-warn-script-location Mako
+}

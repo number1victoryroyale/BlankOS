@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libtasn1
+pkgver=4.21.0
+pkgrel=1
+pkgdesc="The ASN.1 library used in GNUTLS"
+arch=(x86_64)
+url='https://www.gnu.org/software/libtasn1/'
+license=('GPL-3.0-or-later' 'LGPL-2.1-or-later')
+depends=('glibc')
+source=("https://ftp.gnu.org/gnu/libtasn1/libtasn1-$pkgver.tar.gz")
+sha256sums=('1d8a444a223cc5464240777346e125de51d8e6abf0b8bac742ac84609167dc87')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

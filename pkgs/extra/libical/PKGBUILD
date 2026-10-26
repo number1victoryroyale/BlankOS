@@ -1,0 +1,27 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libical
+pkgver=4.0.5
+pkgrel=1
+pkgdesc="An open source reference implementation of the icalendar data type and protocol"
+arch=(x86_64)
+url='https://libical.github.io/libical/'
+license=('LGPL-2.1-only OR MPL-2.0')
+depends=('glibc' 'gcc-libs')
+makedepends=('cmake' 'perl')
+source=("https://github.com/libical/libical/releases/download/v$pkgver/libical-$pkgver.tar.gz")
+sha256sums=('cc09a3ac41d60e6144e644bd3fcf97d47106d659c4a0b8965102581401e67c9c')
+
+build() {
+	# without the GLib/GObject bindings; BlueZ only needs the C library
+	cmake -S "$pkgname-$pkgver" -B build -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_BUILD_TYPE=Release \
+		-D LIBICAL_STATIC=NO -D LIBICAL_BUILD_DOCS=false -D LIBICAL_BUILD_TESTING=OFF \
+		-D LIBICAL_GLIB=OFF -D LIBICAL_GLIB_VAPI=false -D LIBICAL_GOBJECT_INTROSPECTION=false \
+		-D LIBICAL_JAVA_BINDINGS=OFF -D LIBICAL_ENABLE_BUILTIN_TZDATA=OFF
+	make -C build -j1
+}
+
+package() {
+	make -C build DESTDIR="$pkgdir" install
+}

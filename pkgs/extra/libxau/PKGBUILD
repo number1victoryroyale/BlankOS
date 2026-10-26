@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libxau
+pkgver=1.0.12
+pkgrel=1
+pkgdesc="X11 authorisation library"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+depends=('glibc')
+makedepends=('xorgproto' 'xorg-util-macros')
+source=("https://www.x.org/pub/individual/lib/libXau-$pkgver.tar.xz")
+sha256sums=('74d0e4dfa3d39ad8939e99bda37f5967aba528211076828464d2777d477fc0fb')
+
+build() {
+	cd "libXau-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "libXau-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

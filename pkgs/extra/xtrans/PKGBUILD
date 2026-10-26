@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=xtrans
+pkgver=1.6.0
+pkgrel=1
+pkgdesc="X transport library"
+arch=(any)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+makedepends=('xorgproto' 'xorg-util-macros')
+source=("https://www.x.org/pub/individual/lib/xtrans-$pkgver.tar.xz")
+sha256sums=('faafea166bf2451a173d9d593352940ec6404145c5d1da5c213423ce4d359e92')
+
+build() {
+	cd "xtrans-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "xtrans-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

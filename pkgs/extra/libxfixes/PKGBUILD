@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libxfixes
+pkgver=6.0.2
+pkgrel=1
+pkgdesc="X11 miscellaneous 'fixes' extension library"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+depends=('libx11')
+makedepends=('xorgproto' 'xorg-util-macros')
+source=("https://www.x.org/pub/individual/lib/libXfixes-$pkgver.tar.xz")
+sha256sums=('39f115d72d9c5f8111e4684164d3d68cc1fd21f9b27ff2401b08fddfc0f409ba')
+
+build() {
+	cd "libXfixes-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "libXfixes-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libfyaml
+pkgver=0.9.6
+pkgrel=1
+pkgdesc="Fully feature complete YAML parser and emitter"
+arch=(x86_64)
+url='https://github.com/pantoniou/libfyaml'
+license=('MIT')
+depends=('glibc')
+source=("https://github.com/pantoniou/libfyaml/releases/download/v$pkgver/libfyaml-$pkgver.tar.gz")
+sha256sums=('a59cc3331e2eb903ec36933ad52a45888041cac31e44f553a00511131242c483')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static --without-libclang
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

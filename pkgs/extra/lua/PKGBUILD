@@ -1,0 +1,56 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=lua
+pkgver=5.4.8
+pkgrel=1
+pkgdesc="Powerful lightweight programming language designed for extending applications"
+arch=(x86_64)
+url='https://www.lua.org/'
+license=('MIT')
+depends=('readline')
+source=("https://www.lua.org/ftp/lua-$pkgver.tar.gz"
+        "https://www.linuxfromscratch.org/patches/blfs/13.1/lua-$pkgver-shared_library-1.patch")
+sha256sums=('4f18ddae154e793e46eeab727c59ef1c0c0c2b744e7b94219710d76f530629ae'
+            '44324a802822f0a35d095aaad2f5f58fa7b1821ae87ae44dbcfc8a23fcd2e67e')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	patch -Np1 -i "../lua-$pkgver-shared_library-1.patch"
+}
+
+build() {
+	cd "$pkgname-$pkgver"
+	make MYCFLAGS="$CFLAGS" MYLDFLAGS="$LDFLAGS" linux
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make INSTALL_TOP="$pkgdir/usr" INSTALL_DATA="cp -d" INSTALL_MAN="$pkgdir/usr/share/man/man1" \
+		TO_LIB="liblua.so liblua.so.${pkgver%.*} liblua.so.$pkgver" install
+
+	install -Dm644 /dev/stdin "$pkgdir/usr/lib/pkgconfig/lua.pc" << EOF
+V=${pkgver%.*}
+R=$pkgver
+
+prefix=/usr
+INSTALL_BIN=\${prefix}/bin
+INSTALL_INC=\${prefix}/include
+INSTALL_LIB=\${prefix}/lib
+INSTALL_MAN=\${prefix}/share/man/man1
+INSTALL_LMOD=\${prefix}/share/lua/\${V}
+INSTALL_CMOD=\${prefix}/lib/lua/\${V}
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: Lua
+Description: An Extensible Extension Language
+Version: \${R}
+Requires:
+Libs: -L\${libdir} -llua -lm -ldl
+Cflags: -I\${includedir}
+EOF
+	ln -s lua.pc "$pkgdir/usr/lib/pkgconfig/lua${pkgver%.*}.pc"
+	install -Dm644 doc/readme.html "$pkgdir/usr/share/licenses/$pkgname/readme.html"
+}

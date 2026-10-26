@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=python-pyyaml
+pkgver=6.0.3
+pkgrel=1
+pkgdesc="Python bindings for YAML, using fast libYAML library"
+arch=(x86_64)
+url='https://pyyaml.org/'
+license=('MIT')
+depends=('python' 'libyaml')
+source=("https://files.pythonhosted.org/packages/source/P/PyYAML/pyyaml-$pkgver.tar.gz")
+sha256sums=('d76623373421df22fb4cf8817020cbb7ef15c725b9d5e45f17e189bfc384190f')
+
+build() {
+	cd "pyyaml-$pkgver"
+	pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps "$PWD"
+}
+
+package() {
+	cd "pyyaml-$pkgver"
+	pip3 install --root="$pkgdir" --no-index --find-links dist \
+		--no-deps --ignore-installed --no-cache-dir --no-warn-script-location PyYAML
+}

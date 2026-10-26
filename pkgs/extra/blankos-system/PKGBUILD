@@ -1,0 +1,35 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+#
+# Everything a BlankOS PC runs on top of base: firmware and microcode,
+# graphics (Mesa, Vulkan), sound (PipeWire), Bluetooth, networking
+# (NetworkManager) and Flatpak; plus the service presets that turn them on.
+
+pkgname=blankos-system
+pkgver=0.3.0
+pkgrel=1
+pkgdesc="BlankOS system stack: firmware, graphics, sound, Bluetooth, networking and Flatpak"
+arch=(any)
+url='https://github.com/number1victoryroyale/BlankOS'
+license=('GPL-3.0-or-later')
+depends=('base'
+         # firmware and microcode
+         'linux-firmware' 'sof-firmware' 'intel-ucode' 'amd-ucode' 'wireless-regdb'
+         # graphics
+         'mesa' 'vulkan-icd-loader' 'vulkan-tools'
+         # sound and Bluetooth
+         'pipewire' 'wireplumber' 'rtkit' 'alsa-utils' 'bluez'
+         # networking
+         'networkmanager' 'wpa_supplicant' 'iw'
+         # apps
+         'flatpak'
+         # tools
+         'gnupg' 'pciutils' 'usbutils')
+source=("70-blankos-system.preset"
+        "70-blankos-system-user.preset")
+sha256sums=('53570f8c4698cef8801c6218e46e2564f9d7f65d6de974697d0a95909a51bc00'
+            '8717e8889b69dcacbd54c4e46dfaa3cf15847247a38f81d30a60f529200a9aa8')
+
+package() {
+	install -Dm644 70-blankos-system.preset "$pkgdir/usr/lib/systemd/system-preset/70-blankos-system.preset"
+	install -Dm644 70-blankos-system-user.preset "$pkgdir/usr/lib/systemd/user-preset/70-blankos-system.preset"
+}

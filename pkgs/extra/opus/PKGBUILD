@@ -1,0 +1,22 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=opus
+pkgver=1.6.1
+pkgrel=1
+pkgdesc="Totally open, royalty-free, highly versatile audio codec"
+arch=(x86_64)
+url='https://www.opus-codec.org/'
+license=('BSD-3-Clause')
+depends=('glibc')
+source=("https://downloads.xiph.org/releases/opus/opus-$pkgver.tar.gz")
+sha256sums=('6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1')
+
+build() {
+	meson setup build "$pkgname-$pkgver" --prefix=/usr --buildtype=release -D docs=disabled -D tests=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

@@ -12,6 +12,10 @@ source "$(dirname "$0")/../config/blankos.conf"
 source "$BLANKOS_ROOT/tools/lib.sh"
 
 LFS_MIRROR="${LFS_MIRROR:-https://mirror.koddos.net/lfs/lfs-packages/$LFS_BOOK}"
+BLFS_MIRROR="${BLFS_MIRROR:-https://mirror.koddos.net/blfs/${BLFS_BOOK:-13.1}}"
+# filename -> alternate source, for files whose upstream host may be
+# unreachable (see the header of that file)
+ALT_SOURCES=$BLANKOS_ROOT/tools/source-mirrors.txt
 
 # Print "<filename>\t<url>" for each source entry ("-" url = local file).
 list_sources() (
@@ -33,6 +37,40 @@ list_sources() (
 	done
 )
 
+# Upstream first, then the LFS/BLFS source mirrors (which keep every
+# file of a book release, GitHub-hosted ones included), then an alternate
+# from $ALT_SOURCES.
+fetch_one() {
+	local name=$1 url=$2 letter alt
+	letter=$(tr '[:upper:]' '[:lower:]' <<< "${name:0:1}")
+	download "$url" "$SRC/$name" && return 0
+	download "$LFS_MIRROR/$name" "$SRC/$name" && return 0
+	download "$BLFS_MIRROR/$letter/$name" "$SRC/$name" && return 0
+	download "$BLFS_MIRROR/Xorg/$name" "$SRC/$name" && return 0
+	alt=$(awk -v n="$name" '$1 == n { $1 = ""; print substr($0, 2); exit }' "$ALT_SOURCES")
+	[[ -n $alt ]] || return 1
+	msg2 "  trying alternate source for $name"
+	case $alt in
+		git\ *) git_archive "$name" ${alt#git } ;;
+		*) download "$alt" "$SRC/$name" ;;
+	esac
+}
+
+# git_archive NAME REPO TAG PREFIX: rebuild a GitHub tag tarball the way
+# GitHub does (git archive piped through gzip -n), for hosts that only
+# allow git access.
+git_archive() {
+	local name=$1 repo=$2 tag=$3 prefix=$4 tmp
+	tmp=$(mktemp -d)
+	git clone -q --bare --depth 1 --branch "$tag" "$repo" "$tmp/repo.git" || { rm -rf "$tmp"; return 1; }
+	git -C "$tmp/repo.git" -c tar.tar.gz.command="gzip -cn" archive --format=tar.gz \
+		--prefix="$prefix" -o "$SRC/$name.part" "$tag" &&
+		mv "$SRC/$name.part" "$SRC/$name"
+	local rc=$?
+	rm -rf "$tmp"
+	return $rc
+}
+
 cmd_fetch() {
 	mkdir -p "$SRC"
 	local dir name url failed=0
@@ -41,9 +79,7 @@ cmd_fetch() {
 			[[ $url == - ]] && continue
 			[[ -s $SRC/$name ]] && continue
 			msg2 "fetch $name"
-			download "$url" "$SRC/$name" ||
-				download "$LFS_MIRROR/$name" "$SRC/$name" ||
-				{ warn "failed: $url"; failed=1; }
+			fetch_one "$name" "$url" || { warn "failed: $url"; failed=1; }
 		done < <(list_sources "$dir")
 	done
 	return $failed

@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libxcb
+pkgver=1.17.0
+pkgrel=1
+pkgdesc="X11 client-side library"
+arch=(x86_64)
+url='https://xcb.freedesktop.org/'
+license=('MIT')
+depends=('libxau' 'libxdmcp')
+makedepends=('xcb-proto' 'xorgproto' 'python')
+source=("https://xorg.freedesktop.org/archive/individual/lib/libxcb-$pkgver.tar.xz")
+sha256sums=('599ebf9996710fea71622e6e184f3a8ad5b43d0e5fa8c4e407123c88a59a6d55')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static --without-doxygen
+	LC_ALL=C.UTF-8 make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

@@ -1,9 +1,12 @@
 
 [1;35m  Welcome to the BlankOS live system.[0m
 
-  This is a console-only preview: the KDE Plasma desktop, the gaming
-  stack and the graphical installer arrive in later milestones.
+  Console preview: the KDE Plasma desktop, the gaming stack and the
+  graphical installer arrive in later milestones.
 
-  Networking (DHCP) is up automatically. Have a look around:
-    [35mpacman -Q[0m   installed packages      [35mcat /etc/os-release[0m
+  Wired networking comes up by itself. For Wi-Fi run [35mnmtui[0m.
+    [35mbluetoothctl[0m     pair headsets and controllers
+    [35mflatpak search[0m   browse Flathub (flatpak install flathub ...)
+    [35mlspci[0m, [35mlsusb[0m     see what hardware BlankOS found
+    [35mvulkaninfo --summary[0m   GPU drivers in use
 

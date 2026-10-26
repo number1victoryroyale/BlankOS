@@ -1,0 +1,31 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=fuse3
+pkgver=3.18.2
+pkgrel=1
+pkgdesc="Interface for userspace programs to export a filesystem to the Linux kernel"
+arch=(x86_64)
+url='https://github.com/libfuse/libfuse'
+license=('GPL-2.0-only' 'LGPL-2.1-only')
+depends=('glibc')
+backup=('etc/fuse.conf')
+source=("https://github.com/libfuse/libfuse/releases/download/fuse-$pkgver/fuse-$pkgver.tar.gz")
+sha256sums=('f01de85717e20adf5f98aff324acd85dd73d61a5ca3834d573dcf0bd6e54a298')
+
+prepare() {
+	cd "fuse-$pkgver"
+	sed -i '/^udev/,$ s/^/#/' util/meson.build
+}
+
+build() {
+	meson setup build "fuse-$pkgver" --prefix=/usr --buildtype=release -D examples=false -D tests=false
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+	install -Dm644 /dev/stdin "$pkgdir/etc/fuse.conf" <<< '# user_allow_other'
+	# fusermount3 must be setuid for unprivileged mounts (Flatpak's revokefs)
+	chmod u+s "$pkgdir/usr/bin/fusermount3"
+}

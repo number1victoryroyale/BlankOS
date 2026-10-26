@@ -1,0 +1,22 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=xdg-dbus-proxy
+pkgver=0.1.8
+pkgrel=1
+pkgdesc="Filtering proxy for D-Bus connections (used by Flatpak)"
+arch=(x86_64)
+url='https://github.com/flatpak/xdg-dbus-proxy'
+license=('LGPL-2.1-or-later')
+depends=('glib2')
+source=("https://github.com/flatpak/xdg-dbus-proxy/releases/download/$pkgver/xdg-dbus-proxy-$pkgver.tar.xz")
+sha256sums=('b6630bd24f8161b0e2546d2acbb014a3b3249f5c0d75f2a863ade898b9034d3d')
+
+build() {
+	meson setup build "$pkgname-$pkgver" --prefix=/usr --buildtype=release -D man=disabled -D tests=false
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

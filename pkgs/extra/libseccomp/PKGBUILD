@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libseccomp
+pkgver=2.6.1
+pkgrel=1
+pkgdesc="Enhanced seccomp library"
+arch=(x86_64)
+url='https://github.com/seccomp/libseccomp'
+license=('LGPL-2.1-only')
+depends=('glibc')
+makedepends=('gperf')
+source=("https://github.com/seccomp/libseccomp/releases/download/v$pkgver/libseccomp-$pkgver.tar.gz")
+sha256sums=('501f66c667225d53791b97e1d7cf85ab764c297d04881f60f38f451c4b0ee1be')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

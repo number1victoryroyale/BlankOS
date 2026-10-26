@@ -1,0 +1,44 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=networkmanager
+pkgver=1.58.1
+pkgrel=1
+pkgdesc="Network connection manager (nmcli, nmtui; Wi-Fi via wpa_supplicant)"
+arch=(x86_64)
+url='https://networkmanager.dev/'
+license=('GPL-2.0-or-later' 'LGPL-2.1-or-later')
+depends=('glib2' 'libndp' 'curl' 'libpsl' 'gnutls' 'polkit' 'systemd' 'readline' 'newt'
+         'wpa_supplicant' 'iw' 'wireless-regdb')
+makedepends=('meson' 'ninja' 'python')
+backup=('etc/NetworkManager/NetworkManager.conf')
+source=("https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/releases/$pkgver/downloads/NetworkManager-$pkgver.tar.xz")
+sha256sums=('262864cfd198123d3e5dbe91937441b97ee9059d6d712e1a5bfbb1c54668d14d')
+
+prepare() {
+	cd "NetworkManager-$pkgver"
+	grep -rl '^#!.*python$' | xargs -r sed -i '1s/python/&3/'
+}
+
+build() {
+	meson setup build "NetworkManager-$pkgver" --prefix=/usr --buildtype=release \
+		-D dist_version="$pkgver-$pkgrel" \
+		-D session_tracking=systemd -D suspend_resume=systemd \
+		-D crypto=gnutls -D readline=libreadline -D nmtui=true \
+		-D libaudit=no -D selinux=false -D ovs=false -D ppp=false -D nbft=false \
+		-D modem_manager=false -D bluez5_dun=false -D nm_cloud_setup=false -D clat=false \
+		-D ebpf=false -D ifupdown=false -D firewalld_zone=false -D qt=false \
+		-D introspection=false -D vapi=false -D docs=false -D man=false -D tests=no
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+	install -Dm644 /dev/stdin "$pkgdir/etc/NetworkManager/NetworkManager.conf" << EOF2
+# See NetworkManager.conf(5). Drop-ins go to /etc/NetworkManager/conf.d.
+[main]
+plugins=keyfile
+EOF2
+	# runtime state, recreated at boot
+	rm -rf "$pkgdir/var/run" "$pkgdir/run"
+}

@@ -1,0 +1,22 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=usbutils
+pkgver=019
+pkgrel=1
+pkgdesc="A collection of USB tools to query connected USB devices (lsusb)"
+arch=(x86_64)
+url='https://github.com/gregkh/usbutils'
+license=('GPL-2.0-or-later')
+depends=('libusb' 'hwdata' 'systemd')
+source=("https://kernel.org/pub/linux/utils/usb/usbutils/usbutils-$pkgver.tar.xz")
+sha256sums=('659f40c440e31ba865c52c818a33d3ba6a97349e3353f8b1985179cb2aa71ec5')
+
+build() {
+	meson setup build "$pkgname-$pkgver" --prefix=/usr --buildtype=release
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

@@ -1,0 +1,55 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=glib2
+pkgver=2.88.3
+pkgrel=1
+pkgdesc="Low level core library"
+arch=(x86_64)
+url='https://gitlab.gnome.org/GNOME/glib'
+license=('LGPL-2.1-or-later')
+depends=('glibc' 'pcre2' 'libffi' 'util-linux' 'zlib')
+makedepends=('python-packaging')
+source=("https://download.gnome.org/sources/glib/${pkgver%.*}/glib-$pkgver.tar.xz")
+sha256sums=('ab24d24e698dfa1e408b7bcdb508f4aafc906185a8b8ce72fdf79bbbdc9b383b')
+
+build() {
+	# no GObject introspection yet: nothing in BlankOS needs typelibs so far
+	meson setup build "glib-$pkgver" --prefix=/usr --buildtype=release \
+		-D introspection=disabled -D glib_debug=disabled -D man-pages=disabled \
+		-D sysprof=disabled -D tests=false
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+
+	# keep the schema and GIO module caches current as packages come and go
+	install -Dm644 /dev/stdin "$pkgdir/usr/share/libalpm/hooks/glib-compile-schemas.hook" << EOF
+[Trigger]
+Type = Path
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Target = usr/share/glib-2.0/schemas/*.gschema.xml
+Target = usr/share/glib-2.0/schemas/*.gschema.override
+
+[Action]
+Description = Compiling GSettings XML schema files...
+When = PostTransaction
+Exec = /usr/bin/glib-compile-schemas /usr/share/glib-2.0/schemas
+EOF
+	install -Dm644 /dev/stdin "$pkgdir/usr/share/libalpm/hooks/gio-querymodules.hook" << EOF
+[Trigger]
+Type = Path
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Target = usr/lib/gio/modules/*.so
+
+[Action]
+Description = Updating GIO module cache...
+When = PostTransaction
+Exec = /usr/bin/gio-querymodules /usr/lib/gio/modules
+EOF
+}

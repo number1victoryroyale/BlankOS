@@ -1,0 +1,37 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=shared-mime-info
+pkgver=2.5.1
+pkgrel=1
+pkgdesc="Freedesktop.org Shared MIME Info"
+arch=(x86_64)
+url='https://gitlab.freedesktop.org/xdg/shared-mime-info'
+license=('GPL-2.0-or-later')
+depends=('glib2' 'libxml2')
+source=("https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/$pkgver/shared-mime-info-$pkgver.tar.gz")
+sha256sums=('ea248ea157b7fa0165f4fe282c84919fa84c3f175553642f229c8f1ab7539128')
+
+build() {
+	# the database is built by the pacman hook below, not at build time
+	meson setup build "$pkgname-$pkgver" --prefix=/usr --buildtype=release \
+		-D update-mimedb=false -D build-tests=false -D build-spec=false -D build-translations=false
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+	install -Dm644 /dev/stdin "$pkgdir/usr/share/libalpm/hooks/update-mime-database.hook" <<- EOF
+	[Trigger]
+	Type = Path
+	Operation = Install
+	Operation = Upgrade
+	Operation = Remove
+	Target = usr/share/mime/packages/*.xml
+
+	[Action]
+	Description = Updating the MIME type database...
+	When = PostTransaction
+	Exec = /usr/bin/update-mime-database /usr/share/mime
+	EOF
+}

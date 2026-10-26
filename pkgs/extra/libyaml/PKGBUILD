@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libyaml
+pkgver=0.2.5
+pkgrel=1
+pkgdesc="YAML 1.1 library"
+arch=(x86_64)
+url='https://pyyaml.org/wiki/LibYAML'
+license=('MIT')
+depends=('glibc')
+source=("https://github.com/yaml/libyaml/releases/download/$pkgver/yaml-$pkgver.tar.gz")
+sha256sums=('c642ae9b75fee120b2d96c712538bd2cf283228d2337df2cf2988e3c02678ef4')
+
+build() {
+	cd "yaml-$pkgver"
+	./configure --prefix=/usr --disable-static
+	make
+}
+
+package() {
+	cd "yaml-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

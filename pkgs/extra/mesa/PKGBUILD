@@ -1,0 +1,44 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd), with libglvnd like Arch Linux so the
+# NVIDIA driver's GL libraries can live next to Mesa's.
+
+pkgname=mesa
+pkgver=26.1.7
+pkgrel=1
+pkgdesc="Open-source OpenGL and Vulkan drivers (AMD, Intel, NVIDIA nouveau, software, VMs)"
+arch=(x86_64)
+url='https://www.mesa3d.org/'
+license=('MIT AND BSD-3-Clause AND SGI-B-2.0')
+depends=('libdrm' 'libglvnd' 'llvm-libs' 'spirv-tools' 'wayland' 'libx11' 'libxext' 'libxfixes'
+         'libxshmfence' 'libxxf86vm' 'libxrandr' 'libxcb' 'expat' 'zlib' 'zstd' 'libelf' 'vulkan-icd-loader')
+makedepends=('meson' 'ninja' 'python-mako' 'python-pyyaml' 'python-packaging' 'llvm' 'spirv-llvm-translator'
+             'glslang' 'wayland-protocols' 'xorgproto' 'vulkan-headers')
+provides=('opengl-driver' 'vulkan-driver' 'vulkan-radeon' 'vulkan-intel' 'vulkan-swrast' 'libgl' 'libegl' 'libgles')
+source=("https://mesa.freedesktop.org/archive/mesa-$pkgver.tar.xz")
+sha256sums=('25e0a669e6638c3563e7be32a0a09f1888317e6eed0d047dc41d49dc8de26c7d')
+
+build() {
+	# Every driver for the GPUs BlankOS targets, old laptops included:
+	#   AMD: r300 (2004+), r600 (2008+), radeonsi + RADV (2012+)
+	#   Intel: i915 (GMA 900-3150), crocus + hasvk (2006-2014), iris + ANV (2015+)
+	#   NVIDIA: nouveau (GL); NVK needs Rust and comes later
+	#   llvmpipe/softpipe/lavapipe (no GPU), virgl/svga/zink, venus (VMs)
+	meson setup build "mesa-$pkgver" --prefix=/usr --buildtype=release \
+		-D platforms=x11,wayland \
+		-D gallium-drivers=r300,r600,radeonsi,nouveau,virgl,svga,llvmpipe,softpipe,iris,crocus,i915,zink \
+		-D vulkan-drivers=amd,intel,intel_hasvk,swrast,virtio \
+		-D vulkan-layers=device-select,overlay \
+		-D glvnd=enabled \
+		-D video-codecs=all \
+		-D gallium-va=disabled \
+		-D valgrind=disabled \
+		-D libunwind=disabled \
+		-D lmsensors=disabled \
+		-D build-tests=false
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+	install -Dm644 "mesa-$pkgver/docs/license.rst" "$pkgdir/usr/share/licenses/$pkgname/license.rst"
+}

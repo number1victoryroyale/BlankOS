@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libndp
+pkgver=1.9
+pkgrel=1
+pkgdesc="Library for Neighbor Discovery Protocol"
+arch=(x86_64)
+url='http://libndp.org/'
+license=('LGPL-2.1-or-later')
+depends=('glibc')
+source=("http://libndp.org/files/libndp-$pkgver.tar.gz")
+sha256sums=('a8ab214e01dc3a9b615276905395637f391298c84d77651f0cbf0b1082dd2dd4')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

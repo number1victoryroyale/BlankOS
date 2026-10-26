@@ -2,7 +2,7 @@
 # Build the BlankOS live ISO: a hybrid image that boots from CD/DVD and USB
 # sticks on both BIOS and UEFI machines.
 #
-#   sudo iso/mkiso.sh [--test] [--pkgs "base linux grub"]
+#   sudo iso/mkiso.sh [--test] [--pkgs "base linux grub blankos-system"]
 #
 # Layout of the ISO:
 #   /boot/vmlinuz-linux, /boot/initramfs-live.img     kernel + live initramfs
@@ -19,7 +19,7 @@ source "$BLANKOS_ROOT/tools/lib.sh"
 need_root
 
 test_iso=0
-packages="base linux grub"
+packages="base linux grub blankos-system"
 while (($#)); do
 	case $1 in
 		--test) test_iso=1 ;;
@@ -55,6 +55,15 @@ chroot "$root" /usr/bin/blankos-mkinitramfs --live -k "$kver" -o /tmp/initramfs-
 umount_vkfs "$root"
 install -m644 "$root/tmp/initramfs-live.img" "$stage/boot/initramfs-live.img"
 install -m644 "$root/boot/vmlinuz-linux" "$stage/boot/vmlinuz-linux"
+# CPU microcode goes first: the kernel applies it before anything else runs
+initrd=''
+for uc in intel-ucode amd-ucode; do
+	if [[ -f $root/boot/$uc.img ]]; then
+		install -m644 "$root/boot/$uc.img" "$stage/boot/$uc.img"
+		initrd+="/boot/$uc.img "
+	fi
+done
+initrd+=/boot/initramfs-live.img
 # The installed-system initramfs is regenerated on install; don't ship it.
 rm -f "$root"/tmp/initramfs-live.img "$root"/boot/initramfs-*.img
 
@@ -66,7 +75,7 @@ if ((test_iso)); then
 	timeout=1
 fi
 sed -e "s|@LABEL@|$label|g" -e "s|@PALETTE@|$palette|" \
-	-e "s|@EXTRA@|$extra|g" -e "s|@TIMEOUT@|$timeout|" \
+	-e "s|@EXTRA@|$extra|g" -e "s|@TIMEOUT@|$timeout|" -e "s|@INITRD@|$initrd|g" \
 	"$BLANKOS_ROOT/iso/grub.cfg" > "$stage/boot/grub/grub.cfg"
 
 msg "Building GRUB for BIOS and UEFI"

@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libxrandr
+pkgver=1.5.5
+pkgrel=1
+pkgdesc="X11 RandR extension library"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+depends=('libxext' 'libxrender')
+makedepends=('xorgproto' 'xorg-util-macros')
+source=("https://www.x.org/pub/individual/lib/libXrandr-$pkgver.tar.xz")
+sha256sums=('72b922c2e765434e9e9f0960148070bd4504b288263e2868a4ccce1b7cf2767a')
+
+build() {
+	cd "libXrandr-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "libXrandr-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=xcb-proto
+pkgver=1.17.0
+pkgrel=1
+pkgdesc="XML-XCB protocol descriptions"
+arch=(any)
+url='https://xcb.freedesktop.org/'
+license=('MIT')
+depends=('python')
+source=("https://xorg.freedesktop.org/archive/individual/proto/xcb-proto-$pkgver.tar.xz")
+sha256sums=('2c1bacd2110f4799f74de6ebb714b94cf6f80fb112316b1219480fd22562148c')
+
+build() {
+	cd "$pkgname-$pkgver"
+	PYTHON=python3 ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

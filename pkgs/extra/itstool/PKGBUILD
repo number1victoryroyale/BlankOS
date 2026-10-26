@@ -1,0 +1,31 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=itstool
+pkgver=2.0.7
+pkgrel=1
+pkgdesc="XML to PO and back again"
+arch=(any)
+url='https://itstool.org/'
+license=('GPL-3.0-or-later')
+depends=('python' 'python-lxml')
+source=("itstool-$pkgver.tar.gz::https://github.com/itstool/itstool/archive/$pkgver/itstool-$pkgver.tar.gz"
+        "https://www.linuxfromscratch.org/patches/blfs/13.1/itstool-$pkgver-lxml-1.patch")
+sha256sums=('fba78a37dc3535e4686c7f57407b97d03c676e3a57beac5fb2315162b0cc3176'
+            '035a0d22bd1cf37a00357ebc096454e1eb8594f3ea54f8122e8e76fdced0cbec')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	patch -Np1 -i "../itstool-$pkgver-lxml-1.patch"
+}
+
+build() {
+	cd "$pkgname-$pkgver"
+	PYTHON=/usr/bin/python3 ./autogen.sh --prefix=/usr
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

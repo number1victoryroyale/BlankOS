@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=nettle
+pkgver=4.0
+pkgrel=1
+pkgdesc="A low-level cryptographic library"
+arch=(x86_64)
+url='https://www.lysator.liu.se/~nisse/nettle/'
+license=('GPL-2.0-or-later OR LGPL-3.0-or-later')
+depends=('glibc' 'gmp')
+source=("https://ftp.gnu.org/gnu/nettle/nettle-$pkgver.tar.gz")
+sha256sums=('3addbc00da01846b232fb3bc453538ea5468da43033f21bb345cb1e9073f5094')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

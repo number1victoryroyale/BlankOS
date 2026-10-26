@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=gdk-pixbuf2
+pkgver=2.44.7
+pkgrel=1
+pkgdesc="An image loading library (PNG and JPEG built in)"
+arch=(x86_64)
+url='https://gitlab.gnome.org/GNOME/gdk-pixbuf'
+license=('LGPL-2.1-or-later')
+depends=('glib2' 'libpng' 'libjpeg-turbo' 'shared-mime-info')
+source=("https://download.gnome.org/sources/gdk-pixbuf/${pkgver%.*}/gdk-pixbuf-$pkgver.tar.xz")
+sha256sums=('172f80e3626ec31520a970400f1a3694e04718f6c2cd2885f75250fb5a6995a4')
+
+build() {
+	# PNG/JPEG loaders built in instead of glycin, which needs Rust
+	meson setup build "gdk-pixbuf-$pkgver" --prefix=/usr --buildtype=release --wrap-mode=nofallback \
+		-D png=enabled -D jpeg=enabled -D gif=disabled -D tiff=disabled -D glycin=disabled \
+		-D thumbnailer=disabled -D introspection=disabled -D documentation=false -D man=false \
+		-D tests=false -D installed_tests=false
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

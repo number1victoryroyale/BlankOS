@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=glslang
+pkgver=16.5.0
+pkgrel=1
+pkgdesc="OpenGL and OpenGL ES shader front end and validator"
+arch=(x86_64)
+url='https://github.com/KhronosGroup/glslang'
+license=('BSD-3-Clause')
+depends=('gcc-libs' 'spirv-tools')
+makedepends=('cmake' 'ninja' 'python' 'spirv-headers')
+source=("glslang-$pkgver.tar.gz::https://github.com/KhronosGroup/glslang/archive/$pkgver/glslang-$pkgver.tar.gz")
+sha256sums=('01af17195fbeb59e39e31e9506de35bb39dfd35807ea0c9a1a99d7d1183ddd45')
+
+build() {
+	cmake -S "glslang-$pkgver" -B build -G Ninja \
+		-D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_BUILD_TYPE=Release \
+		-D ALLOW_EXTERNAL_SPIRV_TOOLS=ON -D BUILD_SHARED_LIBS=ON -D GLSLANG_TESTS=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

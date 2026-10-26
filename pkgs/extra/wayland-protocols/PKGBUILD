@@ -1,0 +1,22 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=wayland-protocols
+pkgver=1.49
+pkgrel=1
+pkgdesc="Specifications of extended Wayland protocols"
+arch=(any)
+url='https://wayland.freedesktop.org/'
+license=('MIT')
+makedepends=('wayland')
+source=("https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/$pkgver/downloads/wayland-protocols-$pkgver.tar.xz")
+sha256sums=('ec4c8f74942d6dff7ace8b4ce4764f0ef9ff618a935d974ea77edee2ad240b14')
+
+build() {
+	meson setup build "$pkgname-$pkgver" --prefix=/usr --buildtype=release -D tests=false
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

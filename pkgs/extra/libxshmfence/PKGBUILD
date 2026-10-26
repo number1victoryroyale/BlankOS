@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libxshmfence
+pkgver=1.3.3
+pkgrel=1
+pkgdesc="A library that exposes a event API on top of Linux futexes"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+depends=('glibc')
+makedepends=('xorgproto' 'xorg-util-macros')
+source=("https://www.x.org/pub/individual/lib/libxshmfence-$pkgver.tar.xz")
+sha256sums=('d4a4df096aba96fea02c029ee3a44e11a47eb7f7213c1a729be83e85ec3fde10')
+
+build() {
+	cd "libxshmfence-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "libxshmfence-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

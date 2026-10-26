@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libassuan
+pkgver=3.0.2
+pkgrel=1
+pkgdesc="IPC library used by some GnuPG related software"
+arch=(x86_64)
+url='https://www.gnupg.org/related_software/libassuan/'
+license=('LGPL-2.1-or-later')
+depends=('glibc' 'libgpg-error')
+source=("https://www.gnupg.org/ftp/gcrypt/libassuan/libassuan-$pkgver.tar.bz2")
+sha256sums=('d2931cdad266e633510f9970e1a2f346055e351bb19f9b78912475b8074c36f6')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

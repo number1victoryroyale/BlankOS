@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=spirv-llvm-translator
+pkgver=22.1.5
+pkgrel=1
+pkgdesc="Tool and a library for bi-directional translation between SPIR-V and LLVM IR"
+arch=(x86_64)
+url='https://github.com/KhronosGroup/SPIRV-LLVM-Translator'
+license=('NCSA')
+depends=('llvm-libs' 'spirv-tools')
+makedepends=('cmake' 'ninja' 'llvm' 'spirv-headers')
+source=("SPIRV-LLVM-Translator-$pkgver.tar.gz::https://github.com/KhronosGroup/SPIRV-LLVM-Translator/archive/v$pkgver/SPIRV-LLVM-Translator-$pkgver.tar.gz")
+sha256sums=('3c6dffb4b8d67f5c544370e0c869ec7d22c013d4bb798f24655ec903f26cc5d5')
+
+build() {
+	cmake -S "SPIRV-LLVM-Translator-$pkgver" -B build -G Ninja \
+		-D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_BUILD_TYPE=Release \
+		-D BUILD_SHARED_LIBS=ON -D CMAKE_SKIP_INSTALL_RPATH=ON \
+		-D LLVM_EXTERNAL_SPIRV_HEADERS_SOURCE_DIR=/usr -D LLVM_SPIRV_INCLUDE_TESTS=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

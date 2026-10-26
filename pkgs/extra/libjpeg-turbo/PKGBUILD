@@ -1,0 +1,28 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libjpeg-turbo
+pkgver=3.2.0
+pkgrel=1
+pkgdesc="JPEG image codec with accelerated baseline compression and decompression"
+arch=(x86_64)
+url='https://libjpeg-turbo.org/'
+license=('BSD-3-Clause' 'IJG')
+depends=('glibc')
+makedepends=('cmake')
+provides=('libjpeg')
+source=("https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$pkgver/libjpeg-turbo-$pkgver.tar.gz")
+sha256sums=('6f30092cef9fb839779646608f4ee14ae3cbac989c47fa05e841b0841f09878e')
+
+build() {
+	# WITH_SIMD needs nasm, not packaged yet
+	cmake -S "$pkgname-$pkgver" -B build -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_BUILD_TYPE=Release \
+		-D ENABLE_STATIC=FALSE -D CMAKE_INSTALL_DEFAULT_LIBDIR=lib -D CMAKE_SKIP_INSTALL_RPATH=ON \
+		-D WITH_SIMD=OFF -D WITH_JPEG8=ON
+	make -C build
+}
+
+package() {
+	make -C build DESTDIR="$pkgdir" install
+	install -Dm644 "$pkgname-$pkgver/LICENSE.md" "$pkgdir/usr/share/licenses/$pkgname/LICENSE.md"
+}

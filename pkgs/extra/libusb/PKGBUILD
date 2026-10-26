@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libusb
+pkgver=1.0.30
+pkgrel=1
+pkgdesc="Library that provides generic access to USB devices"
+arch=(x86_64)
+url='https://libusb.info/'
+license=('LGPL-2.1-or-later')
+depends=('glibc' 'systemd')
+source=("https://github.com/libusb/libusb/releases/download/v$pkgver/libusb-$pkgver.tar.bz2")
+sha256sums=('fea36f34f9156400209595e300840767ab1a385ede1dc7ee893015aea9c6dbaf')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static
+	make -j1
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Arch Linux's vulkan-tools package (not in BLFS)
+
+pkgname=vulkan-tools
+pkgver=1.4.357.0
+pkgrel=1
+pkgdesc="Vulkan tools (vulkaninfo)"
+arch=(x86_64)
+url='https://www.vulkan.org/'
+license=('Apache-2.0')
+depends=('vulkan-icd-loader' 'libx11' 'libxcb' 'wayland')
+makedepends=('cmake' 'ninja' 'python' 'vulkan-headers' 'wayland-protocols')
+source=("Vulkan-Tools-vulkan-sdk-$pkgver.tar.gz::https://github.com/KhronosGroup/Vulkan-Tools/archive/refs/tags/vulkan-sdk-$pkgver.tar.gz")
+sha256sums=('6c94b86c850808aba316d999dd6742133d6197ae2135248d3a8aed9b32ebd1f7')
+
+build() {
+	# vkcube and the mock driver are for SDK users; only vulkaninfo here
+	cmake -S "Vulkan-Tools-vulkan-sdk-$pkgver" -B build -G Ninja \
+		-D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_BUILD_TYPE=Release \
+		-D BUILD_CUBE=OFF -D BUILD_ICD=OFF -D BUILD_TESTS=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libxdamage
+pkgver=1.1.7
+pkgrel=1
+pkgdesc="X11 damaged region extension library"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+depends=('libxfixes')
+makedepends=('xorgproto' 'xorg-util-macros')
+source=("https://www.x.org/pub/individual/lib/libXdamage-$pkgver.tar.xz")
+sha256sums=('127067f521d3ee467b97bcb145aeba1078e2454d448e8748eb984d5b397bde24')
+
+build() {
+	cd "libXdamage-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "libXdamage-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

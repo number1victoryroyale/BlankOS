@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=fdk-aac
+pkgver=2.0.3
+pkgrel=1
+pkgdesc="Fraunhofer FDK AAC codec library (AAC over Bluetooth)"
+arch=(x86_64)
+url='https://sourceforge.net/projects/opencore-amr/'
+license=('FDK-AAC')
+depends=('gcc-libs')
+source=("https://downloads.sourceforge.net/opencore-amr/fdk-aac-$pkgver.tar.gz")
+sha256sums=('829b6b89eef382409cda6857fd82af84fabb63417b08ede9ea7a553f811cb79e')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+	install -Dm644 NOTICE "$pkgdir/usr/share/licenses/$pkgname/NOTICE"
+}

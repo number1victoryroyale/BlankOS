@@ -1,0 +1,74 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+#
+# One build, two packages: llvm-libs carries only the shared libraries
+# that Mesa (llvmpipe, radeonsi, r300/r600) loads at run time, so the live
+# system does not ship the toolchain. llvm has everything else, clang
+# included (Mesa needs clang and SPIRV-LLVM-Translator to build the Intel
+# iris/anv drivers).
+
+pkgbase=llvm
+pkgname=('llvm' 'llvm-libs')
+pkgver=22.1.8
+pkgrel=1
+arch=(x86_64)
+url='https://llvm.org/'
+license=('Apache-2.0 WITH LLVM-exception')
+makedepends=('cmake' 'ninja' 'python' 'libffi' 'libxml2' 'zstd' 'zlib' 'binutils')
+source=("https://github.com/llvm/llvm-project/releases/download/llvmorg-$pkgver/llvm-project-$pkgver.src.tar.xz"
+        "https://www.linuxfromscratch.org/patches/blfs/13.1/llvm-$pkgver-upstream_fix-1.patch")
+sha256sums=('922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888'
+            '4a2084f9714f2f3babc0ed58065c3a6b83cd2828ea19aec1518995a6d2376187')
+
+prepare() {
+	cd "llvm-project-$pkgver.src"
+	patch -Np1 -i "../llvm-$pkgver-upstream_fix-1.patch"
+	grep -rl '#!.*python$' | xargs sed -i '1s/python$/python3/'
+	sed 's/utility/tool/' -i llvm/utils/FileCheck/CMakeLists.txt
+}
+
+build() {
+	# LLVM_PARALLEL_LINK_JOBS: linking clang with every core at once can
+	# exhaust the 16 GB of a CI runner
+	CC=gcc CXX=g++ cmake -S "llvm-project-$pkgver.src/llvm" -B build -G Ninja \
+		-D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON \
+		-D LLVM_ENABLE_FFI=ON \
+		-D LLVM_BUILD_LLVM_DYLIB=ON \
+		-D LLVM_LINK_LLVM_DYLIB=ON \
+		-D LLVM_ENABLE_RTTI=ON \
+		-D LLVM_TARGETS_TO_BUILD="host;AMDGPU" \
+		-D LLVM_ENABLE_PROJECTS=clang \
+		-D LLVM_BINUTILS_INCDIR=/usr/include \
+		-D LLVM_INCLUDE_BENCHMARKS=OFF \
+		-D LLVM_INCLUDE_TESTS=OFF \
+		-D LLVM_INCLUDE_EXAMPLES=OFF \
+		-D LLVM_INCLUDE_DOCS=OFF \
+		-D CLANG_INCLUDE_TESTS=OFF \
+		-D CLANG_DEFAULT_PIE_ON_LINUX=ON \
+		-D CLANG_CONFIG_FILE_SYSTEM_DIR=/etc/clang \
+		-D LLVM_PARALLEL_LINK_JOBS=2 \
+		-W no-author
+	ninja -C build
+}
+
+package_llvm() {
+	pkgdesc="Compiler infrastructure, with the clang C/C++ compiler"
+	depends=("llvm-libs=$pkgver-$pkgrel" 'gcc-libs' 'perl' 'python')
+	provides=("clang=$pkgver")
+
+	DESTDIR="$pkgdir" ninja -C build install
+
+	# shared libraries go to llvm-libs
+	mkdir -p "$srcdir/llvm-libs/usr/lib"
+	mv "$pkgdir"/usr/lib/lib{LLVM,clang-cpp,clang,LTO,Remarks}*.so* "$srcdir/llvm-libs/usr/lib/" 2> /dev/null || true
+	mv "$pkgdir"/usr/lib/LLVMgold.so "$srcdir/llvm-libs/usr/lib/" 2> /dev/null || true
+}
+
+package_llvm-libs() {
+	pkgdesc="LLVM runtime libraries"
+	depends=('gcc-libs' 'libffi' 'libxml2' 'zlib' 'zstd')
+
+	mv "$srcdir/llvm-libs/usr" "$pkgdir/"
+}

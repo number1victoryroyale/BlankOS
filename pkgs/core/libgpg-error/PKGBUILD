@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libgpg-error
+pkgver=1.61
+pkgrel=1
+pkgdesc="Support library for libgcrypt"
+arch=(x86_64)
+url='https://www.gnupg.org/related_software/libgpg-error/'
+license=('LGPL-2.1-or-later')
+depends=('glibc' 'bash')
+source=("https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-$pkgver.tar.bz2")
+sha256sums=('7a85413f2bc354f4f8aa832b718af122e48965e9e0eb9012ee659c13c6385c93')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --disable-static
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

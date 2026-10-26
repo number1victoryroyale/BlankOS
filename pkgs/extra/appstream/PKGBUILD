@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=appstream
+pkgver=1.1.6
+pkgrel=1
+pkgdesc="Provides a standard for creating app stores across distributions"
+arch=(x86_64)
+url='https://www.freedesktop.org/wiki/Distributions/AppStream/'
+license=('LGPL-2.1-or-later')
+depends=('curl' 'glib2' 'libfyaml' 'libxml2' 'libxmlb' 'systemd' 'zstd')
+makedepends=('meson' 'ninja' 'itstool' 'libxslt' 'gperf' 'wayland')
+source=("https://www.freedesktop.org/software/appstream/releases/AppStream-$pkgver.tar.xz")
+sha256sums=('e298929f39729e84a70f6be6941f3e7f3fc2ee3c83cb3ea1b1b5b280a8fe3a24')
+
+build() {
+	meson setup build "AppStream-$pkgver" --prefix=/usr --buildtype=release \
+		-D apidocs=false -D docs=false -D install-docs=false -D bash-completion=false \
+		-D stemming=false -D gir=false -D vapi=false -D qt=false -D compose=false
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

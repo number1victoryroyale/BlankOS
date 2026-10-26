@@ -1,0 +1,33 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=bluez
+pkgver=5.87
+pkgrel=1
+pkgdesc="Bluetooth protocol stack and tools (bluetoothctl)"
+arch=(x86_64)
+url='https://www.bluez.org/'
+license=('GPL-2.0-or-later' 'LGPL-2.1-or-later')
+depends=('glib2' 'dbus' 'libical' 'readline' 'systemd')
+backup=('etc/bluetooth/main.conf' 'etc/bluetooth/input.conf')
+source=("https://www.kernel.org/pub/linux/bluetooth/bluez-$pkgver.tar.xz")
+sha256sums=('26bdcf2cebd7310c6f598850606b037ef0c515fe6608ebc54d22c50c4c32b35f')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+		--enable-library --disable-manpages --disable-cups
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+	install -d -m755 "$pkgdir/etc/bluetooth"
+	install -m644 src/main.conf profiles/input/input.conf "$pkgdir/etc/bluetooth/"
+	# Experimental: lets PipeWire report headset battery levels to the desktop.
+	# FastConnectable: quicker reconnects of paired headsets and controllers.
+	sed -i -e 's/^#Experimental = .*/Experimental = true/' \
+		-e 's/^#FastConnectable = .*/FastConnectable = true/' "$pkgdir/etc/bluetooth/main.conf"
+	grep -qx 'Experimental = true' "$pkgdir/etc/bluetooth/main.conf"
+}

@@ -1,0 +1,109 @@
+# Build order for [extra]: graphics, audio, network and Flatpak stacks
+# (milestone 3). Builds on [core] (see DEPENDS).
+
+# build tools and base libraries
+cmake
+libxml2
+glib2
+libyaml
+python-pyyaml
+python-mako
+python-pyparsing
+
+# X11 client libraries (Mesa, XWayland and X11 games need them)
+xorg-util-macros
+xorgproto
+libxau
+libxdmcp
+xcb-proto
+libxcb
+xtrans
+libx11
+libxext
+libxfixes
+libxrender
+libxdamage
+libxxf86vm
+libxrandr
+libxshmfence
+libpciaccess
+
+# graphics
+libdrm
+wayland
+wayland-protocols
+spirv-headers
+spirv-tools
+glslang
+llvm
+spirv-llvm-translator
+libglvnd
+vulkan-headers
+vulkan-icd-loader
+mesa
+vulkan-tools
+
+# hardware information (lspci, lsusb)
+hwdata
+pciutils
+libusb
+usbutils
+
+# audio and Bluetooth
+alsa-ucm-conf
+alsa-topology-conf
+alsa-lib
+alsa-utils
+sof-firmware
+libogg
+libvorbis
+flac
+opus
+libsndfile
+sbc
+fdk-aac
+liblc3
+libical
+bluez
+lua
+pipewire
+wireplumber
+
+# networking
+libnl
+iw
+wireless-regdb
+wpa_supplicant
+libndp
+popt
+slang
+newt
+duktape
+polkit
+rtkit
+libpsl
+networkmanager
+
+# firmware and CPU microcode
+linux-firmware
+intel-ucode
+
+# Flatpak
+libxslt
+python-lxml
+itstool
+libfyaml
+libxmlb
+appstream
+libseccomp
+bubblewrap
+xdg-dbus-proxy
+fuse3
+json-glib
+libpng
+libjpeg-turbo
+shared-mime-info
+gdk-pixbuf2
+ostree
+flatpak
+blankos-system

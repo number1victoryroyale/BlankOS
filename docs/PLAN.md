@@ -192,11 +192,36 @@ SOF audio, IPU6 cameras). Userspace follows with the stack it belongs to:
 - Later: old GPUs through Mesa (Intel GMA/crocus, Radeon r300/r600, nouveau), Broadcom Wi-Fi
   (b43 firmware / broadcom-wl), Atheros/Realtek firmware via linux-firmware, a lighter Plasma profile.
 
-**Razer Blade 15 (the user's laptop for now):**
-- Kernel side already present: Intel/AMD pstate, i2c-hid precision touchpad, iwlwifi, SOF/HDA audio.
-- NVIDIA RTX + Intel iGPU: same NVIDIA/PRIME offload plan as the Quadro laptop; MUX-switch models
-  can run the NVIDIA GPU directly.
+**Razer Blade 15 (the user's laptop):** it is the Quadro machine, a Blade 15 Studio Edition (2020):
+i7-10875H with Intel UHD 630 (Comet Lake), Quadro RTX 5000 Max-Q (Turing), Intel AX201 Wi-Fi 6 +
+Bluetooth, 4K OLED touch screen.
+- Kernel side already present: Intel pstate, i2c-hid precision touchpad, iwlwifi, btusb, SOF/HDA audio.
+- Milestone 3 covers the rest of the base: iwlwifi/ibt firmware, i915 GuC/HuC/DMC firmware, Intel
+  microcode, SOF firmware, Mesa iris + ANV for the UHD 630 (needs clang + SPIRV-LLVM-Translator).
+- Optimus (UHD 630 + Quadro): the NVIDIA/PRIME offload plan from the main plan; nouveau with the
+  GSP firmware in linux-firmware-nvidia works as a fallback until the NVIDIA packages land.
 - Keyboard RGB, backlight and fan/performance modes: OpenRazer (kernel module built per kernel +
   daemon) with Polychromatic or OpenRGB as the GUI, in [gaming].
 - Model-specific quirks (suspend, screen flicker, speaker routing) get DMI-matched entries in a
   blankos-hwquirks package once the exact model year is known.
+
+## Addendum: what milestone 3 ships
+- [core] gains GnuPG/GnuTLS (libgpg-error, libgcrypt, gnupg, gpgme, nettle, gnutls, p11-kit, ...);
+  pacman is built with gpgme. Signing the repos needs a CI signing key + blankos-keyring (later).
+- New [extra] repo, built after [core] in its own chained CI passes:
+  - graphics: X11 client libs, libdrm, Wayland, LLVM 22 + clang (split: only llvm-libs ships on the
+    ISO), SPIR-V tools, glslang, libglvnd, Vulkan loader/tools, Mesa 26 with every desktop driver
+    (r300, r600, radeonsi/RADV, i915, crocus/hasvk, iris/ANV, nouveau, llvmpipe/lavapipe, zink,
+    virgl/venus/svga). NVK (needs Rust) comes later.
+  - sound and Bluetooth: ALSA + UCM, SOF firmware, PipeWire (PulseAudio/ALSA/JACK front ends) +
+    WirePlumber + rtkit, BlueZ with Experimental (headset battery), codecs SBC/mSBC, AAC (fdk-aac),
+    LC3 (LE Audio, LC3-SWB mic), Opus.
+  - networking: NetworkManager (nmcli, nmtui, Wi-Fi via wpa_supplicant with WPA3/802.1X), iw,
+    wireless-regdb, polkit (shadow auth until PAM lands in milestone 4).
+  - firmware: linux-firmware split by vendor (qcom/server firmware stays off the ISO), intel-ucode
+    and amd-ucode loaded early by GRUB.
+  - Flatpak with Flathub preconfigured (ostree, bubblewrap, xdg-dbus-proxy, AppStream).
+  - blankos-system: meta package for all of the above plus the service presets.
+- Moved to milestone 4: xdg-desktop-portal (needs GStreamer), Linux-PAM (needed by SDDM and logind
+  sessions), GObject introspection. Moved to milestone 7 with the laptop work: power-profiles-daemon,
+  thermald, fwupd.

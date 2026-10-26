@@ -1,0 +1,30 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Arch Linux's ostree package (not in BLFS)
+
+pkgname=ostree
+pkgver=2026.4
+pkgrel=1
+pkgdesc="Operating system and container binary deployment and upgrades (Flatpak's storage)"
+arch=(x86_64)
+url='https://ostreedev.github.io/ostree/'
+license=('LGPL-2.0-or-later')
+depends=('glib2' 'gpgme' 'libarchive' 'curl' 'openssl' 'e2fsprogs' 'fuse3' 'xz' 'zlib' 'util-linux' 'systemd')
+makedepends=('bison')
+source=("https://github.com/ostreedev/ostree/releases/download/v$pkgver/libostree-$pkgver.tar.xz")
+sha256sums=('b26c9016eb03bb4ee52cc00c642d56e00fc79ae7faac6bf4aa317d7451339ef7')
+
+build() {
+	cd "libostree-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --libexecdir=/usr/lib \
+		--with-curl --without-soup --without-soup3 --with-openssl --with-gpgme \
+		--with-libarchive --with-libmount --with-libsystemd --enable-rofiles-fuse \
+		--without-composefs --without-selinux --without-smack --without-avahi \
+		--without-dracut --without-mkinitcpio --disable-man --disable-gtk-doc \
+		--disable-introspection
+	make
+}
+
+package() {
+	cd "libostree-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

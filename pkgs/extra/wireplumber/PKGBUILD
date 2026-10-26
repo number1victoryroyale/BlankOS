@@ -1,0 +1,28 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=wireplumber
+pkgver=0.5.15
+pkgrel=1
+pkgdesc="Session / policy manager implementation for PipeWire"
+arch=(x86_64)
+url='https://pipewire.pages.freedesktop.org/wireplumber/'
+license=('MIT')
+depends=('pipewire' 'glib2' 'lua' 'systemd')
+makedepends=('meson' 'ninja' 'python')
+provides=('pipewire-session-manager')
+source=("https://gitlab.freedesktop.org/pipewire/wireplumber/-/archive/$pkgver/wireplumber-$pkgver.tar.bz2")
+sha256sums=('fb192f5d884155aedd6f01438e94cc12b263f482f0f39e5706c1e2cff9ad0c6d')
+
+build() {
+	meson setup build "wireplumber-$pkgver" --prefix=/usr --buildtype=release \
+		-D system-lua=true -D introspection=disabled -D doc=disabled -D tests=false \
+		-D systemd=enabled -D systemd-user-service=true -D systemd-system-service=false \
+		-D elogind=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+	install -Dm644 "wireplumber-$pkgver/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

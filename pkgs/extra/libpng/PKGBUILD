@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libpng
+pkgver=1.6.58
+pkgrel=1
+pkgdesc="A collection of routines used to create PNG format graphics files"
+arch=(x86_64)
+url='http://www.libpng.org/pub/png/libpng.html'
+license=('Libpng')
+depends=('zlib')
+source=("https://downloads.sourceforge.net/libpng/libpng-$pkgver.tar.xz")
+sha256sums=('28eb403f51f0f7405249132cecfe82ea5c0ef97f1b32c5a65828814ae0d34775')
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure --prefix=/usr --disable-static
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+	install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

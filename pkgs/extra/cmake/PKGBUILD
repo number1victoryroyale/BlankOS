@@ -1,0 +1,32 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=cmake
+pkgver=4.4.2
+pkgrel=1
+pkgdesc="A cross-platform open-source make system"
+arch=(x86_64)
+url='https://www.cmake.org/'
+license=('BSD-3-Clause')
+depends=('gcc-libs' 'curl' 'libarchive' 'expat' 'zlib' 'bzip2' 'xz' 'zstd' 'ncurses')
+source=("https://cmake.org/files/v4.4/cmake-$pkgver.tar.gz")
+sha256sums=('1db9e61e60b6e0874c86386340b910382f3c5e75b9fbfb44d122063129a2789d')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	sed -i '/"lib64"/s/64//' Modules/GNUInstallDirs.cmake
+}
+
+build() {
+	cd "$pkgname-$pkgver"
+	# bundled jsoncpp, cppdap, librhash and libuv: not packaged (yet)
+	./bootstrap --prefix=/usr --mandir=/share/man --docdir=/share/doc/cmake \
+		--system-libs --no-system-jsoncpp --no-system-cppdap --no-system-librhash \
+		--no-system-libuv --parallel="$(nproc)"
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

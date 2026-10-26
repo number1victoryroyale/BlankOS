@@ -1,0 +1,125 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Split like Arch Linux's linux-firmware, so an install (or the live ISO)
+# can leave out what no PC needs: the SoC firmware in -qcom and the data
+# center NIC firmware in -server. Files are zstd-compressed (the kernel
+# decompresses them; CONFIG_FW_LOADER_COMPRESS_ZSTD).
+#
+# amd-ucode is the early-load CPU microcode image for AMD processors,
+# made from the same tarball (intel-ucode is its own package).
+
+pkgbase=linux-firmware
+pkgname=('linux-firmware-intel' 'linux-firmware-amdgpu' 'linux-firmware-radeon' 'linux-firmware-nvidia'
+         'linux-firmware-realtek' 'linux-firmware-atheros' 'linux-firmware-broadcom'
+         'linux-firmware-mediatek' 'linux-firmware-qcom' 'linux-firmware-server'
+         'linux-firmware-other' 'linux-firmware' 'amd-ucode')
+pkgver=20261019
+pkgrel=1
+arch=(any)
+url='https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git'
+license=('LicenseRef-linux-firmware')
+makedepends=('zstd' 'libarchive')
+# firmware blobs can be ELF files; stripping would corrupt them
+options=(!strip)
+source=("https://cdn.kernel.org/pub/linux/kernel/firmware/linux-firmware-$pkgver.tar.xz")
+sha256sums=('a10d1ab5baf2c74ba92e8c7cf313e691696c26bddfa6df00db795e48d70cd4ca')
+
+_fw=usr/lib/firmware
+
+build() {
+	cd "linux-firmware-$pkgver"
+	rm -rf "$srcdir/fw"
+	make DESTDIR="$srcdir/fw" FIRMWAREDIR="/$_fw" install-zst
+
+	# early microcode image for AMD CPUs
+	rm -rf "$srcdir/amd-ucode"
+	mkdir -p "$srcdir/amd-ucode/kernel/x86/microcode"
+	cat amd-ucode/microcode_amd*.bin > "$srcdir/amd-ucode/kernel/x86/microcode/AuthenticAMD.bin"
+	(cd "$srcdir/amd-ucode" && bsdtar --format newc --uid 0 --gid 0 -cf ../amd-ucode.img kernel)
+}
+
+# _pick PATH...: move these firmware paths (relative to the firmware dir,
+# globs allowed) from the staging tree into this package
+_pick() {
+	local p f
+	install -d "$pkgdir/$_fw"
+	for p in "$@"; do
+		for f in "$srcdir/fw/$_fw"/$p; do
+			[[ -e $f || -L $f ]] || continue
+			mkdir -p "$pkgdir/$_fw/$(dirname "${f#"$srcdir/fw/$_fw/"}")"
+			mv "$f" "$pkgdir/$_fw/${f#"$srcdir/fw/$_fw/"}"
+		done
+	done
+}
+
+package_linux-firmware-intel() {
+	pkgdesc="Firmware for Intel Wi-Fi, Bluetooth, graphics (i915/xe), audio and other devices"
+	_pick intel i915 xe iwlwifi-* ibt-*
+}
+
+package_linux-firmware-amdgpu() {
+	pkgdesc="Firmware for AMD Radeon graphics (amdgpu) and AMD NPUs"
+	_pick amdgpu amdnpu amdtee amd
+}
+
+package_linux-firmware-radeon() {
+	pkgdesc="Firmware for older ATI/AMD Radeon graphics (radeon driver)"
+	_pick radeon r128
+}
+
+package_linux-firmware-nvidia() {
+	pkgdesc="Firmware for NVIDIA GPUs (nouveau)"
+	_pick nvidia
+}
+
+package_linux-firmware-realtek() {
+	pkgdesc="Firmware for Realtek Wi-Fi, Bluetooth and Ethernet"
+	_pick rtl_nic rtl_bt rtlwifi rtw88 rtw89 realtek rtl8*
+}
+
+package_linux-firmware-atheros() {
+	pkgdesc="Firmware for Qualcomm Atheros Wi-Fi and Bluetooth"
+	_pick ath6k ath9k_htc ath10k ath11k ath12k ar3k qca ar*.fw htc_*.fw
+}
+
+package_linux-firmware-broadcom() {
+	pkgdesc="Firmware for Broadcom and Cypress Wi-Fi and Bluetooth"
+	_pick brcm cypress
+}
+
+package_linux-firmware-mediatek() {
+	pkgdesc="Firmware for MediaTek Wi-Fi and Bluetooth"
+	_pick mediatek airoha mt7*
+}
+
+package_linux-firmware-qcom() {
+	pkgdesc="Firmware for Qualcomm SoCs (ARM laptops and phones)"
+	_pick qcom
+}
+
+package_linux-firmware-server() {
+	pkgdesc="Firmware for data center network and storage adapters"
+	_pick mellanox netronome qed liquidio cxgb3 cxgb4 dpaa2 qlogic cavium mrvl/prestera bnx2x ti-keystone
+}
+
+package_linux-firmware-other() {
+	pkgdesc="Firmware for everything else: laptop audio amplifiers, USB devices, older hardware"
+	_pick '*'
+	# licences and the index go to the linux-firmware package
+	rm -f "$pkgdir/$_fw"/{WHENCE,README*,LICENSE*,LICENCE*}
+	rm -rf "$pkgdir/$_fw/LICENSES"
+}
+
+package_linux-firmware() {
+	pkgdesc="Firmware files for Linux (the common desktop and laptop set)"
+	depends=('linux-firmware-intel' 'linux-firmware-amdgpu' 'linux-firmware-radeon' 'linux-firmware-nvidia'
+	         'linux-firmware-realtek' 'linux-firmware-atheros' 'linux-firmware-broadcom'
+	         'linux-firmware-mediatek' 'linux-firmware-other')
+	cd "linux-firmware-$pkgver"
+	install -Dm644 -t "$pkgdir/usr/share/licenses/linux-firmware" WHENCE LICEN[CS]E*
+	if [[ -d LICENSES ]]; then cp -r LICENSES "$pkgdir/usr/share/licenses/linux-firmware/"; fi
+}
+
+package_amd-ucode() {
+	pkgdesc="Microcode update image for AMD CPUs (loaded early by the boot loader)"
+	install -Dm644 "$srcdir/amd-ucode.img" "$pkgdir/boot/amd-ucode.img"
+}

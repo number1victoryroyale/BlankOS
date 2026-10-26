@@ -1,0 +1,28 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=iw
+pkgver=6.17
+pkgrel=1
+pkgdesc="nl80211 based CLI configuration utility for wireless devices"
+arch=(x86_64)
+url='https://wireless.wiki.kernel.org/en/users/documentation/iw'
+license=('ISC')
+depends=('libnl')
+source=("https://www.kernel.org/pub/software/network/iw/iw-$pkgver.tar.xz")
+sha256sums=('7d182e498289ab39b257da6780d562e415377107f50358ee5b55b8cfe40b1e33')
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	sed -i "/INSTALL.*gz/s/.gz//" Makefile
+}
+
+build() {
+	cd "$pkgname-$pkgver"
+	make
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make DESTDIR="$pkgdir" SBINDIR=/usr/sbin install
+}

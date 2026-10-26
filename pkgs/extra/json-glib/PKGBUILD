@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=json-glib
+pkgver=1.10.8
+pkgrel=1
+pkgdesc="JSON library built on GLib"
+arch=(x86_64)
+url='https://gitlab.gnome.org/GNOME/json-glib'
+license=('LGPL-2.1-or-later')
+depends=('glib2')
+source=("https://download.gnome.org/sources/json-glib/${pkgver%.*}/json-glib-$pkgver.tar.xz")
+sha256sums=('55c5c141a564245b8f8fbe7698663c87a45a7333c2a2c56f06f811ab73b212dd')
+
+build() {
+	meson setup build "$pkgname-$pkgver" --prefix=/usr --buildtype=release \
+		-D introspection=disabled -D documentation=disabled -D man=false -D tests=false
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}
