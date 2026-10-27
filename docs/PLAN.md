@@ -225,3 +225,25 @@ Bluetooth, 4K OLED touch screen.
 - Moved to milestone 4: xdg-desktop-portal (needs GStreamer), Linux-PAM (needed by SDDM and logind
   sessions), GObject introspection. Moved to milestone 7 with the laptop work: power-profiles-daemon,
   thermald, fwupd.
+
+## Addendum: what milestones 4 and 5 ship
+- [core]: Linux-PAM + pambase (logind sessions for every login), shadow/systemd/polkit with PAM;
+  linux-headers split out of the kernel package (for xpadneo and, later, NVIDIA).
+- New [desktop] repo (DEPENDS: extra), BLFS 13.1 versions: Qt 6.11.2 (base, declarative, wayland,
+  svg, imageformats, shadertools, 5compat, tools, multimedia with the FFmpeg backend), KDE
+  Frameworks 6.29, Plasma 6.7.4 (Wayland session only), KDE Gear 26.04.3 apps (Dolphin, Konsole,
+  Kate, Ark, Gwenview), Spectacle, Discover (Flatpak backend only), SDDM 0.21 (Wayland greeter in
+  KWin), Firefox (Mozilla's build, updater off), GTK 3 for GTK apps, Xwayland, FFmpeg, GStreamer,
+  xdg-desktop-portal(-kde). blankos-desktop: Breeze Dark + violet accent, SDDM, graphical.target.
+  Left out: QtWebEngine (too big for CI), kio-extras, libqalculate, ModemManager, PackageKit, fwupd.
+- New [gaming] repo (DEPENDS: desktop): MinGW-w64 14 cross toolchain (GCC 16, ucrt, win32 threads),
+  Wine 11.0 in WoW64 mode (no 32-bit Linux libraries), winetricks, DXVK and VKD3D-Proton (upstream
+  release DLLs, `blankos-wine-dx install`), GameMode, MangoHud, game-devices-udev (Steam/Valve and
+  other controller rules, uinput), xpadneo (built against linux-headers), NTSYNC (`/dev/ntsync`
+  for every user), 7-Zip, cabextract, and the BlankOS Game Hub.
+- BlankOS Game Hub (`pkgs/gaming/blankos-game-hub`, Qt 6 + Kirigami): opens on the first login,
+  installs Steam, Sober (Roblox), Heroic, Lutris and ProtonUp-Qt system-wide from Flathub (polkit
+  asks for the admin password; the live session needs none) and starts them. `--self-test` runs in
+  the ISO boot test.
+- Deferred: gamescope (Flathub's VulkanLayer.gamescope covers Flatpak Steam), the NVIDIA driver
+  (milestone 7), Sonnet dictionaries, xdg-utils.
