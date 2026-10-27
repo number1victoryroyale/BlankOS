@@ -26,6 +26,8 @@ package() {
 	DESTDIR="$pkgdir" cmake --install build
 	install -Dm644 "qttools-everywhere-src-$pkgver/LICENSES"/* -t "$pkgdir/usr/share/licenses/$pkgname"
 
+	# Qt also writes these links relative to the prefix (/usr/usr/bin)
+	rm -rf "$pkgdir/usr/usr"
 	# user-facing tools (qmake6, qdbus6, ...) in /usr/bin
 	if [[ -f $srcdir/build/user_facing_tool_links.txt ]]; then
 		cd "$pkgdir"
