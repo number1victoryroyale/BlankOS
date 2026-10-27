@@ -6,7 +6,8 @@ self test over the serial console.
 
 Exit status is 0 only if the guest reports "SELFTEST-DONE failures=0".
 Uses KVM when /dev/kvm is usable, otherwise plain emulation (slow).
---screenshot FILE.png saves the screen once the self test is done.
+--screenshot FILE.png saves the screen once the self test is done;
+--after CMD runs a shell command in the guest after it (diagnostics).
 """
 import argparse, os, re, select, shutil, socket, struct, subprocess, sys, tempfile, time, zlib
 
@@ -82,6 +83,7 @@ def main():
     ap.add_argument("--cpu", help="QEMU CPU model, e.g. core2duo to prove old laptops work "
                                   "(default: the host CPU with KVM, 'max' otherwise)")
     ap.add_argument("--screenshot", help="save the screen as this PNG file after the self test")
+    ap.add_argument("--after", help="shell command to run in the guest after the self test (diagnostics)")
     args = ap.parse_args()
 
     tmp = tempfile.mkdtemp()
@@ -145,6 +147,16 @@ def main():
                     screendump(monitor, os.path.abspath(args.screenshot))
                 except OSError as e:
                     print(f"boot-test: screenshot failed: {e}", flush=True)
+            if args.after:
+                stage = "after"
+                # quoted so the echoed command line does not match
+                send(f"\n{args.after}; echo AFTER-'DONE'\n")
+            else:
+                stage = "poweroff"
+        if stage == "after" and "AFTER-DONE" in text:
+            stage = "poweroff"
+        if stage == "poweroff":
+            stage = "off"
             time.sleep(1)
             send("systemctl poweroff\n")
             deadline = min(deadline, time.time() + 120)
