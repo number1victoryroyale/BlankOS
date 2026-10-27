@@ -65,7 +65,6 @@ package_nvidia-open() {
 		install -m644 "$_pkg/kernel-open/$m.ko" "$dest/$m.ko"
 		zstd -q --rm -19 "$dest/$m.ko"
 	done
-	install -Dm644 "$_pkg/kernel-open/COPYING" "$pkgdir/usr/share/licenses/$pkgname/COPYING"
 }
 
 package_nvidia-utils() {
