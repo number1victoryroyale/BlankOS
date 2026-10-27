@@ -80,6 +80,7 @@ exiv2
 
 # more libraries: game controllers (SDL), locale data, DocBook (for kdoctools), Boost
 hunspell
+libqalculate
 lm_sensors
 sdl3
 sdl2-compat
@@ -100,6 +101,8 @@ qt6-5compat
 qt6-tools
 qt6-multimedia
 qt6-speech
+qt6-positioning
+qt6-location
 
 # KDE build modules and Qt helper libraries
 extra-cmake-modules

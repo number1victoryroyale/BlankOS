@@ -1,0 +1,39 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's qt6-location
+# Needed by plasma-workspace.
+
+pkgname=qt6-location
+_qtver=6.11.2
+pkgver=$_qtver
+pkgrel=1
+pkgdesc="Provides access to position, satellite info and area monitoring classes (maps)"
+arch=(x86_64)
+url='https://www.qt.io'
+license=('GPL-3.0-only' 'LGPL-3.0-only' 'LicenseRef-Qt-Commercial')
+depends=('glibc' 'gcc-libs' 'qt6-base' 'qt6-declarative' 'qt6-positioning')
+makedepends=('cmake' 'ninja' 'qt6-declarative' 'qt6-shadertools')
+source=("https://download.qt.io/official_releases/qt/${pkgver%.*}/$pkgver/submodules/qtlocation-everywhere-src-$pkgver.tar.xz")
+sha256sums=('4d50a7ece01fbd76f6ec17c650236cb56ea60f987c52fc391dac72f13f65c23a')
+
+build() {
+	cmake -S "qtlocation-everywhere-src-$pkgver" -B build -G Ninja -D CMAKE_MESSAGE_LOG_LEVEL=STATUS \
+		-D CMAKE_BUILD_TYPE=Release -D QT_BUILD_TESTS=OFF -D QT_BUILD_EXAMPLES=OFF
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+	install -Dm644 "qtlocation-everywhere-src-$pkgver/LICENSES"/* -t "$pkgdir/usr/share/licenses/$pkgname"
+
+	# Qt also writes these links relative to the prefix (/usr/usr/bin)
+	rm -rf "$pkgdir/usr/usr"
+	# user-facing tools (qmake6, qdbus6, ...) in /usr/bin
+	if [[ -f $srcdir/build/user_facing_tool_links.txt ]]; then
+		cd "$pkgdir"
+		mkdir -p usr/bin
+		while read -r _line; do
+			[[ -n $_line ]] || continue
+			ln -s $_line
+		done < "$srcdir/build/user_facing_tool_links.txt"
+	fi
+}
