@@ -1,10 +1,11 @@
 # Maintainer: BlankOS <builds@blankos.invalid>
-# Based on LFS 13.1 §8.50
+# Based on LFS 13.1 §8.50, plus libdw: systemd-coredump loads it to put
+# stack traces in crash reports.
 
 pkgname=libelf
 pkgver=0.195
-pkgrel=2
-pkgdesc="ELF object file access library (from elfutils)"
+pkgrel=3
+pkgdesc="ELF object file access and DWARF libraries (libelf, libdw from elfutils)"
 arch=(x86_64)
 url='https://sourceware.org/elfutils/'
 license=('LGPL-3.0-or-later' 'GPL-2.0-or-later')
@@ -17,13 +18,15 @@ build() {
 	./configure --prefix=/usr \
 		--disable-debuginfod \
 		--enable-libdebuginfod=dummy
-	make -C lib
-	make -C libelf
+	make
 }
 
 package() {
 	cd "elfutils-$pkgver"
 	make -C libelf DESTDIR="$pkgdir" install
-	install -Dm644 config/libelf.pc "$pkgdir/usr/lib/pkgconfig/libelf.pc"
-	rm -f "$pkgdir/usr/lib/libelf.a"
+	make -C libdw DESTDIR="$pkgdir" install
+	make -C libdwelf DESTDIR="$pkgdir" install
+	make -C libdwfl DESTDIR="$pkgdir" install
+	install -Dm644 config/libelf.pc config/libdw.pc -t "$pkgdir/usr/lib/pkgconfig"
+	rm -f "$pkgdir"/usr/lib/lib{elf,dw}.a
 }

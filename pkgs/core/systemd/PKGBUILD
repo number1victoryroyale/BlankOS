@@ -3,13 +3,13 @@
 
 pkgname=systemd
 pkgver=261.2
-pkgrel=3
+pkgrel=4
 pkgdesc="System and service manager"
 arch=(x86_64)
 url='https://systemd.io'
 license=('GPL-2.0-or-later' 'LGPL-2.1-or-later')
 depends=('glibc' 'acl' 'bash' 'kbd' 'kmod' 'libcap' 'libxcrypt' 'openssl' 'util-linux' 'xz' 'zstd' 'lz4' 'pcre2' 'linux-pam')
-makedepends=('meson' 'ninja' 'gperf' 'python-jinja')
+makedepends=('meson' 'ninja' 'gperf' 'python-jinja' 'libelf')
 provides=('systemd-libs' 'udev' 'libudev' 'libsystemd')
 backup=('etc/systemd/journald.conf' 'etc/systemd/logind.conf' 'etc/systemd/networkd.conf' 'etc/systemd/resolved.conf' 'etc/systemd/sleep.conf' 'etc/systemd/system.conf' 'etc/systemd/timesyncd.conf' 'etc/systemd/user.conf' 'etc/udev/udev.conf')
 install=systemd.install
@@ -53,6 +53,7 @@ build() {
 		-D nobody-group=nogroup \
 		-D sysupdate=disabled \
 		-D ukify=disabled \
+		-D elfutils=enabled \
 		-D docdir=/usr/share/doc/systemd-$pkgver
 	ninja -C build
 }
