@@ -80,6 +80,7 @@ exiv2
 
 # more libraries: game controllers (SDL), locale data, DocBook (for kdoctools), Boost
 hunspell
+lm_sensors
 sdl3
 sdl2-compat
 iso-codes

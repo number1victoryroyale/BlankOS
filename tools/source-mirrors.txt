@@ -26,3 +26,4 @@ efibootmgr-18.tar.gz  git https://github.com/rhboot/efibootmgr 18 efibootmgr-18/
 yaml-cpp-0.8.0.tar.gz  git https://github.com/jbeder/yaml-cpp 0.8.0 yaml-cpp-0.8.0/
 opencv-4.13.0.tar.gz  git https://github.com/opencv/opencv 4.13.0 opencv-4.13.0/
 tesseract-5.5.3.tar.gz  git https://github.com/tesseract-ocr/tesseract 5.5.3 tesseract-5.5.3/
+lm-sensors-3-6-2.tar.gz  git https://github.com/hramrach/lm-sensors V3-6-2 lm-sensors-3-6-2/
