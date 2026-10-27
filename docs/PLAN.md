@@ -269,5 +269,27 @@ Bluetooth, 4K OLED touch screen.
   libqalculate (plasma-workspace), OpenCV + Tesseract (Spectacle), lm_sensors (libksysguard), libva
   (KPipeWire), libXft, ModemManager (plasma-nm), hunspell (Sonnet), GCC 16 fixes (graphite tests,
   yaml-cpp, harfbuzz without -fexceptions), no `which` in the builder (libvpx).
-- Still open: printing (CUPS; the KDE print portal is left out), Plymouth, gamescope, OpenRazer,
-  thermald, fwupd, fingerprint login, the custom browser, Turtle Beach Stealth 500 testing.
+- Still open: printing (CUPS; the KDE print portal is left out), OpenRazer, thermald, fwupd,
+  fingerprint login, the custom browser, Turtle Beach Stealth 500 testing.
+
+## Addendum: getting the desktop ISO to boot to Plasma
+- Added: gamescope 3.17 (its pinned wlroots/libliftoff/libdisplay-info/vkroots/reshade/glm/stb as
+  static subprojects; libxres, libdecor, luajit, seatd), pulled in by blankos-gaming; Plymouth with
+  a BlankOS theme (packaged, not switched on yet: needs "splash" on the kernel command line).
+- The desktop ISO was booted locally under QEMU (no KVM, so slowly) until the self test passed. What
+  that found, all fixed:
+  - SDDM read its own default.conf (DisplayServer=x11) after ours: our settings moved to
+    /etc/sddm.conf.d.
+  - Missing runtime libraries: libltdl (libcanberra, so KWin and startplasma could not run), libfl
+    (binutils' ar), KF6DocTools (KIO help), libcuda (nvidia-utils). iso/mkiso.sh now runs
+    tools/check-libs.sh, which fails the build when a program or library needs a library the image
+    lacks, or a program in /usr/bin cannot load one (Discover lost its RPATH that way).
+  - KWin 6.7's KWIN_BUILD_X11 switch now means Xwayland: with it off kwin_wayland rejected
+    startplasma's --xwayland. Built with Xwayland again (Steam, Wine and games need it).
+  - NVIDIA's EGL vendor file made libglvnd load NVIDIA's EGL without an NVIDIA GPU and its GBM
+    platform crashed Xwayland: the file is now linked into /etc/glvnd only while the NVIDIA
+    driver is chosen (blankos-nvidia-setup; blankos-nvidia-egl.service for the NVIDIA boot entry).
+  - The Game Hub's QML module path; the self test's session check; no idle dimming/suspend live.
+- Open: under slow emulation plasmashell and plasma-welcome crashed once (SIGSEGV) about two
+  minutes into the session and plasmashell restarted; the self test now lists crashes. Needs a
+  backtrace (systemd-coredump has no libdw yet: elfutils' libdw would add stack traces).
