@@ -35,6 +35,7 @@ libxtst
 libfontenc
 libxfont2
 libxss
+libxft
 libxkbfile
 xcb-util
 xcb-util-image

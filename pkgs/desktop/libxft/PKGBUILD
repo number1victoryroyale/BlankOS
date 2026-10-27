@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd): plasma-workspace's X11 parts require it
+
+pkgname=libxft
+pkgver=2.3.9
+pkgrel=1
+pkgdesc="FreeType-based font drawing library for X"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('HPND-sell-variant')
+depends=('fontconfig' 'libxrender' 'freetype2')
+makedepends=('xorgproto' 'xorg-util-macros')
+source=("https://www.x.org/pub/individual/lib/libXft-$pkgver.tar.xz")
+sha256sums=('60a25b78945ed6932635b3bb1899a517d31df7456e69867ffba27f89ff3976f5')
+
+build() {
+	cd "libXft-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "libXft-$pkgver"
+	make DESTDIR="$pkgdir" install
+}
