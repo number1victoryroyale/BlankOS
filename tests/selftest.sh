@@ -119,7 +119,7 @@ if pacman -Q blankos-gaming > /dev/null 2>&1; then
 	check "controller drivers and rules" bash -c 'modinfo hid_xpadneo > /dev/null && ls /usr/lib/udev/rules.d/71-valve-gdu.rules && modinfo uinput > /dev/null'
 	check "NVIDIA driver ready (off unless chosen)" bash -c 'modinfo -n nvidia && modinfo -n nvidia_drm && test -x /usr/bin/nvidia-smi && test -f /usr/share/vulkan/icd.d/nvidia_icd.json && ! lsmod | grep -q "^nvidia " && test -f /usr/share/nvidia/10_nvidia.json && ! test -e /etc/glvnd/egl_vendor.d/10_nvidia.json && command -v prime-run blankos-nvidia-setup'
 	check "power profiles and GPU switching" bash -c 'systemctl is-active -q power-profiles-daemon.service && systemctl is-active -q switcheroo-control.service'
-	check "Game Hub self test"         bash -c 'su live -s /bin/bash -c "QT_QPA_PLATFORM=offscreen blankos-game-hub --self-test"'
+	check "Game Hub self test"         bash -c 'test -s /usr/share/applications/org.blankos.GameHub.desktop && test -s /etc/xdg/autostart/blankos-game-hub-autostart.desktop && su live -s /bin/bash -c "QT_QPA_PLATFORM=offscreen blankos-game-hub --self-test"'
 fi
 
 # Not a check: programs that crashed during the test, with backtraces

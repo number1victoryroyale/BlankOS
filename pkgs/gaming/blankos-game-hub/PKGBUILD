@@ -4,7 +4,7 @@
 
 pkgname=blankos-game-hub
 pkgver=1.0
-pkgrel=2
+pkgrel=3
 pkgdesc="BlankOS Game Hub: one-click installs of Steam, Sober (Roblox), Heroic, Lutris and ProtonUp-Qt"
 arch=(x86_64)
 url='https://github.com/number1victoryroyale/BlankOS'
@@ -21,8 +21,16 @@ sha256sums=('0925e7781a5b45b3defdbc0a9d1bf237bdd14df06eb8cdb01957800ceea8597c'
             '0e6926c612ec6ef3cf48ca56feab4a42332b120d66e12b7f418fa7add33bf343'
             '86c983b458b61878dff2a509774dec908b7c6f56bcec566ffbf04d4309b90cd8')
 
+prepare() {
+	# real copies: makepkg links local sources, and CMake would install
+	# the .desktop files as links into the build directory
+	rm -rf app
+	mkdir app
+	cp -L "${source[@]}" app/
+}
+
 build() {
-	cmake -S . -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_BUILD_TYPE=Release
+	cmake -S app -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_BUILD_TYPE=Release
 	cmake --build build
 }
 

@@ -130,6 +130,11 @@ build_one() {
 				rm -f "$outdir/$f"
 				die "$name: package contains files owned by 'builder' (fakeroot problem)"
 			fi
+			# links into the build tree dangle once installed
+			if tar --zstd -tvf "$outdir/$f" | grep -q -- '-> /build/'; then
+				rm -f "$outdir/$f"
+				die "$name: package contains symlinks into /build (installed a makepkg source link?)"
+			fi
 		done
 		in_chroot "$LFS" repo-add -q "/repo/$repo.db.tar.gz" "${files[@]/#//repo/}"
 		prune_old "$dir"
