@@ -247,3 +247,27 @@ Bluetooth, 4K OLED touch screen.
   the ISO boot test.
 - Deferred: gamescope (Flathub's VulkanLayer.gamescope covers Flatpak Steam), the NVIDIA driver
   (milestone 7), Sonnet dictionaries, xdg-utils.
+
+## Addendum: what milestones 6 and 7 ship (first part)
+- Milestone 6, the BlankOS look and the installer:
+  - blankos-branding: BlankOS color scheme (near-black, violet #8B5CF6 accent and selection), the
+    org.blankos.desktop look-and-feel (Breeze with BlankOS colors, breeze-dark icons), the wallpaper
+    (drawn at build time in pure Python, 4K and 1080p), SDDM background, Konsole profile.
+  - blankos-grub-theme: graphical GRUB menu (wallpaper, wordmark, violet highlight; Noto + Hack
+    fonts made with grub-mkfont built from the GRUB sources), used by the ISO and installed systems.
+  - Calamares 3.3.14 + kpmcore + blankos-installer: copies the pristine squashfs, removes the live
+    session's extras, users/root password, GRUB (BIOS or UEFI) with the theme and console palette,
+    blankos-mkinitramfs, SDDM; BlankOS branding and slideshow; "Install BlankOS" on the live desktop.
+- Milestone 7, first part:
+  - NVIDIA 595.104.02 from the .run: nvidia-open (built against linux-headers), nvidia-utils
+    (GL/Vulkan/EGL Wayland+GBM, GSP firmware, DLSS for Proton, suspend services, modeset + RTD3),
+    nvidia-utils-cuda (off the ISO). "BlankOS live (NVIDIA)" boot entry; blankos-nvidia-setup
+    switches nvidia/nouveau and the installer keeps the live choice; prime-run for Optimus.
+  - power-profiles-daemon and switcheroo-control (Plasma's Performance mode and "Run on dedicated
+    graphics card").
+- Found while building (all fixed): Qt TextToSpeech (KTextEditor), Qt Positioning/Location and
+  libqalculate (plasma-workspace), OpenCV + Tesseract (Spectacle), lm_sensors (libksysguard), libva
+  (KPipeWire), libXft, ModemManager (plasma-nm), hunspell (Sonnet), GCC 16 fixes (graphite tests,
+  yaml-cpp, harfbuzz without -fexceptions), no `which` in the builder (libvpx).
+- Still open: printing (CUPS; the KDE print portal is left out), Plymouth, gamescope, OpenRazer,
+  thermald, fwupd, fingerprint login, the custom browser, Turtle Beach Stealth 500 testing.
