@@ -1,0 +1,36 @@
+---
+componentName: blankos
+
+welcomeStyleCalamares: false
+welcomeExpandingLogo: true
+windowExpanding: normal
+windowSize: 960px,640px
+windowPlacement: center
+sidebar: widget
+navigation: widget
+
+strings:
+    productName: BlankOS
+    shortProductName: BlankOS
+    version: 0.6
+    shortVersion: 0.6
+    versionedName: BlankOS
+    shortVersionedName: BlankOS
+    bootloaderEntryName: BlankOS
+    productUrl: https://github.com/number1victoryroyale/BlankOS
+    supportUrl: https://github.com/number1victoryroyale/BlankOS/issues
+    knownIssuesUrl: https://github.com/number1victoryroyale/BlankOS#known-gaps
+
+images:
+    productLogo: "logo.png"
+    productIcon: "logo.png"
+    productWelcome: "welcome.png"
+
+slideshow: "show.qml"
+slideshowAPI: 2
+
+style:
+    SidebarBackground: "#0B0B10"
+    SidebarText: "#E8E6F0"
+    SidebarTextCurrent: "#FFFFFF"
+    SidebarBackgroundCurrent: "#8B5CF6"

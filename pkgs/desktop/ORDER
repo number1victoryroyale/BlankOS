@@ -234,3 +234,13 @@ firefox-bin
 blankos-default-browser
 blankos-branding
 blankos-desktop
+
+# the installer (Calamares) and what it needs
+dosfstools
+efivar
+efibootmgr
+rsync
+yaml-cpp
+kpmcore
+calamares
+blankos-installer

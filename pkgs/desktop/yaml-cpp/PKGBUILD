@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Arch Linux's yaml-cpp (Calamares reads its settings with it)
+
+pkgname=yaml-cpp
+pkgver=0.8.0
+pkgrel=1
+pkgdesc="YAML parser and emitter in C++"
+arch=(x86_64)
+url='https://github.com/jbeder/yaml-cpp'
+license=('MIT')
+depends=('gcc-libs')
+makedepends=('cmake' 'ninja')
+source=("https://github.com/jbeder/yaml-cpp/archive/$pkgver/yaml-cpp-$pkgver.tar.gz")
+sha256sums=('fbe74bbdcee21d656715688706da3c8becfd946d92cd44705cc6098bb23b3a16')
+
+build() {
+	cmake -S "yaml-cpp-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_BUILD_TYPE=Release \
+		-D CMAKE_POLICY_VERSION_MINIMUM=3.5 -D YAML_BUILD_SHARED_LIBS=ON -D YAML_CPP_BUILD_TESTS=OFF \
+		-D YAML_CPP_BUILD_TOOLS=OFF
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+	install -Dm644 "yaml-cpp-$pkgver/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

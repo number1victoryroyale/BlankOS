@@ -2,7 +2,7 @@
 # Build the BlankOS live ISO: a hybrid image that boots from CD/DVD and USB
 # sticks on both BIOS and UEFI machines.
 #
-#   sudo iso/mkiso.sh [--test] [--pkgs "base linux grub blankos-system blankos-desktop blankos-gaming"]
+#   sudo iso/mkiso.sh [--test] [--pkgs "base linux grub blankos-system blankos-desktop blankos-gaming blankos-installer"]
 #
 # Layout of the ISO:
 #   /boot/vmlinuz-linux, /boot/initramfs-live.img     kernel + live initramfs
@@ -19,7 +19,7 @@ source "$BLANKOS_ROOT/tools/lib.sh"
 need_root
 
 test_iso=0
-packages="base linux grub blankos-system blankos-desktop blankos-gaming"
+packages="base linux grub blankos-system blankos-desktop blankos-gaming blankos-installer"
 while (($#)); do
 	case $1 in
 		--test) test_iso=1 ;;
@@ -69,7 +69,12 @@ polkit.addRule(function(action, subject) {
 EOF
 	install -d "$root/home/live/.config"
 	printf '%s\n' '[Daemon]' 'Autolock=false' 'LockOnResume=false' > "$root/home/live/.config/kscreenlockerrc"
-	chown -R --reference="$root/home/live" "$root/home/live/.config"
+	# "Install BlankOS" on the live desktop
+	if [[ -f $root/usr/share/applications/blankos-install.desktop ]]; then
+		install -d "$root/home/live/Desktop"
+		install -m755 "$root/usr/share/applications/blankos-install.desktop" "$root/home/live/Desktop/"
+	fi
+	chown -R --reference="$root/home/live" "$root/home/live/.config" "$root/home/live/Desktop" 2>/dev/null || true
 fi
 systemctl_preset_root "$root"
 ((test_iso)) && add_test_hooks "$root"

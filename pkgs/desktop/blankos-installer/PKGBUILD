@@ -1,0 +1,65 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# The BlankOS installer: Calamares settings (copy the live system, set up
+# users, GRUB with the BlankOS theme, the initramfs, and remove the live
+# session's extras), BlankOS branding and slideshow, and the "Install
+# BlankOS" launcher. The installer removes itself from the new system.
+
+pkgname=blankos-installer
+pkgver=1.0
+pkgrel=1
+pkgdesc="BlankOS installer (Calamares settings, branding and launcher)"
+arch=(any)
+url='https://github.com/number1victoryroyale/BlankOS'
+license=('GPL-3.0-or-later')
+depends=('calamares' 'blankos-branding' 'blankos-grub-theme' 'blankos-initramfs' 'polkit')
+makedepends=('python')
+source=("settings.conf" "branding.desc" "show.qml" "mklogo.py"
+        "blankos-install.desktop" "org.blankos.installer.policy"
+        "welcome.conf" "unpackfs.conf"
+        "partition.conf" "mount.conf"
+        "users.conf" "displaymanager.conf"
+        "grubcfg.conf" "bootloader.conf"
+        "fstab.conf"
+        "shellprocess-cleanup.conf"
+        "shellprocess-initramfs.conf"
+        "shellprocess-palette.conf")
+sha256sums=('4c43d5bb3bd3774a729a63974d9e59bd872043e71a92e9eeb844c896cc5d6bc1'
+            '3b674f639d9cdd441a15698f13ddfe5d8eb04983e2ccce65a33898cd87636b0b'
+            '324b035eb2f956cdbb56ae05cf10518bea7e9c6113731c59fb826a8d54275d70'
+            'a2486e9ca65599ba28d251b95744e72ab283f4511fcdcaf48bc03ae17015df96'
+            '5e9273cb7c7fcd5f591aa8900083a19c5f8fb47f5553135f5a621548180d9343'
+            'b51aebb61065dd919ce924729a1d85f5fd5b6793ace0f74c859f001960acd398'
+            '45bba00a6071f6cc01a007459c89b17dbe5bf749d6805decd06af4ecb0fd8596'
+            '3f61fa68d8583d76b73e63ea9f1f45da5001fa713920590127ca48f58e5ea817'
+            '8311f7b81d55334234745f9e70e4d1cb2fc51c76e2dbb53b5d25964a10e8d200'
+            '741b5c1177594504008ac9b228528ed9a5ff6c0d87255b4c0f63e1bbe51a04c6'
+            'bec2cb5aaf40069c63c126e9c12aa5d03802f5f79c78d06e9ac36c6e7cd07736'
+            '9816d9497b7ea5d02576c554da7fc8c2ef63fc1b71b28af911d5fb0b0aeed32b'
+            '7cf4444c1611985488c7a2acfa27799f4eb6b469219afaab592015002b1fcafe'
+            '35faa80905b3f25a48c3d2d734e3a320a68bd5b7ebe529bf739896a8cce0909e'
+            '025df5e321f44f3a30972a7195f4642130512d7221d400642e694f828e2299ec'
+            'abb0cd9b219ed40dbde706fc417d088d72a151b929447028b20f9d94789198ae'
+            '2fe622778dd156cd591dc89f53fbbe287d926cf1bb1be518063eedd4742373c7'
+            'b1161283c10115cbe2f972e7872b32c3db137adc7bda9006090dded44fe47fea')
+
+build() {
+	python3 mklogo.py 256 logo.png
+	python3 mklogo.py 64 icon64.png
+}
+
+package() {
+	local c=$pkgdir/etc/calamares
+	install -Dm644 settings.conf "$c/settings.conf"
+	local m
+	for m in welcome unpackfs partition mount users displaymanager grubcfg bootloader fstab \
+	         shellprocess-cleanup shellprocess-initramfs shellprocess-palette; do
+		install -Dm644 "$m.conf" "$c/modules/$m.conf"
+	done
+	install -Dm644 branding.desc show.qml logo.png -t "$c/branding/blankos"
+	ln -s /usr/share/wallpapers/BlankOS/contents/images/1920x1080.png "$c/branding/blankos/welcome.png"
+
+	install -Dm644 blankos-install.desktop "$pkgdir/usr/share/applications/blankos-install.desktop"
+	install -Dm644 logo.png "$pkgdir/usr/share/icons/hicolor/256x256/apps/blankos-installer.png"
+	install -Dm644 icon64.png "$pkgdir/usr/share/icons/hicolor/64x64/apps/blankos-installer.png"
+	install -Dm644 org.blankos.installer.policy "$pkgdir/usr/share/polkit-1/actions/org.blankos.installer.policy"
+}

@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Arch Linux's kpmcore (the partitioning engine of Calamares)
+
+pkgname=kpmcore
+pkgver=26.04.3
+pkgrel=1
+pkgdesc="Library for managing partitions"
+arch=(x86_64)
+url='https://apps.kde.org/partitionmanager/'
+license=('GPL-3.0-or-later')
+depends=('gcc-libs' 'kauth' 'kcoreaddons' 'ki18n' 'kwidgetsaddons' 'polkit-qt6' 'qt6-base' 'util-linux'
+         'e2fsprogs' 'dosfstools')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools')
+source=("https://download.kde.org/stable/release-service/$pkgver/src/kpmcore-$pkgver.tar.xz")
+sha256sums=('08018d9465fccaf9f56ee8178f2aa3419d6bcfef667308bb558e387516216e6d')
+
+build() {
+	cmake -S "kpmcore-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D BUILD_TESTING=OFF
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}

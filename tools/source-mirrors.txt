@@ -21,3 +21,6 @@ winetricks-20260125.tar.gz  git https://github.com/Winetricks/winetricks 2026012
 7zip-26.02.tar.gz  git https://github.com/ip7z/7zip 26.02 7zip-26.02/
 inih-r62.tar.gz  git https://github.com/benhoyt/inih r62 inih-r62/
 xpadneo-0.10.5.tar.gz  git https://github.com/atar-axis/xpadneo v0.10.5 xpadneo-0.10.5/
+efivar-39.tar.gz  git https://github.com/rhboot/efivar 39 efivar-39/
+efibootmgr-18.tar.gz  git https://github.com/rhboot/efibootmgr 18 efibootmgr-18/
+yaml-cpp-0.8.0.tar.gz  git https://github.com/jbeder/yaml-cpp 0.8.0 yaml-cpp-0.8.0/

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Install BlankOS
+GenericName=System Installer
+Comment=Install BlankOS on this computer
+Exec=pkexec /usr/bin/calamares
+Icon=blankos-installer
+Terminal=false
+Categories=System;Qt;
+Keywords=install;installer;calamares;

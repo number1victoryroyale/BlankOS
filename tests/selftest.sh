@@ -90,6 +90,12 @@ if pacman -Q blankos-desktop > /dev/null 2>&1; then
 	check "xdg-desktop-portal-kde"     test -x /usr/lib/xdg-desktop-portal-kde
 fi
 
+# The installer (milestone 6), on the live ISO
+if pacman -Q blankos-installer > /dev/null 2>&1; then
+	check "installer ready"            bash -c 'calamares --version && test -f /etc/calamares/settings.conf && test -f /etc/calamares/branding/blankos/branding.desc && test -e /run/live/medium/blankos/x86_64/rootfs.sfs && command -v rsync efibootmgr mkfs.fat'
+	check "GRUB theme installed"       test -f /usr/share/grub/themes/blankos/theme.txt
+fi
+
 # The gaming layer (milestone 5), when installed.
 if pacman -Q blankos-gaming > /dev/null 2>&1; then
 	check "Wine 64-bit WoW64 build"    bash -c 'wine --version | grep -q "^wine-" && test -d /usr/lib/wine/x86_64-windows && test -d /usr/lib/wine/i386-windows'

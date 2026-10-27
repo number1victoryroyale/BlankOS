@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd): the installer copies the system with it
+
+pkgname=rsync
+pkgver=3.5.0
+pkgrel=1
+pkgdesc="A fast and versatile file copying tool for remote and local files"
+arch=(x86_64)
+url='https://rsync.samba.org/'
+license=('GPL-3.0-or-later')
+depends=('acl' 'attr' 'lz4' 'openssl' 'popt' 'zlib' 'zstd')
+source=("https://www.samba.org/ftp/rsync/src/rsync-$pkgver.tar.gz")
+sha256sums=('c7ffd1ef653e99540f661e47cb00b7f9cad1ee6b972399b16f93d672656e0d33')
+
+build() {
+	cd "rsync-$pkgver"
+	./configure --prefix=/usr --disable-xxhash --without-included-zlib --without-included-popt
+	make
+}
+
+package() {
+	cd "rsync-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

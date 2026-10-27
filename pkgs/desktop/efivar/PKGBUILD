@@ -1,0 +1,30 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=efivar
+pkgver=39
+pkgrel=1
+pkgdesc="Tools and libraries to work with EFI variables"
+arch=(x86_64)
+url='https://github.com/rhboot/efivar'
+license=('LGPL-2.1-only')
+depends=('glibc')
+source=("https://github.com/rhboot/efivar/archive/$pkgver/efivar-$pkgver.tar.gz"
+        "https://www.linuxfromscratch.org/patches/blfs/13.1/efivar-39-upstream_fixes-1.patch")
+sha256sums=('c9edd15f2eeeea63232f3e669a48e992c7be9aff57ee22672ac31f5eca1609a6'
+            '5b53b8f151fbdb14a75b4b6548b6736f8bac01e1391bfa69b8247f31a12b0127')
+
+prepare() {
+	cd "efivar-$pkgver"
+	patch -Np1 -i ../efivar-39-upstream_fixes-1.patch
+}
+
+build() {
+	cd "efivar-$pkgver"
+	make ENABLE_DOCS=0
+}
+
+package() {
+	cd "efivar-$pkgver"
+	make DESTDIR="$pkgdir" install ENABLE_DOCS=0 LIBDIR=/usr/lib
+}

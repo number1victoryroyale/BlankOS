@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd): grub-install registers the boot entry with it
+
+pkgname=efibootmgr
+pkgver=18
+pkgrel=1
+pkgdesc="Linux user-space application to modify the EFI Boot Manager"
+arch=(x86_64)
+url='https://github.com/rhboot/efibootmgr'
+license=('GPL-2.0-or-later')
+depends=('efivar' 'popt')
+source=("https://github.com/rhboot/efibootmgr/archive/$pkgver/efibootmgr-$pkgver.tar.gz")
+sha256sums=('442867d12f8525034a404fc8af3036dba8e1fc970998af2486c3b940dfad0874')
+
+build() {
+	cd "efibootmgr-$pkgver"
+	make EFIDIR=BlankOS EFI_LOADER=grubx64.efi
+}
+
+package() {
+	cd "efibootmgr-$pkgver"
+	make DESTDIR="$pkgdir" install EFIDIR=BlankOS
+}
