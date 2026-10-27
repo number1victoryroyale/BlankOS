@@ -20,7 +20,7 @@ depends=('blankos-system'
          'sddm-kcm' 'plasma-systemmonitor' 'ksystemstats' 'milou' 'plasma-welcome' 'discover'
          # look and sound
          'breeze' 'breeze-icons' 'qqc2-breeze-style' 'qqc2-desktop-style' 'ocean-sound-theme'
-         'noto-fonts' 'ttf-hack' 'blankos-branding'
+         'noto-fonts' 'ttf-hack' 'blankos-branding' 'blankos-grub-theme'
          # apps
          'dolphin' 'konsole' 'kate' 'spectacle' 'ark' 'gwenview' 'blankos-default-browser'
          # Qt runtime pieces apps load as plugins

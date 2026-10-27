@@ -103,6 +103,11 @@ fi
 sed -e "s|@LABEL@|$label|g" -e "s|@PALETTE@|$palette|" \
 	-e "s|@EXTRA@|$extra|g" -e "s|@TIMEOUT@|$timeout|" -e "s|@INITRD@|$initrd|g" \
 	"$BLANKOS_ROOT/iso/grub.cfg" > "$stage/boot/grub/grub.cfg"
+# graphical menu (blankos-grub-theme), when installed in the live root
+if [[ -f $root/usr/share/grub/themes/blankos/theme.txt ]]; then
+	install -d "$stage/boot/grub/themes"
+	cp -r "$root/usr/share/grub/themes/blankos" "$stage/boot/grub/themes/"
+fi
 
 msg "Building GRUB for BIOS and UEFI"
 # BIOS: El Torito core image; the rest of the modules load from the ISO.
@@ -121,7 +126,7 @@ search --no-floppy --set=root --label $label
 set prefix=(\$root)/boot/grub
 configfile (\$root)/boot/grub/grub.cfg
 EOF
-efi_mods="part_gpt part_msdos fat iso9660 search search_label normal configfile linux all_video echo test reboot halt"
+efi_mods="part_gpt part_msdos fat iso9660 search search_label normal configfile linux all_video echo test reboot halt gfxterm gfxmenu png font"
 in_chroot "$LFS" grub-mkstandalone -O x86_64-efi -o /tmp/BOOTX64.EFI \
 	--modules="$efi_mods" --install-modules="$efi_mods" \
 	--locales= --fonts= --themes= \

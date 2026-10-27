@@ -2,20 +2,23 @@
 #
 # The BlankOS look: a Plasma look-and-feel (BlankOS colors on Breeze,
 # breeze-dark icons and Plasma style), the wallpaper (drawn at build time
-# by mkwallpaper.py), the SDDM background and a Konsole profile.
+# by mkwallpaper.py), the SDDM background and a Konsole profile; and the
+# graphical GRUB theme (fonts made with grub-mkfont, built here from the
+# GRUB sources because the core grub package has no FreeType).
 
-pkgname=blankos-branding
+pkgbase=blankos-branding
+pkgname=('blankos-branding' 'blankos-grub-theme')
 pkgver=1.0
 pkgrel=1
-pkgdesc="BlankOS look: colors, Plasma theme, wallpaper, SDDM background, Konsole profile"
+_grubver=2.14
 arch=(any)
 url='https://github.com/number1victoryroyale/BlankOS'
 license=('GPL-3.0-or-later' 'CC-BY-SA-4.0')
-depends=('breeze' 'breeze-icons' 'plasma-workspace' 'sddm' 'konsole')
-makedepends=('python')
-backup=('etc/xdg/konsolerc')
+makedepends=('python' 'freetype2' 'noto-fonts')
 source=("BlankOS.colors" "lnf-metadata.json" "lnf-defaults" "wallpaper-metadata.json" "mkwallpaper.py"
-        "sddm-theme.conf.user" "BlankOS.colorscheme" "BlankOS.profile" "konsolerc")
+        "sddm-theme.conf.user" "BlankOS.colorscheme" "BlankOS.profile" "konsolerc"
+        "mkpng.py" "grub-theme.txt"
+        "https://ftpmirror.gnu.org/grub/grub-$_grubver.tar.xz")
 sha256sums=('a0e1faaad367f839146874056d896e0118401cdd8e8a748fa1010d4a311e6690'
             '9415cfd32be30aeeb657029546fe4526410776d511185cc619f4bde647366a8a'
             '9366e719e72dd04dad06994bb62a6727e3c7e75fda4ddfc48437502683f6b821'
@@ -24,16 +27,39 @@ sha256sums=('a0e1faaad367f839146874056d896e0118401cdd8e8a748fa1010d4a311e6690'
             '6d09e0657e6befa87fdcb10e8f87a46f0e17ac71c8fd007f55c2d4fa22e30171'
             'c5719b769035d5c0ec477383d2c7f19a63b45a9f692abbbe5b9ba29cfb13f8e4'
             '2ad9699b982a66429f8a0a4ce152f15251bd9c991b8ef978d3b48c4dd22554c3'
-            'beb41eef8773c17a780cbefc802170f0e00e3271e3d213f8f610ada08b2f4419')
+            'beb41eef8773c17a780cbefc802170f0e00e3271e3d213f8f610ada08b2f4419'
+            '24ebed6e31dc635ee50a28b9048f97bc37446651237f0695213b7e8ec06cecac'
+            'c267a234183f7a0ea8158b15454e53ac7ff8358e29fa95796af397f43f1b1161'
+            'bc8d3c73535b8838d8c8e2654d73edc4e6ae8c8acdb45d5df5dc9a1547446d43')
 
 build() {
 	local s
 	for s in 3840x2160 1920x1080; do
 		python3 mkwallpaper.py "${s%x*}" "${s#*x}" "$s.png"
 	done
+
+	# grub-mkfont only
+	cd "grub-$_grubver"
+	./configure --prefix=/usr --enable-grub-mkfont --disable-werror > /dev/null
+	make grub-mkfont
+	cd ..
+	local fonts=/usr/share/fonts/noto mkfont="grub-$_grubver/grub-mkfont"
+	mkdir -p theme
+	"$mkfont" -s 16 -o theme/noto_sans_regular_16.pf2 "$fonts/NotoSans-Regular.ttf"
+	"$mkfont" -s 20 -o theme/noto_sans_regular_20.pf2 "$fonts/NotoSans-Regular.ttf"
+	"$mkfont" -s 48 -o theme/noto_sans_bold_48.pf2 "$fonts/NotoSans-Bold.ttf"
+	"$mkfont" -s 16 -o theme/noto_sans_mono_regular_16.pf2 "$fonts/NotoSansMono-Regular.ttf"
+	cp 1920x1080.png theme/background.png
+	python3 mkpng.py 8B5CF6 8 8 theme/select_c.png
+	python3 mkpng.py 0B0B10E6 8 8 theme/terminal_c.png
+	cp grub-theme.txt theme/theme.txt
 }
 
-package() {
+package_blankos-branding() {
+	pkgdesc="BlankOS look: colors, Plasma theme, wallpaper, SDDM background, Konsole profile"
+	depends=('breeze' 'breeze-icons' 'plasma-workspace' 'sddm' 'konsole')
+	backup=('etc/xdg/konsolerc')
+
 	install -Dm644 BlankOS.colors "$pkgdir/usr/share/color-schemes/BlankOS.colors"
 
 	local lnf=$pkgdir/usr/share/plasma/look-and-feel/org.blankos.desktop
@@ -49,4 +75,11 @@ package() {
 
 	install -Dm644 BlankOS.colorscheme BlankOS.profile -t "$pkgdir/usr/share/konsole"
 	install -Dm644 konsolerc "$pkgdir/etc/xdg/konsolerc"
+}
+
+package_blankos-grub-theme() {
+	pkgdesc="BlankOS theme for the GRUB boot menu"
+	depends=('grub')
+	install -d "$pkgdir/usr/share/grub/themes/blankos"
+	cp theme/* "$pkgdir/usr/share/grub/themes/blankos/"
 }

@@ -1,0 +1,55 @@
+# BlankOS GRUB theme: the BlankOS wallpaper, a violet-highlighted menu
+title-text: ""
+desktop-image: "background.png"
+desktop-color: "#0B0B10"
+terminal-font: "Noto Sans Mono Regular 16"
+terminal-box: "terminal_*.png"
+
++ label {
+	top = 18%
+	left = 0
+	width = 100%
+	align = "center"
+	text = "BlankOS"
+	font = "Noto Sans Bold 48"
+	color = "#A78BFA"
+}
+
++ boot_menu {
+	left = 30%
+	top = 34%
+	width = 40%
+	height = 44%
+	item_font = "Noto Sans Regular 20"
+	item_color = "#C9C6D6"
+	selected_item_font = "Noto Sans Regular 20"
+	selected_item_color = "#FFFFFF"
+	selected_item_pixmap_style = "select_*.png"
+	item_height = 44
+	item_padding = 16
+	item_spacing = 6
+	icon_width = 0
+	icon_height = 0
+	scrollbar = false
+}
+
++ label {
+	id = "__timeout__"
+	top = 84%
+	left = 0
+	width = 100%
+	align = "center"
+	text = "Starting in %d seconds"
+	font = "Noto Sans Regular 16"
+	color = "#8E8BA3"
+}
+
++ label {
+	top = 90%
+	left = 0
+	width = 100%
+	align = "center"
+	text = "Arrow keys to choose, Enter to start, E to edit"
+	font = "Noto Sans Regular 16"
+	color = "#5E5B73"
+}
