@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd): mobile broadband modems (plasma-nm
+# requires ModemManagerQt, which builds against it)
+
+pkgname=modemmanager
+pkgver=1.24.2
+pkgrel=1
+pkgdesc="Mobile broadband modem management service"
+arch=(x86_64)
+url='https://www.freedesktop.org/wiki/Software/ModemManager/'
+license=('GPL-2.0-or-later' 'LGPL-2.1-or-later')
+depends=('glib2' 'libgudev' 'polkit' 'systemd')
+makedepends=('meson' 'ninja')
+source=("https://gitlab.freedesktop.org/mobile-broadband/ModemManager/-/archive/$pkgver/ModemManager-$pkgver.tar.gz")
+sha256sums=('fbc75adcc0d7b0565f256e7ff4e8872b0a37c4413ff576665f7470932d9c1b68')
+
+build() {
+	meson setup build "ModemManager-$pkgver" --prefix=/usr --buildtype=release \
+		-D bash_completion=false -D qrtr=false -D mbim=false -D qmi=false \
+		-D introspection=false -D man=false -D tests=false -D examples=false -D gtk_doc=false
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}
