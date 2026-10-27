@@ -15,6 +15,13 @@ inih
 gamemode
 mangohud
 
+# gamescope (Valve's game compositor) and what it needs
+libxres
+libdecor
+luajit
+seatd
+gamescope
+
 # NVIDIA driver and laptop GPU/power services
 nvidia
 switcheroo-control

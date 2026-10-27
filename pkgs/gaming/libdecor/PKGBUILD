@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Client-side window decorations for Wayland (gamescope's nested mode).
+
+pkgname=libdecor
+pkgver=0.2.5
+pkgrel=1
+pkgdesc="Client-side decorations library for Wayland clients"
+arch=(x86_64)
+url='https://gitlab.freedesktop.org/libdecor/libdecor'
+license=('MIT')
+depends=('cairo' 'dbus' 'pango' 'wayland')
+makedepends=('meson' 'wayland-protocols')
+source=("https://gitlab.freedesktop.org/libdecor/libdecor/-/archive/$pkgver/libdecor-$pkgver.tar.gz")
+sha256sums=('39c109a9a7eae943ba34d18a282c447d5729f9c486c8bc05ea305e4acd341522')
+
+build() {
+	meson setup build "libdecor-$pkgver" --prefix=/usr --buildtype=release -D demo=false -D gtk=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+	install -Dm644 "libdecor-$pkgver/LICENSE" -t "$pkgdir/usr/share/licenses/$pkgname"
+}

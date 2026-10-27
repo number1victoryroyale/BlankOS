@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Needed by gamescope.
+
+pkgname=libxres
+pkgver=1.2.3
+pkgrel=1
+pkgdesc="X11 Resource extension library"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+depends=('libxext')
+makedepends=('xorgproto' 'xorg-util-macros')
+source=("https://www.x.org/pub/individual/lib/libXres-$pkgver.tar.xz")
+sha256sums=('d2de8f5401d6c86a8992791654547eb8def585dfdc0c08cc16e24ef6aeeb69dc')
+
+build() {
+	cd "libXres-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "libXres-$pkgver"
+	make DESTDIR="$pkgdir" install
+	install -Dm644 COPYING -t "$pkgdir/usr/share/licenses/$pkgname"
+}

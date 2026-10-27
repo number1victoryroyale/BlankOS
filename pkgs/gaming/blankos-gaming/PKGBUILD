@@ -6,14 +6,14 @@
 
 pkgname=blankos-gaming
 pkgver=0.5.0
-pkgrel=1
+pkgrel=2
 pkgdesc="BlankOS gaming layer: Wine, DXVK, VKD3D-Proton, GameMode, MangoHud, controllers and the Game Hub"
 arch=(any)
 url='https://github.com/number1victoryroyale/BlankOS'
 license=('GPL-3.0-or-later')
 depends=('blankos-desktop'
          'wine' 'winetricks' 'dxvk-bin' 'vkd3d-proton-bin' 'cabextract' '7zip'
-         'gamemode' 'mangohud'
+         'gamemode' 'mangohud' 'gamescope'
          'game-devices-udev' 'xpadneo' 'sdl2-compat'
          # NVIDIA (switched on from the boot menu / installer) and laptops
          'nvidia-open' 'nvidia-utils' 'switcheroo-control' 'power-profiles-daemon'

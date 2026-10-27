@@ -1,0 +1,82 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Arch Linux's gamescope
+#
+# Valve's micro-compositor for games: upscaling (FSR/NIS), frame limits,
+# HDR and VRR, nested in Plasma (gamescope -- %command% in Steam) or as the
+# whole session. wlroots, libliftoff, libdisplay-info, vkroots, reshade,
+# SPIRV-Headers, glm and stb are the exact commits gamescope pins (its git
+# submodules and wraps), built in as static subprojects. No OpenVR.
+
+pkgname=gamescope
+pkgver=3.17.0
+pkgrel=1
+pkgdesc="SteamOS session compositing window manager"
+arch=(x86_64)
+url='https://github.com/ValveSoftware/gamescope'
+license=('BSD-2-Clause')
+depends=('hwdata' 'libcap' 'libdecor' 'libdrm' 'libinput' 'libx11' 'libxcomposite' 'libxcursor' 'libxdamage'
+         'libxext' 'libxfixes' 'libxi' 'libxkbcommon' 'libxmu' 'libxrender' 'libxres' 'libxtst' 'libxxf86vm'
+         'luajit' 'pipewire' 'pixman' 'sdl2-compat' 'seatd' 'systemd' 'vulkan-icd-loader' 'wayland'
+         'xcb-util-wm' 'xorg-xwayland')
+makedepends=('cmake' 'glslang' 'meson' 'ninja' 'vulkan-headers' 'wayland-protocols')
+_wlroots=d783533489e1f75d6886c2ab5c5960090ef268f8
+_liftoff=8b08dc1c14fd019cc90ddabe34ad16596b0691f4
+_displayinfo=c67a3e9bedb05ab61c7443704a1a107e76254595
+_vkroots=20733b938267dcac60f6ac105dbb757f9cc8df9c
+_reshade=696b14cd6006ae9ca174e6164450619ace043283
+_spirvheaders=d790ced752b5bfc06b6988baadef6eb2d16bdf96
+_glm=0af55ccecd98d4e5a8d1fad7de25ba429d60e863
+_stb=5736b15f7ea0ffb08dd38af21067c314d6a3aae9
+source=("gamescope-$pkgver.tar.gz::https://github.com/ValveSoftware/gamescope/archive/refs/tags/$pkgver.tar.gz"
+        "https://gitlab.freedesktop.org/wlroots/wlroots/-/archive/$_wlroots/wlroots-$_wlroots.tar.gz"
+        "https://gitlab.freedesktop.org/emersion/libliftoff/-/archive/$_liftoff/libliftoff-$_liftoff.tar.gz"
+        "https://gitlab.freedesktop.org/emersion/libdisplay-info/-/archive/$_displayinfo/libdisplay-info-$_displayinfo.tar.gz"
+        "vkroots-$_vkroots.tar.gz::https://github.com/Joshua-Ashton/vkroots/archive/$_vkroots.tar.gz"
+        "reshade-$_reshade.tar.gz::https://github.com/Joshua-Ashton/reshade/archive/$_reshade.tar.gz"
+        "SPIRV-Headers-$_spirvheaders.tar.gz::https://github.com/KhronosGroup/SPIRV-Headers/archive/$_spirvheaders.tar.gz"
+        "glm-$_glm.tar.gz::https://github.com/g-truc/glm/archive/$_glm.tar.gz"
+        "stb-$_stb.tar.gz::https://github.com/nothings/stb/archive/$_stb.tar.gz")
+sha256sums=('77d96c2c68c7a98dd4e0b951407fa23dfb4fc30632d5ee740471c7d612f288e0'
+            'd4d7c5f4ff5729d5eff33859b58ab7ced812aca54367b75ecbdaf9aae448fff6'
+            '8de28aee6f90f47b7fc7037dcd2360166197c0b5d2033f3afdbd34f2ea1bf216'
+            '34f2109f3ba5a56f4e12062210261c98214f32b5568684311aa029da518bf2fd'
+            '863ee36f80faa84d28e1f73b588f6f52d391d210267938a57f7a8fa14b9fd1ce'
+            '3aa6feda7773cc8ffa8fb012fe95e6207c776101e29198d0e0d34a0c5e339f6a'
+            '90141b3f6261dba643fe546d56b4539e61fe40e307c5c3b9985ea9fa0622ac3f'
+            'e7f187d83523f505eb38dd25d297ea6c0d4ed856d733e808f18253f5a8fa88a0'
+            'd00921d49b06af62aa6bfb97c1b136bec661dd11dd4eecbcb0da1f6da7cedb4c')
+
+prepare() {
+	cd "gamescope-$pkgver"
+	# the version comes from git describe; this is a tarball
+	sed -i "s/^vcs_tag = run_command.*/vcs_tag = '$pkgver'/" src/meson.build
+	local d
+	for d in subprojects/{wlroots,libliftoff,libdisplay-info,vkroots,glm,stb} src/reshade thirdparty/SPIRV-Headers; do
+		rm -rf "$d"
+	done
+	mv "$srcdir/wlroots-$_wlroots" subprojects/wlroots
+	mv "$srcdir/libliftoff-$_liftoff" subprojects/libliftoff
+	mv "$srcdir/libdisplay-info-$_displayinfo" subprojects/libdisplay-info
+	mv "$srcdir/vkroots-$_vkroots" subprojects/vkroots
+	mv "$srcdir/reshade-$_reshade" src/reshade
+	mv "$srcdir/SPIRV-Headers-$_spirvheaders" thirdparty/SPIRV-Headers
+	# the glm and stb wraps: their sources plus gamescope's meson.build for them
+	mv "$srcdir/glm-$_glm" subprojects/glm
+	mv "$srcdir/stb-$_stb" subprojects/stb
+	cp subprojects/packagefiles/glm/* subprojects/glm/
+	cp subprojects/packagefiles/stb/* subprojects/stb/
+}
+
+build() {
+	meson setup build "gamescope-$pkgver" --prefix=/usr --buildtype=release --wrap-mode=nodownload \
+		-D force_fallback_for=glm,stb,libdisplay-info,libliftoff,vkroots,wlroots \
+		-D pipewire=enabled -D drm_backend=enabled -D sdl2_backend=enabled -D rt_cap=enabled \
+		-D avif_screenshots=disabled -D input_emulation=disabled -D benchmark=disabled \
+		-D enable_openvr_support=false -D enable_tests=false -D enable_zenity=false
+	ninja -C build
+}
+
+package() {
+	meson install -C build --skip-subprojects --destdir "$pkgdir"
+	install -Dm644 "gamescope-$pkgver/LICENSE" -t "$pkgdir/usr/share/licenses/$pkgname"
+}

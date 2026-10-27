@@ -1,0 +1,27 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# libseat, through which gamescope (wlroots) takes over the session's
+# devices; it talks to systemd-logind, so the seatd daemon is not needed.
+
+pkgname=seatd
+pkgver=0.9.3
+pkgrel=1
+pkgdesc="Seat management daemon and library (libseat)"
+arch=(x86_64)
+url='https://sr.ht/~kennylevinsen/seatd/'
+license=('MIT')
+depends=('systemd')
+makedepends=('meson')
+provides=('libseat.so')
+source=("seatd-$pkgver.tar.gz::https://github.com/kennylevinsen/seatd/archive/refs/tags/$pkgver.tar.gz")
+sha256sums=('302564d54d8e28191fadfd734f2675ecb0c9e0615a58011b89ef15dfa4dbaa96')
+
+build() {
+	meson setup build "seatd-$pkgver" --prefix=/usr --buildtype=release \
+		-D libseat-logind=systemd -D server=enabled -D examples=disabled -D man-pages=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+	install -Dm644 "seatd-$pkgver/LICENSE" -t "$pkgdir/usr/share/licenses/$pkgname"
+}

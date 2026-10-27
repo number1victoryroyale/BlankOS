@@ -28,3 +28,11 @@ opencv-4.13.0.tar.gz  git https://github.com/opencv/opencv 4.13.0 opencv-4.13.0/
 tesseract-5.5.3.tar.gz  git https://github.com/tesseract-ocr/tesseract 5.5.3 tesseract-5.5.3/
 lm-sensors-3-6-2.tar.gz  git https://github.com/hramrach/lm-sensors V3-6-2 lm-sensors-3-6-2/
 libva-2.24.1.tar.gz  git https://github.com/intel/libva 2.24.1 libva-2.24.1/
+seatd-0.9.3.tar.gz  git https://github.com/kennylevinsen/seatd 0.9.3 seatd-0.9.3/
+LuaJIT-a4c064539ea931274d407e1249b4bb575424a0f4.tar.gz  git https://github.com/LuaJIT/LuaJIT a4c064539ea931274d407e1249b4bb575424a0f4 LuaJIT-a4c064539ea931274d407e1249b4bb575424a0f4/
+gamescope-3.17.0.tar.gz  git https://github.com/ValveSoftware/gamescope 3.17.0 gamescope-3.17.0/
+vkroots-20733b938267dcac60f6ac105dbb757f9cc8df9c.tar.gz  git https://github.com/Joshua-Ashton/vkroots 20733b938267dcac60f6ac105dbb757f9cc8df9c vkroots-20733b938267dcac60f6ac105dbb757f9cc8df9c/
+reshade-696b14cd6006ae9ca174e6164450619ace043283.tar.gz  git https://github.com/Joshua-Ashton/reshade 696b14cd6006ae9ca174e6164450619ace043283 reshade-696b14cd6006ae9ca174e6164450619ace043283/
+SPIRV-Headers-d790ced752b5bfc06b6988baadef6eb2d16bdf96.tar.gz  git https://github.com/KhronosGroup/SPIRV-Headers d790ced752b5bfc06b6988baadef6eb2d16bdf96 SPIRV-Headers-d790ced752b5bfc06b6988baadef6eb2d16bdf96/
+glm-0af55ccecd98d4e5a8d1fad7de25ba429d60e863.tar.gz  git https://github.com/g-truc/glm 0af55ccecd98d4e5a8d1fad7de25ba429d60e863 glm-0af55ccecd98d4e5a8d1fad7de25ba429d60e863/
+stb-5736b15f7ea0ffb08dd38af21067c314d6a3aae9.tar.gz  git https://github.com/nothings/stb 5736b15f7ea0ffb08dd38af21067c314d6a3aae9 stb-5736b15f7ea0ffb08dd38af21067c314d6a3aae9/

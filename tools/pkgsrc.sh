@@ -56,15 +56,16 @@ fetch_one() {
 	esac
 }
 
-# git_archive NAME REPO TAG PREFIX: rebuild a GitHub tag tarball the way
-# GitHub does (git archive piped through gzip -n), for hosts that only
-# allow git access.
+# git_archive NAME REPO REF PREFIX: rebuild a GitHub tag or commit tarball
+# the way GitHub does (git archive piped through gzip -n), for hosts that
+# only allow git access. REF is a tag or a full commit id.
 git_archive() {
-	local name=$1 repo=$2 tag=$3 prefix=$4 tmp
+	local name=$1 repo=$2 ref=$3 prefix=$4 tmp
 	tmp=$(mktemp -d)
-	git clone -q --bare --depth 1 --branch "$tag" "$repo" "$tmp/repo.git" || { rm -rf "$tmp"; return 1; }
+	git init -q --bare "$tmp/repo.git" &&
+		git -C "$tmp/repo.git" fetch -q --depth 1 "$repo" "$ref" || { rm -rf "$tmp"; return 1; }
 	git -C "$tmp/repo.git" -c tar.tar.gz.command="gzip -cn" archive --format=tar.gz \
-		--prefix="$prefix" -o "$SRC/$name.part" "$tag" &&
+		--prefix="$prefix" -o "$SRC/$name.part" FETCH_HEAD &&
 		mv "$SRC/$name.part" "$SRC/$name"
 	local rc=$?
 	rm -rf "$tmp"

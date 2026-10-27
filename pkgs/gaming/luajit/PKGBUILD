@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# LuaJIT from its rolling v2.1 branch (no tarball releases); gamescope's
+# scripting uses it. The version is 2.1.<commit time>, as upstream does.
+
+pkgname=luajit
+_commit=a4c064539ea931274d407e1249b4bb575424a0f4
+pkgver=2.1.1792588164
+pkgrel=1
+pkgdesc="Just-in-time compiler and drop-in replacement for Lua 5.1"
+arch=(x86_64)
+url='https://luajit.org/'
+license=('MIT')
+depends=('glibc' 'gcc-libs')
+source=("LuaJIT-$_commit.tar.gz::https://github.com/LuaJIT/LuaJIT/archive/$_commit.tar.gz")
+sha256sums=('15625df3ebfbd1f76371005bffae39b84c65e718e57acc9a9c57863c7c101541')
+
+build() {
+	cd "LuaJIT-$_commit"
+	make amalg PREFIX=/usr
+}
+
+package() {
+	cd "LuaJIT-$_commit"
+	make install PREFIX=/usr DESTDIR="$pkgdir"
+	install -Dm644 COPYRIGHT "$pkgdir/usr/share/licenses/$pkgname/COPYRIGHT"
+}
