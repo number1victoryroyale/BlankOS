@@ -2,7 +2,7 @@
 title-text: ""
 desktop-image: "background.png"
 desktop-color: "#0B0B10"
-terminal-font: "Noto Sans Mono Regular 16"
+terminal-font: "Hack Regular 16"
 terminal-box: "terminal_*.png"
 
 + label {
