@@ -98,6 +98,7 @@ qt6-wayland
 qt6-5compat
 qt6-tools
 qt6-multimedia
+qt6-speech
 
 # KDE build modules and Qt helper libraries
 extra-cmake-modules
