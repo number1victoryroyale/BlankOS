@@ -13,6 +13,12 @@ makedepends=('cmake' 'ninja')
 source=("https://github.com/jbeder/yaml-cpp/archive/$pkgver/yaml-cpp-$pkgver.tar.gz")
 sha256sums=('fbe74bbdcee21d656715688706da3c8becfd946d92cd44705cc6098bb23b3a16')
 
+prepare() {
+	cd "yaml-cpp-$pkgver"
+	# GCC 16 no longer pulls in <cstdint> indirectly
+	sed -i '1i #include <cstdint>' src/emitterutils.cpp
+}
+
 build() {
 	cmake -S "yaml-cpp-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_BUILD_TYPE=Release \
 		-D CMAKE_POLICY_VERSION_MINIMUM=3.5 -D YAML_BUILD_SHARED_LIBS=ON -D YAML_CPP_BUILD_TESTS=OFF \
