@@ -25,7 +25,7 @@ prepare() {
 build() {
 	mkdir -p build && cd build
 	../"libvpx-$pkgver"/configure --prefix=/usr --enable-shared --disable-static \
-		--disable-examples --disable-docs --disable-unit-tests --enable-vp9-highbitdepth --enable-pic
+		--disable-examples --disable-docs --disable-unit-tests --enable-vp9-highbitdepth --enable-pic --as=nasm
 	make
 }
 
