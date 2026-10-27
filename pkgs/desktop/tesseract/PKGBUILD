@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Arch Linux's tesseract: Spectacle's text recognition (OCR);
+# language data is installable separately.
+
+pkgname=tesseract
+pkgver=5.5.3
+pkgrel=1
+pkgdesc="An OCR program"
+arch=(x86_64)
+url='https://github.com/tesseract-ocr/tesseract'
+license=('Apache-2.0')
+depends=('leptonica' 'gcc-libs')
+makedepends=('cmake' 'ninja')
+source=("https://github.com/tesseract-ocr/tesseract/archive/$pkgver/tesseract-$pkgver.tar.gz")
+sha256sums=('9218e62793116d42a9f6d14cd9348518b27f382096eea3d0f2d1a24616bb5884')
+
+build() {
+	cmake -S "tesseract-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_BUILD_TYPE=Release \
+		-D CMAKE_INSTALL_LIBDIR=lib -D BUILD_TRAINING_TOOLS=OFF -D BUILD_TESTS=OFF -D GRAPHICS_DISABLED=ON \
+		-D DISABLE_CURL=ON -D DISABLE_ARCHIVE=ON -D ENABLE_LTO=OFF -D BUILD_SHARED_LIBS=ON -D OPENMP_BUILD=OFF
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}

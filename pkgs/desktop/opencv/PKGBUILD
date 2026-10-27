@@ -1,0 +1,32 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd), reduced to the core and imgproc modules
+# that Spectacle and KQuickImageEditor use (no downloads at build time).
+
+pkgname=opencv
+pkgver=4.13.0
+pkgrel=1
+pkgdesc="Open Source Computer Vision Library (core and image processing modules)"
+arch=(x86_64)
+url='https://opencv.org/'
+license=('Apache-2.0')
+depends=('gcc-libs' 'zlib')
+makedepends=('cmake' 'ninja')
+source=("https://github.com/opencv/opencv/archive/$pkgver/opencv-$pkgver.tar.gz")
+sha256sums=('1d40ca017ea51c533cf9fd5cbde5b5fe7ae248291ddf2af99d4c17cf8e13017d')
+
+build() {
+	cmake -S "opencv-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_BUILD_TYPE=Release \
+		-D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_SKIP_INSTALL_RPATH=ON -W no-dev \
+		-D BUILD_LIST=core,imgproc -D OPENCV_GENERATE_PKGCONFIG=ON \
+		-D BUILD_TESTS=OFF -D BUILD_PERF_TESTS=OFF -D BUILD_EXAMPLES=OFF -D BUILD_DOCS=OFF \
+		-D BUILD_opencv_apps=OFF -D BUILD_opencv_python3=OFF -D BUILD_JAVA=OFF \
+		-D WITH_IPP=OFF -D WITH_ADE=OFF -D WITH_PROTOBUF=OFF -D WITH_FFMPEG=OFF -D WITH_GSTREAMER=OFF \
+		-D WITH_GTK=OFF -D WITH_QT=OFF -D WITH_OPENCL=OFF -D WITH_VTK=OFF -D WITH_EIGEN=OFF \
+		-D WITH_LAPACK=OFF -D WITH_OPENEXR=OFF -D WITH_V4L=OFF -D WITH_1394=OFF -D WITH_ITT=OFF \
+		-D ENABLE_PRECOMPILED_HEADERS=OFF
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}

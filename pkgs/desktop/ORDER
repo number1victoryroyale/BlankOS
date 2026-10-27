@@ -179,6 +179,9 @@ ksvg
 ktexttemplate
 kuserfeedback
 kirigami-addons
+opencv
+leptonica
+tesseract
 kquickimageeditor
 
 # KDE Plasma 6

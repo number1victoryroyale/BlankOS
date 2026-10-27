@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Arch Linux's leptonica (image library behind Tesseract)
+
+pkgname=leptonica
+pkgver=1.87.0
+pkgrel=1
+pkgdesc="Software that is broadly useful for image processing and image analysis applications"
+arch=(x86_64)
+url='http://www.leptonica.org/'
+license=('BSD-2-Clause')
+depends=('giflib' 'libjpeg-turbo' 'libpng' 'libtiff' 'libwebp' 'zlib')
+source=("https://github.com/DanBloomberg/leptonica/releases/download/$pkgver/leptonica-$pkgver.tar.gz")
+sha256sums=('c73363397f96eb1295602bf44d708a994ad42046c791bf03ea0505d829bdb6a7')
+
+build() {
+	cd "leptonica-$pkgver"
+	./configure --prefix=/usr --disable-static --disable-programs
+	make
+}
+
+package() {
+	cd "leptonica-$pkgver"
+	make DESTDIR="$pkgdir" install
+}
