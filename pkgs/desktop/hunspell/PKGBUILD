@@ -31,7 +31,6 @@ package_hunspell() {
 
 package_hunspell-en_us() {
 	pkgdesc="US English dictionary for Hunspell"
-	arch=(any)
 	license=('LicenseRef-SCOWL')
 	mkdir -p deb
 	bsdtar -xOf "$_dictdeb" 'data.tar.*' | bsdtar -xf - -C deb
