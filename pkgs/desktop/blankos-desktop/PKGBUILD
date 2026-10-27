@@ -5,7 +5,7 @@
 
 pkgname=blankos-desktop
 pkgver=0.4.0
-pkgrel=1
+pkgrel=2
 pkgdesc="BlankOS desktop: KDE Plasma 6 (Wayland), SDDM, KDE apps and Firefox"
 arch=(any)
 url='https://github.com/number1victoryroyale/BlankOS'
@@ -25,7 +25,7 @@ depends=('blankos-system'
          'dolphin' 'konsole' 'kate' 'spectacle' 'ark' 'gwenview' 'blankos-default-browser'
          # Qt runtime pieces apps load as plugins
          'qt6-wayland' 'qt6-svg' 'qt6-imageformats' 'kimageformats' 'qt6-multimedia')
-backup=('etc/xdg/kdeglobals')
+backup=('etc/xdg/kdeglobals' 'etc/sddm.conf.d/10-blankos.conf')
 source=("70-blankos-desktop.preset"
         "10-blankos.conf"
         "kdeglobals")
@@ -35,9 +35,9 @@ sha256sums=('1a026633127464691ea7b7cfcfbed34168ba72722333200fc7f187e443e67f7c'
 
 package() {
 	install -Dm644 70-blankos-desktop.preset "$pkgdir/usr/lib/systemd/system-preset/70-blankos-desktop.preset"
-	# boot to the login screen
-	install -d "$pkgdir/etc/systemd/system"
-	ln -s /usr/lib/systemd/system/graphical.target "$pkgdir/etc/systemd/system/default.target"
-	install -Dm644 10-blankos.conf "$pkgdir/usr/lib/sddm/sddm.conf.d/10-blankos.conf"
+	# (systemd's default.target is already graphical.target: boots to SDDM)
+	# In /etc: SDDM reads /usr/lib/sddm/sddm.conf.d first, where its own
+	# default.conf (DisplayServer=x11) would sort after a 10-blankos.conf.
+	install -Dm644 10-blankos.conf "$pkgdir/etc/sddm.conf.d/10-blankos.conf"
 	install -Dm644 kdeglobals "$pkgdir/etc/xdg/kdeglobals"
 }
