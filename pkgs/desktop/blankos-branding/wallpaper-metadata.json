@@ -1,0 +1,8 @@
+{
+    "KPlugin": {
+        "Authors": [ { "Name": "BlankOS" } ],
+        "Id": "BlankOS",
+        "License": "CC-BY-SA-4.0",
+        "Name": "BlankOS"
+    }
+}

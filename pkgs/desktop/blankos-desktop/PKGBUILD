@@ -1,8 +1,7 @@
 # Maintainer: BlankOS <builds@blankos.invalid>
 #
 # The BlankOS desktop: KDE Plasma 6 on Wayland, logged in through SDDM,
-# with the core KDE apps and Firefox. Dark (Breeze Dark) with the BlankOS
-# violet accent until the full theme lands.
+# with the core KDE apps and Firefox, in the BlankOS look (blankos-branding).
 
 pkgname=blankos-desktop
 pkgver=0.4.0
@@ -21,7 +20,7 @@ depends=('blankos-system'
          'sddm-kcm' 'plasma-systemmonitor' 'ksystemstats' 'milou' 'plasma-welcome' 'discover'
          # look and sound
          'breeze' 'breeze-icons' 'qqc2-breeze-style' 'qqc2-desktop-style' 'ocean-sound-theme'
-         'noto-fonts' 'ttf-hack'
+         'noto-fonts' 'ttf-hack' 'blankos-branding'
          # apps
          'dolphin' 'konsole' 'kate' 'spectacle' 'ark' 'gwenview' 'blankos-default-browser'
          # Qt runtime pieces apps load as plugins
@@ -32,7 +31,7 @@ source=("70-blankos-desktop.preset"
         "kdeglobals")
 sha256sums=('1a026633127464691ea7b7cfcfbed34168ba72722333200fc7f187e443e67f7c'
             'f6f1e4a3521e4c7564ff8f141574d7ee6e64f924d71bab67e8ae279312f48aa7'
-            '11415964b3ab63799c45a5d2ef7eeb127d5b828606875f1435eae3a66beafbc2')
+            'bf04eaa0de1e807e05edffc567047740b5611376df1a8a7487fb99f90a94e115')
 
 package() {
 	install -Dm644 70-blankos-desktop.preset "$pkgdir/usr/lib/systemd/system-preset/70-blankos-desktop.preset"

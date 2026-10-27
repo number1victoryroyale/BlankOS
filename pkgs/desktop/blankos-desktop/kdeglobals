@@ -1,7 +1,7 @@
-# BlankOS defaults for every user: Breeze Dark with the violet accent
+# BlankOS defaults for every user: the BlankOS look (dark, violet accent)
 [General]
 AccentColor=139,92,246
-ColorScheme=BreezeDark
+ColorScheme=BlankOS
 font=Noto Sans,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
 fixed=Hack,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
 
@@ -9,5 +9,5 @@ fixed=Hack,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
 Theme=breeze-dark
 
 [KDE]
-LookAndFeelPackage=org.kde.breezedark.desktop
+LookAndFeelPackage=org.blankos.desktop
 widgetStyle=Breeze

@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [ { "Name": "BlankOS" } ],
+        "Category": "",
+        "Description": "Dark BlankOS look with the violet accent",
+        "Id": "org.blankos.desktop",
+        "License": "GPL-3.0-or-later",
+        "Name": "BlankOS",
+        "Version": "1.0",
+        "Website": "https://github.com/number1victoryroyale/BlankOS"
+    },
+    "X-Plasma-APIVersion": "2"
+}

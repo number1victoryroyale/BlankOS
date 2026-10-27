@@ -1,0 +1,52 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+#
+# The BlankOS look: a Plasma look-and-feel (BlankOS colors on Breeze,
+# breeze-dark icons and Plasma style), the wallpaper (drawn at build time
+# by mkwallpaper.py), the SDDM background and a Konsole profile.
+
+pkgname=blankos-branding
+pkgver=1.0
+pkgrel=1
+pkgdesc="BlankOS look: colors, Plasma theme, wallpaper, SDDM background, Konsole profile"
+arch=(any)
+url='https://github.com/number1victoryroyale/BlankOS'
+license=('GPL-3.0-or-later' 'CC-BY-SA-4.0')
+depends=('breeze' 'breeze-icons' 'plasma-workspace' 'sddm' 'konsole')
+makedepends=('python')
+backup=('etc/xdg/konsolerc')
+source=("BlankOS.colors" "lnf-metadata.json" "lnf-defaults" "wallpaper-metadata.json" "mkwallpaper.py"
+        "sddm-theme.conf.user" "BlankOS.colorscheme" "BlankOS.profile" "konsolerc")
+sha256sums=('a0e1faaad367f839146874056d896e0118401cdd8e8a748fa1010d4a311e6690'
+            '9415cfd32be30aeeb657029546fe4526410776d511185cc619f4bde647366a8a'
+            '9366e719e72dd04dad06994bb62a6727e3c7e75fda4ddfc48437502683f6b821'
+            '5f6db1dbc3c25c9a034a1acf007f82d94b637273ea111f24d9a5f9e3d6dffb84'
+            'e04058686d43ee681f004386cf9d64cd995a282f826a08fd03fe2d65b03f3110'
+            '6d09e0657e6befa87fdcb10e8f87a46f0e17ac71c8fd007f55c2d4fa22e30171'
+            'c5719b769035d5c0ec477383d2c7f19a63b45a9f692abbbe5b9ba29cfb13f8e4'
+            '2ad9699b982a66429f8a0a4ce152f15251bd9c991b8ef978d3b48c4dd22554c3'
+            'beb41eef8773c17a780cbefc802170f0e00e3271e3d213f8f610ada08b2f4419')
+
+build() {
+	local s
+	for s in 3840x2160 1920x1080; do
+		python3 mkwallpaper.py "${s%x*}" "${s#*x}" "$s.png"
+	done
+}
+
+package() {
+	install -Dm644 BlankOS.colors "$pkgdir/usr/share/color-schemes/BlankOS.colors"
+
+	local lnf=$pkgdir/usr/share/plasma/look-and-feel/org.blankos.desktop
+	install -Dm644 lnf-metadata.json "$lnf/metadata.json"
+	install -Dm644 lnf-defaults "$lnf/contents/defaults"
+
+	local wp=$pkgdir/usr/share/wallpapers/BlankOS
+	install -Dm644 wallpaper-metadata.json "$wp/metadata.json"
+	install -Dm644 3840x2160.png 1920x1080.png -t "$wp/contents/images"
+	install -Dm644 1920x1080.png "$wp/contents/screenshot.png"
+
+	install -Dm644 sddm-theme.conf.user "$pkgdir/usr/share/sddm/themes/breeze/theme.conf.user"
+
+	install -Dm644 BlankOS.colorscheme BlankOS.profile -t "$pkgdir/usr/share/konsole"
+	install -Dm644 konsolerc "$pkgdir/etc/xdg/konsolerc"
+}
