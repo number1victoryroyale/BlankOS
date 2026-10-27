@@ -89,7 +89,7 @@ if pacman -Q blankos-desktop > /dev/null 2>&1; then
 		journalctl -b --no-pager _UID=1000 2>/dev/null | grep -iE "kwin|wayland|drm|egl|startplasma" | tail -n 40
 		tail -n 30 /home/live/.local/share/sddm/wayland-session.log 2>/dev/null; exit 1'
 	check "Plasma shell running"       bash -c 'for i in $(seq 180); do pgrep -u live -x plasmashell > /dev/null && exit 0; sleep 1; done; ps -u live -o pid,args; journalctl -b --user-unit plasma-plasmashell --no-pager 2>/dev/null | tail -n 30; exit 1'
-	check "KDE apps start"             bash -c 'su live -s /bin/bash -c "QT_QPA_PLATFORM=offscreen dolphin --version && QT_QPA_PLATFORM=offscreen konsole --version && QT_QPA_PLATFORM=offscreen kate --version"'
+	check "KDE apps start"             bash -c 'su live -s /bin/bash -c "QT_QPA_PLATFORM=offscreen dolphin --version && QT_QPA_PLATFORM=offscreen konsole --version && QT_QPA_PLATFORM=offscreen kate --version && QT_QPA_PLATFORM=offscreen plasma-discover --version"'
 	check "Firefox installed"          bash -c '/usr/lib/firefox/firefox --version'
 	check "default browser is Firefox" bash -c 'grep -qx "x-scheme-handler/https=firefox.desktop" /etc/xdg/mimeapps.list'
 	check "xdg-desktop-portal-kde"     test -x /usr/lib/xdg-desktop-portal-kde
@@ -120,6 +120,16 @@ if pacman -Q blankos-gaming > /dev/null 2>&1; then
 	check "NVIDIA driver ready (off unless chosen)" bash -c 'modinfo -n nvidia && modinfo -n nvidia_drm && test -x /usr/bin/nvidia-smi && test -f /usr/share/vulkan/icd.d/nvidia_icd.json && ! lsmod | grep -q "^nvidia " && test -f /usr/share/nvidia/10_nvidia.json && ! test -e /etc/glvnd/egl_vendor.d/10_nvidia.json && command -v prime-run blankos-nvidia-setup'
 	check "power profiles and GPU switching" bash -c 'systemctl is-active -q power-profiles-daemon.service && systemctl is-active -q switcheroo-control.service'
 	check "Game Hub self test"         bash -c 'su live -s /bin/bash -c "QT_QPA_PLATFORM=offscreen blankos-game-hub --self-test"'
+fi
+
+# Not a check: programs that crashed during the test, with backtraces
+if command -v coredumpctl > /dev/null && coredumpctl --no-pager --no-legend list > /tmp/crashes 2>/dev/null &&
+	[[ -s /tmp/crashes ]]; then
+	echo "INFO crashes during the boot:"
+	sed 's/^/     | /' /tmp/crashes
+	for exe in $(awk '{ print $NF }' /tmp/crashes | sort -u); do
+		coredumpctl --no-pager info "$exe" 2>/dev/null | grep -E "Signal:|^ +#[0-9]+ " | head -n 15 | sed "s|^|     | ${exe##*/}: |"
+	done
 fi
 
 echo "SELFTEST-DONE failures=$fails"

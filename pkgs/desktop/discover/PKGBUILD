@@ -3,7 +3,7 @@
 
 pkgname=discover
 pkgver=6.7.4
-pkgrel=1
+pkgrel=2
 pkgdesc="KDE and Plasma resources management GUI"
 arch=(x86_64)
 url='https://apps.kde.org/discover/'
@@ -16,7 +16,7 @@ sha256sums=('f8b809c9aaa25c1d636b0bdf144d87a3ee659d5d80f26961d3116a627fef859d')
 build() {
 	cmake -S "discover-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
 		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
-		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_TESTING=OFF -W no-dev \
 		-D BUILD_QT5=OFF -D BUILD_FlatpakBackend=ON -D BUILD_PackageKitBackend=OFF -D BUILD_FwupdBackend=OFF \
 		-D BUILD_SnapBackend=OFF -D BUILD_RpmOstreeBackend=OFF -D BUILD_SteamOSBackend=OFF
 	ninja -C build

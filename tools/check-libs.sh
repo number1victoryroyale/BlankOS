@@ -4,7 +4,10 @@
 # dependency missing from some PKGBUILD. Private libraries that programs
 # load from their own directories (Firefox, Wine, systemd) count as
 # present wherever they are, so this only catches libraries that are
-# missing altogether.
+# missing altogether. A second pass runs ldd (inside ROOT) on every program
+# in /usr/bin, which also catches libraries in private directories that a
+# missing RPATH leaves unreachable. (Not on plugins: those may rely on
+# libraries their host program has already loaded.)
 set -euo pipefail
 root=${1:?usage: check-libs.sh ROOT}
 work=$(mktemp -d)
@@ -29,4 +32,12 @@ while IFS=$'\t' read -r f lib; do
 	printf '%s (%s) needs %s\n' "$f" "$(chroot "$root" /usr/bin/pacman -Qoq "$f" 2>/dev/null || echo '?')" "$lib"
 	bad=1
 done < "$work/needs"
+
+while IFS= read -r f; do
+	missing=$(chroot "$root" /usr/bin/ldd "$f" 2>/dev/null | awk '/not found/ { print $1 }' | sort -u | tr '\n' ' ')
+	if [[ -n $missing ]]; then
+		printf '%s (%s) cannot load %s\n' "$f" "$(chroot "$root" /usr/bin/pacman -Qoq "$f" 2>/dev/null || echo '?')" "$missing"
+		bad=1
+	fi
+done < <(cut -f1 "$work/needs" | sort -u | grep '^/usr/bin/')
 exit $bad
