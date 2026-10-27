@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's kunitconversion
+
+pkgname=kunitconversion
+pkgver=6.29.0
+pkgrel=1
+pkgdesc="Support for unit conversion"
+arch=(x86_64)
+url='https://develop.kde.org/products/frameworks/'
+license=('LGPL-2.0-only' 'LGPL-3.0-only')
+depends=('glibc' 'ki18n' 'gcc-libs' 'qt6-base')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'python-setuptools')
+source=("https://download.kde.org/stable/frameworks/${pkgver%.*}/kunitconversion-$pkgver.tar.xz")
+sha256sums=('cfb2bc59a293dd4895dc07504b6b80ce29855222206fcc76d9c4ff8f4be5c5ec')
+
+build() {
+	cmake -S "kunitconversion-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QCH=OFF -D BUILD_PYTHON_BINDINGS=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

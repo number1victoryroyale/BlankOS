@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's sddm-kcm
+
+pkgname=sddm-kcm
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="KDE Config Module for SDDM"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('GPL-2.0-or-later')
+depends=('glibc' 'karchive' 'kauth' 'kcmutils' 'kconfig' 'kcoreaddons' 'ki18n' 'kio' 'kirigami' 'knewstuff' 'kservice' 'kwidgetsaddons' 'gcc-libs' 'qt6-base' 'qt6-declarative' 'sddm')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'kdoctools')
+source=("https://download.kde.org/stable/plasma/$pkgver/sddm-kcm-$pkgver.tar.xz")
+sha256sums=('e29498674bf54140dfec8480186cdd0da515a2e6292c733208adeb4175512969')
+
+build() {
+	cmake -S "sddm-kcm-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

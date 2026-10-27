@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's libplasma
+
+pkgname=libplasma
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="Plasma library and runtime components"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('glibc' 'kcolorscheme' 'kconfig' 'kcoreaddons' 'kglobalaccel' 'kguiaddons' 'ki18n' 'kiconthemes' 'kio' 'kirigami' 'knotifications' 'kpackage' 'ksvg' 'kwidgetsaddons' 'kwindowsystem' 'gcc-libs' 'plasma-activities' 'qt6-5compat' 'qt6-base' 'qt6-declarative' 'wayland')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'kdoctools' 'plasma-wayland-protocols' 'wayland-protocols')
+source=("https://download.kde.org/stable/plasma/$pkgver/libplasma-$pkgver.tar.xz")
+sha256sums=('8f187850ea0cd46e545b33787619fa28f682388e4b828d090a0692874a7c9955')
+
+build() {
+	cmake -S "libplasma-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

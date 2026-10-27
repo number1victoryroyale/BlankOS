@@ -1,0 +1,40 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=fontconfig
+pkgver=2.18.3
+pkgrel=1
+pkgdesc="Library for configuring and customizing font access"
+arch=(x86_64)
+url='https://www.freedesktop.org/wiki/Software/fontconfig/'
+license=('HPND AND Unicode-DFS-2016')
+depends=('expat' 'freetype2')
+makedepends=('gperf' 'python')
+backup=('etc/fonts/fonts.conf')
+source=("https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic/fontconfig/$pkgver/fontconfig-$pkgver.tar.xz")
+sha256sums=('4f7b554a38cdf78c033f666c8871f3749e14a094f65a07f630c91ed0b43d35e3')
+
+build() {
+	cd "fontconfig-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static \
+		--disable-docs
+	make
+}
+
+package() {
+	cd "fontconfig-$pkgver"
+	make DESTDIR="$pkgdir" install
+	install -Dm644 /dev/stdin "$pkgdir/usr/share/libalpm/hooks/fontconfig.hook" <<- EOF
+		[Trigger]
+		Type = Path
+		Operation = Install
+		Operation = Upgrade
+		Operation = Remove
+		Target = usr/share/fonts/*
+
+		[Action]
+		Description = Updating fontconfig cache...
+		When = PostTransaction
+		Exec = /usr/bin/fc-cache -s
+		EOF
+}

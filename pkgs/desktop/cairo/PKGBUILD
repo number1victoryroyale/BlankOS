@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=cairo
+pkgver=1.18.4
+pkgrel=1
+pkgdesc="2D graphics library with support for multiple output devices"
+arch=(x86_64)
+url='https://cairographics.org/'
+license=('LGPL-2.1-only OR MPL-1.1')
+depends=('fontconfig' 'freetype2' 'glib2' 'libpng' 'libx11' 'libxext' 'libxrender' 'libxcb' 'pixman' 'zlib')
+source=("https://www.cairographics.org/releases/cairo-$pkgver.tar.xz")
+sha256sums=('445ed8208a6e4823de1226a74ca319d3600e83f6369f99b14265006599c32ccb')
+
+build() {
+	meson setup build "cairo-$pkgver" --prefix=/usr --buildtype=release \
+		-D tests=disabled -D gtk_doc=false -D spectre=disabled -D symbol-lookup=disabled -D lzo=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

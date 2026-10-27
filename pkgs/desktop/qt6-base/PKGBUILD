@@ -1,0 +1,59 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's qt6-base
+# Installed in /usr, tools in /usr/lib/qt6/bin with *6 links in /usr/bin
+# (Arch's layout, which the other Qt modules inherit).
+
+pkgname=qt6-base
+_qtver=6.11.2
+pkgver=$_qtver
+pkgrel=1
+pkgdesc="A cross-platform application and UI framework"
+arch=(x86_64)
+url='https://www.qt.io'
+license=('GPL-3.0-only' 'LGPL-3.0-only' 'LicenseRef-Qt-Commercial' 'Qt-GPL-exception-1.0')
+depends=('brotli' 'dbus' 'double-conversion' 'fontconfig' 'freetype2' 'glib2' 'glibc' 'harfbuzz' 'icu' 'libdrm' 'gcc-libs' 'libglvnd' 'libice' 'libinput' 'libjpeg-turbo' 'libpng' 'libsm' 'libx11' 'libxcb' 'libxkbcommon' 'mesa' 'mtdev' 'openssl' 'pcre2' 'sqlite' 'systemd' 'wayland' 'xcb-util-cursor' 'xcb-util-image' 'xcb-util-keysyms' 'xcb-util-renderutil' 'xcb-util-wm' 'zlib' 'zstd' 'vulkan-icd-loader' 'at-spi2-core' 'libxi')
+makedepends=('cmake' 'ninja' 'vulkan-headers' 'xorgproto' 'wayland-protocols')
+source=("https://download.qt.io/official_releases/qt/${pkgver%.*}/$pkgver/submodules/qtbase-everywhere-src-$pkgver.tar.xz")
+sha256sums=('5b2e00eccaf5a4d8c14134ffa0ea8dfd0a35ae1ffc7f8d87fa4305a1ed23cf22')
+
+build() {
+	cmake -S "qtbase-everywhere-src-$pkgver" -B build -G Ninja \
+		-D CMAKE_BUILD_TYPE=Release \
+		-D CMAKE_MESSAGE_LOG_LEVEL=STATUS \
+		-D CMAKE_INSTALL_PREFIX=/usr \
+		-D INSTALL_BINDIR=lib/qt6/bin \
+		-D INSTALL_PUBLICBINDIR=usr/bin \
+		-D INSTALL_LIBEXECDIR=lib/qt6 \
+		-D INSTALL_DOCDIR=share/doc/qt6 \
+		-D INSTALL_ARCHDATADIR=lib/qt6 \
+		-D INSTALL_DATADIR=share/qt6 \
+		-D INSTALL_INCLUDEDIR=include/qt6 \
+		-D INSTALL_MKSPECSDIR=lib/qt6/mkspecs \
+		-D INSTALL_EXAMPLESDIR=share/doc/qt6/examples \
+		-D FEATURE_journald=ON \
+		-D FEATURE_libproxy=OFF \
+		-D FEATURE_openssl_linked=ON \
+		-D FEATURE_system_sqlite=ON \
+		-D FEATURE_system_xcb_xinput=ON \
+		-D FEATURE_no_direct_extern_access=ON \
+		-D FEATURE_vulkan=ON \
+		-D FEATURE_gtk3=OFF \
+		-D FEATURE_cups=OFF \
+		-D FEATURE_sql_mysql=OFF -D FEATURE_sql_psql=OFF -D FEATURE_sql_odbc=OFF -D FEATURE_sql_ibase=OFF \
+		-D QT_BUILD_TESTS=OFF -D QT_BUILD_EXAMPLES=OFF
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+	install -Dm644 "qtbase-everywhere-src-$pkgver/LICENSES"/* -t "$pkgdir/usr/share/licenses/$pkgname"
+
+	# user-facing tools (qmake6, qdbus6, ...) in /usr/bin
+	if [[ -f $srcdir/build/user_facing_tool_links.txt ]]; then
+		cd "$pkgdir"
+		mkdir -p usr/bin
+		while read -r _line; do
+			ln -s $_line
+		done < "$srcdir/build/user_facing_tool_links.txt"
+	fi
+}

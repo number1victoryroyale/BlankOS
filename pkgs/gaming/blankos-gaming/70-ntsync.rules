@@ -1,0 +1,2 @@
+# Wine/Proton open /dev/ntsync for fast synchronization primitives
+KERNEL=="ntsync", MODE="0666"

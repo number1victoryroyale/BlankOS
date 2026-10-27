@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's kmenuedit
+
+pkgname=kmenuedit
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="KDE menu editor"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('glibc' 'kcompletion' 'kconfig' 'kconfigwidgets' 'kcoreaddons' 'kcrash' 'kdbusaddons' 'kglobalaccel' 'ki18n' 'kiconthemes' 'kio' 'kitemviews' 'kservice' 'kwidgetsaddons' 'kwindowsystem' 'kxmlgui' 'gcc-libs' 'qt6-base' 'sonnet')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'kdoctools')
+source=("https://download.kde.org/stable/plasma/$pkgver/kmenuedit-$pkgver.tar.xz")
+sha256sums=('bc8daed5c859904e580ca8415b88836fcde198957fa672b5b28de4017398b0c3')
+
+build() {
+	cmake -S "kmenuedit-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libsecret
+pkgver=0.21.7
+pkgrel=1
+pkgdesc="Library for storing and retrieving passwords and other secrets"
+arch=(x86_64)
+url='https://gitlab.gnome.org/GNOME/libsecret'
+license=('LGPL-2.1-or-later')
+depends=('glib2' 'libgcrypt')
+source=("https://download.gnome.org/sources/libsecret/0.21/libsecret-$pkgver.tar.xz")
+sha256sums=('6b452e4750590a2b5617adc40026f28d2f4903de15f1250e1d1c40bfd68ed55e')
+
+build() {
+	meson setup build "libsecret-$pkgver" --prefix=/usr --buildtype=release \
+		-D gtk_doc=false -D introspection=false -D vapi=false -D manpage=false -D bash_completion=disabled -D crypto=libgcrypt
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

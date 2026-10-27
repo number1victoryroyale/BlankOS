@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Arch Linux's libinih (needed by gamemode)
+
+pkgname=inih
+pkgver=r62
+pkgrel=1
+pkgdesc="A simple .INI file parser written in C"
+arch=(x86_64)
+url='https://github.com/benhoyt/inih'
+license=('BSD-3-Clause')
+depends=('gcc-libs')
+provides=('libinih')
+source=("https://github.com/benhoyt/inih/archive/$pkgver/inih-$pkgver.tar.gz")
+sha256sums=('9c15fa751bb8093d042dae1b9f125eb45198c32c6704cd5481ccde460d4f8151')
+
+build() {
+	meson setup build "inih-$pkgver" --prefix=/usr --buildtype=release \
+		-D default_library=shared -D distro_install=true -D with_INIReader=true
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+	install -Dm644 "inih-$pkgver/LICENSE.txt" "$pkgdir/usr/share/licenses/$pkgname/LICENSE.txt"
+}

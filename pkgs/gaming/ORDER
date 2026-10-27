@@ -1,0 +1,24 @@
+# Build order for [gaming]: Wine, game tools and the Game Hub (milestone 5).
+# Builds on [desktop] (see DEPENDS).
+
+# Windows cross compilers (for Wine's PE DLLs), then Wine
+mingw-w64-toolchain
+wine
+cabextract
+7zip
+winetricks
+dxvk-bin
+vkd3d-proton-bin
+
+# performance tools
+inih
+gamemode
+mangohud
+
+# controllers
+game-devices-udev
+xpadneo
+
+# the Game Hub and the meta package
+blankos-game-hub
+blankos-gaming

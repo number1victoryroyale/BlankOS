@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's syntax-highlighting
+
+pkgname=syntax-highlighting
+pkgver=6.29.0
+pkgrel=1
+pkgdesc="Syntax highlighting engine for structured text and code"
+arch=(x86_64)
+url='https://develop.kde.org/products/frameworks/'
+license=('MIT')
+depends=('glibc' 'gcc-libs' 'qt6-base')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'qt6-declarative')
+source=("https://download.kde.org/stable/frameworks/${pkgver%.*}/syntax-highlighting-$pkgver.tar.xz")
+sha256sums=('924c4cfab4043ede9a40bc55721a62515c7b83c6b84c0bdcc29cd3cdf89b09b4')
+
+build() {
+	cmake -S "syntax-highlighting-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QCH=OFF -D BUILD_PYTHON_BINDINGS=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

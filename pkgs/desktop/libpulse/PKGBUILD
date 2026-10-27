@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libpulse
+pkgver=17.0
+pkgrel=1
+pkgdesc="PulseAudio client libraries (the server is PipeWire)"
+arch=(x86_64)
+url='https://www.freedesktop.org/wiki/Software/PulseAudio/'
+license=('LGPL-2.1-or-later')
+depends=('dbus' 'glib2' 'libsndfile' 'systemd')
+source=("https://www.freedesktop.org/software/pulseaudio/releases/pulseaudio-$pkgver.tar.xz")
+sha256sums=('053794d6671a3e397d849e478a80b82a63cb9d8ca296bd35b73317bb5ceb87b5')
+
+build() {
+	meson setup build "pulseaudio-$pkgver" --prefix=/usr --buildtype=release \
+		-D daemon=false -D client=true -D doxygen=false -D man=false -D tests=false -D database=simple \
+		-D bluez5=disabled -D gtk=disabled -D x11=disabled -D avahi=disabled -D jack=disabled -D lirc=disabled -D openssl=disabled -D tcpwrap=disabled -D gstreamer=disabled -D orc=disabled -D webrtc-aec=disabled -D fftw=disabled -D soxr=disabled -D speex=disabled -D valgrind=disabled -D elogind=disabled -D asyncns=disabled -D consolekit=disabled -D oss-output=disabled -D adrian-aec=false -D bashcompletiondir=no -D zshcompletiondir=no
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

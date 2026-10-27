@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=fribidi
+pkgver=1.0.16
+pkgrel=1
+pkgdesc="Free Implementation of the Unicode Bidirectional Algorithm"
+arch=(x86_64)
+url='https://github.com/fribidi/fribidi'
+license=('LGPL-2.1-or-later')
+depends=('glibc')
+source=("https://github.com/fribidi/fribidi/releases/download/v$pkgver/fribidi-$pkgver.tar.xz")
+sha256sums=('1b1cde5b235d40479e91be2f0e88a309e3214c8ab470ec8a2744d82a5a9ea05c')
+
+build() {
+	meson setup build "fribidi-$pkgver" --prefix=/usr --buildtype=release \
+		-D docs=false -D tests=false
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

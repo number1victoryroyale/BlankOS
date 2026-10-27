@@ -1,0 +1,18 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+
+pkgname=winetricks
+pkgver=20260125
+pkgrel=1
+pkgdesc="Script to install various redistributable runtime libraries in Wine"
+arch=(any)
+url='https://github.com/Winetricks/winetricks'
+license=('LGPL-2.1-or-later')
+depends=('wine' 'cabextract' 'curl' 'bash')
+optdepends=('7zip: extract 7z archives natively')
+source=("https://github.com/Winetricks/winetricks/archive/$pkgver/winetricks-$pkgver.tar.gz")
+sha256sums=('2890bd9fbbade4638e58b4999a237273192df03b58516ae7b8771e09c22d2f56')
+
+package() {
+	cd "winetricks-$pkgver"
+	make DESTDIR="$pkgdir" PREFIX=/usr install
+}

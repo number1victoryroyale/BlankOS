@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's kwayland
+
+pkgname=kwayland
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="Qt-style Client and Server library wrapper for the Wayland libraries"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('glibc' 'gcc-libs' 'qt6-base' 'wayland')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'plasma-wayland-protocols' 'wayland-protocols')
+source=("https://download.kde.org/stable/plasma/$pkgver/kwayland-$pkgver.tar.xz")
+sha256sums=('2cb3ad260a0fc07533b1e0e9e294da2ec9be83095a901140e9fab16fa17a550d')
+
+build() {
+	cmake -S "kwayland-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

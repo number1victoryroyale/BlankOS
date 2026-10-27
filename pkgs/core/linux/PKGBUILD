@@ -1,16 +1,17 @@
 # Maintainer: BlankOS <builds@blankos.invalid>
 
-pkgname=linux
+# linux-headers (split package) holds what out-of-tree modules (xpadneo,
+# NVIDIA) need to build against this exact kernel.
+
+pkgbase=linux
+pkgname=('linux' 'linux-headers')
 pkgver=7.3
-pkgrel=1
-pkgdesc="The BlankOS Linux kernel and modules"
+pkgrel=2
 arch=(x86_64)
 url='https://www.kernel.org'
 license=('GPL-2.0-only')
-depends=('bash' 'kmod' 'coreutils')
 makedepends=('bc' 'perl' 'flex' 'bison' 'libelf' 'openssl' 'python' 'zstd' 'xz' 'tar')
 options=('!strip' '!debug' '!lto')
-install=linux.install
 source=("https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-$pkgver.tar.xz"
         "config.base"
         "config.blankos")
@@ -38,7 +39,11 @@ build() {
 	make all
 }
 
-package() {
+package_linux() {
+	pkgdesc="The BlankOS Linux kernel and modules"
+	depends=('bash' 'kmod' 'coreutils')
+	optdepends=('linux-headers: build out-of-tree kernel modules')
+	install=linux.install
 	cd "linux-$pkgver"
 	local modulesdir="$pkgdir/usr/lib/modules/$_kver"
 	make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 DEPMOD=/doesnt/exist modules_install
@@ -50,4 +55,35 @@ package() {
 	# Until the initramfs/dracut integration lands, the kernel lives in /boot
 	# directly (root filesystem drivers are built in).
 	install -Dm644 "$(make -s image_name)" "$pkgdir/boot/vmlinuz-linux"
+}
+
+package_linux-headers() {
+	pkgdesc="Headers and scripts for building modules for the BlankOS Linux kernel"
+	depends=("linux=$pkgver-$pkgrel")
+	cd "linux-$pkgver"
+	local builddir="$pkgdir/usr/lib/modules/$_kver/build" d
+
+	install -Dt "$builddir" -m644 .config Makefile Module.symvers System.map
+	install -Dt "$builddir/kernel" -m644 kernel/Makefile
+	install -Dt "$builddir/arch/x86" -m644 arch/x86/Makefile
+	cp -t "$builddir" -a scripts include
+	cp -t "$builddir/arch/x86" -a arch/x86/include
+	install -Dt "$builddir/arch/x86/kernel" -m644 arch/x86/kernel/asm-offsets.s
+	if [[ -f tools/objtool/objtool ]]; then
+		install -Dt "$builddir/tools/objtool" tools/objtool/objtool
+	fi
+	# private headers some out-of-tree drivers include
+	for d in drivers/md net/mac80211 drivers/media/usb/dvb-usb drivers/media/dvb-frontends \
+	         drivers/media/tuners drivers/iio/common/hid-sensors; do
+		install -Dt "$builddir/$d" -m644 "$d"/*.h
+	done
+	find . -name 'Kconfig*' -exec install -Dm644 {} "$builddir/{}" \;
+	# only x86 is needed; no objects or dangling links
+	for d in "$builddir"/arch/*/; do
+		[[ $d == */x86/ ]] || rm -r "$d"
+	done
+	find "$builddir" -type f -name '*.o' -delete
+	find -L "$builddir" -type l -delete
+	install -d "$pkgdir/usr/src"
+	ln -sr "$builddir" "$pkgdir/usr/src/linux"
 }

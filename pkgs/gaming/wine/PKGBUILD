@@ -1,0 +1,47 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Wine in the new WoW64 mode: one 64-bit build that also runs 32-bit
+# Windows programs, so BlankOS needs no 32-bit Linux libraries. Windows
+# DLLs are built as real PE files with the MinGW-w64 cross compilers.
+# Uses NTSYNC (/dev/ntsync, see blankos-gaming) for fast synchronization.
+
+pkgname=wine
+pkgver=11.0
+pkgrel=1
+pkgdesc="A compatibility layer for running Windows programs (64-bit WoW64 build, runs 32-bit programs too)"
+arch=(x86_64)
+url='https://www.winehq.org'
+license=('LGPL-2.1-or-later')
+depends=('fontconfig' 'freetype2' 'gnutls' 'libx11' 'libxext' 'libxrandr' 'libxi' 'libxcursor' 'libxinerama'
+         'libxcomposite' 'libxrender' 'libxfixes' 'libxkbcommon' 'wayland' 'libglvnd' 'vulkan-icd-loader'
+         'alsa-lib' 'libpulse' 'gstreamer' 'gst-plugins-base' 'sdl2-compat' 'libusb' 'dbus' 'systemd'
+         'ffmpeg')
+makedepends=('mingw-w64-toolchain' 'perl' 'flex' 'bison' 'vulkan-headers' 'xorgproto' 'wayland-protocols')
+optdepends=('winetricks: install Windows runtimes and fonts'
+            'dxvk-bin: Direct3D 8-11 over Vulkan'
+            'vkd3d-proton-bin: Direct3D 12 over Vulkan')
+options=('staticlibs' '!lto')
+source=("https://dl.winehq.org/wine/source/${pkgver%%.*}.0/wine-$pkgver.tar.xz")
+sha256sums=('c07a6857933c1fc60dff5448d79f39c92481c1e9db5aa628db9d0358446e0701')
+
+build() {
+	cd "wine-$pkgver"
+	# PE files are not ELF: no host CFLAGS hardening or LTO for them
+	export CROSSCFLAGS="-O2 -pipe"
+	./configure --prefix=/usr --libdir=/usr/lib \
+		--enable-archs=i386,x86_64 --with-mingw \
+		--disable-tests --disable-win16 \
+		--with-wayland --with-vulkan --with-pulse --with-alsa --with-gstreamer --with-ffmpeg \
+		--with-sdl --with-usb --with-udev --with-dbus --with-freetype --with-fontconfig --with-gnutls \
+		--with-x --with-xcomposite --with-xcursor --with-xfixes --with-xinerama --with-xinput2 \
+		--with-xrandr --with-xrender --with-xshape --with-opengl \
+		--without-capi --without-cups --without-gphoto --without-sane --without-krb5 --without-netapi \
+		--without-opencl --without-pcap --without-pcsclite --without-v4l2 --without-oss \
+		--without-gssapi --without-xxf86vm --without-osmesa
+	make
+}
+
+package() {
+	cd "wine-$pkgver"
+	make DESTDIR="$pkgdir" install
+	install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

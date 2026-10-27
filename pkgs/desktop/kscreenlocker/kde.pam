@@ -1,0 +1,6 @@
+# Begin /usr/lib/pam.d/kde (KDE screen locker)
+
+auth     include        system-auth
+account  include        system-account
+
+# End /usr/lib/pam.d/kde

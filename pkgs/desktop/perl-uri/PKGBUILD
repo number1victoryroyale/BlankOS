@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=perl-uri
+pkgver=5.35
+pkgrel=1
+pkgdesc="Uniform Resource Identifiers (absolute and relative)"
+arch=(any)
+url='https://metacpan.org/dist/URI'
+license=('Artistic-1.0-Perl OR GPL-1.0-or-later')
+depends=('perl')
+source=("https://www.cpan.org/authors/id/O/OA/OALDERS/URI-$pkgver.tar.gz")
+sha256sums=('89648964ce5ae006726951f42f718576fbefe9e98a41bd2212d57386163092d2')
+
+build() {
+	cd "URI-$pkgver"
+	PERL_MM_USE_DEFAULT=1 perl Makefile.PL INSTALLDIRS=vendor
+	make
+}
+
+package() {
+	cd "URI-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

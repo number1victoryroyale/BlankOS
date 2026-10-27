@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's libkscreen
+
+pkgname=libkscreen
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="KDE screen management software"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('glibc' 'gcc-libs' 'libxcb' 'qt6-base' 'wayland')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'plasma-wayland-protocols')
+source=("https://download.kde.org/stable/plasma/$pkgver/libkscreen-$pkgver.tar.xz")
+sha256sums=('f40bfbd83147a7c7ff387ffe5053cc2ea000bdb21555a0b3d06da3c59d7b4977')
+
+build() {
+	cmake -S "libkscreen-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=exiv2
+pkgver=0.28.8
+pkgrel=1
+pkgdesc="Exif, IPTC and XMP metadata library and tools (used by Gwenview)"
+arch=(x86_64)
+url='https://exiv2.org'
+license=('GPL-2.0-or-later')
+depends=('expat' 'zlib' 'brotli')
+source=("exiv2-$pkgver.tar.gz::https://github.com/Exiv2/exiv2/archive/v$pkgver/exiv2-$pkgver.tar.gz")
+sha256sums=('ea51b0609f58a9afa063b60daa1539948b62247721e154f4fff0ad3aec9f9756')
+
+build() {
+	cmake -S "exiv2-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D EXIV2_ENABLE_VIDEO=ON -D EXIV2_ENABLE_WEBREADY=OFF -D EXIV2_ENABLE_INIH=OFF -D EXIV2_ENABLE_NLS=OFF -D EXIV2_ENABLE_BMFF=ON -D EXIV2_BUILD_SAMPLES=OFF -D EXIV2_BUILD_UNIT_TESTS=OFF -D EXIV2_BUILD_EXIV2_COMMAND=ON
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

@@ -1,0 +1,29 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's appstream-qt (AppStream built with -D qt=true;
+# only the Qt library is packaged, the rest is the appstream package)
+
+pkgname=appstream-qt
+pkgver=1.1.6
+pkgrel=1
+pkgdesc="Qt 6 interface for AppStream (used by Discover)"
+arch=(x86_64)
+url='https://www.freedesktop.org/wiki/Distributions/AppStream/'
+license=('LGPL-2.1-or-later')
+depends=('appstream' 'qt6-base')
+makedepends=('meson' 'ninja' 'itstool' 'libxslt' 'gperf' 'cmake' 'qt6-tools')
+source=("https://www.freedesktop.org/software/appstream/releases/AppStream-$pkgver.tar.xz")
+sha256sums=('e298929f39729e84a70f6be6941f3e7f3fc2ee3c83cb3ea1b1b5b280a8fe3a24')
+
+build() {
+	meson setup build "AppStream-$pkgver" --prefix=/usr --buildtype=release \
+		-D apidocs=false -D docs=false -D install-docs=false -D bash-completion=false \
+		-D stemming=false -D gir=false -D vapi=false -D qt=true -D qt-versions=6 -D compose=false -D man=false
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$srcdir/inst" ninja -C build install
+	install -d "$pkgdir/usr/lib" "$pkgdir/usr/include"
+	mv "$srcdir"/inst/usr/lib/libAppStreamQt* "$srcdir/inst/usr/lib/cmake" "$pkgdir/usr/lib/"
+	mv "$srcdir/inst/usr/include/AppStreamQt" "$pkgdir/usr/include/"
+}

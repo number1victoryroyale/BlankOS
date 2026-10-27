@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=giflib
+pkgver=6.1.3
+pkgrel=1
+pkgdesc="Library for reading and writing gif images"
+arch=(x86_64)
+url='https://sourceforge.net/projects/giflib/'
+license=('MIT')
+depends=('glibc')
+source=("https://sourceforge.net/projects/giflib/files/giflib-$pkgver.tar.gz")
+sha256sums=('b65b66b99f0424b93525f987386f22fc5efb9da2bfc92ad4a532249aaffbab0e')
+
+build() {
+	cd "giflib-$pkgver"
+	make
+}
+
+package() {
+	cd "giflib-$pkgver"
+	make PREFIX=/usr DESTDIR="$pkgdir" install
+	rm -f "$pkgdir"/usr/lib/libgif.a
+}

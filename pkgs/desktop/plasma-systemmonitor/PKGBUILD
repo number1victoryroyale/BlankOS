@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's plasma-systemmonitor
+
+pkgname=plasma-systemmonitor
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="An interface for monitoring system sensors, process information and other system resources"
+arch=(x86_64)
+url='https://apps.kde.org/plasma-systemmonitor/'
+license=('GPL-2.0-or-later' 'LGPL-2.0-or-later')
+depends=('glibc' 'kconfig' 'kcoreaddons' 'kcrash' 'kdbusaddons' 'kdeclarative' 'kglobalaccel' 'ki18n' 'kiconthemes' 'kio' 'kirigami' 'kirigami-addons' 'kitemmodels' 'knewstuff' 'kquickcharts' 'kservice' 'ksystemstats' 'kwindowsystem' 'libksysguard' 'gcc-libs' 'python' 'qt6-base' 'qt6-declarative')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools')
+source=("https://download.kde.org/stable/plasma/$pkgver/plasma-systemmonitor-$pkgver.tar.xz")
+sha256sums=('80694f9d683a3720116197f7899e47a0b10f01a46a66af65ee079e2145897a8d')
+
+build() {
+	cmake -S "plasma-systemmonitor-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

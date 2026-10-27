@@ -1,0 +1,35 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=lmdb
+pkgver=1.0.1
+pkgrel=1
+pkgdesc="Symas Lightning Memory-Mapped Database (used by Baloo)"
+arch=(x86_64)
+url='https://www.symas.com/mdb'
+license=('OLDAP-2.8')
+depends=('glibc')
+source=("https://git.openldap.org/openldap/openldap/-/archive/LMDB_$pkgver/openldap-LMDB_$pkgver.tar.bz2")
+sha256sums=('1ae17f11ebdeb0d69e53416bb6e0a7479a7d3d5b5ca443a474bff5b5f886a348')
+
+build() {
+	cd "openldap-LMDB_$pkgver/libraries/liblmdb"
+	make CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
+	sed -i "s| liblmdb.a||" Makefile
+}
+
+package() {
+	cd "openldap-LMDB_$pkgver/libraries/liblmdb"
+	make prefix=/usr DESTDIR="$pkgdir" install
+	install -Dm644 /dev/stdin "$pkgdir/usr/lib/pkgconfig/lmdb.pc" <<- EOF
+		prefix=/usr
+		libdir=\${prefix}/lib
+		includedir=\${prefix}/include
+
+		Name: liblmdb
+		Description: Lightning Memory-Mapped Database
+		Version: $pkgver
+		Libs: -L\${libdir} -llmdb
+		Cflags: -I\${includedir}
+		EOF
+}

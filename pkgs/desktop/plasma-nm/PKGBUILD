@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's plasma-nm
+
+pkgname=plasma-nm
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="Plasma applet written in QML for managing network connections"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('GPL-2.0-or-later')
+depends=('glib2' 'glibc' 'kcmutils' 'kcolorscheme' 'kcompletion' 'kconfig' 'kcoreaddons' 'kdbusaddons' 'kdeclarative' 'ki18n' 'kio' 'kirigami' 'kirigami-addons' 'kjobwidgets' 'knotifications' 'kquickcharts' 'kservice' 'kwidgetsaddons' 'kwindowsystem' 'libplasma' 'gcc-libs' 'networkmanager-qt' 'openssl' 'plasma-workspace' 'prison' 'qcoro' 'qt6-base' 'qt6-declarative' 'solid' 'networkmanager' 'qtkeychain-qt6')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools')
+source=("https://download.kde.org/stable/plasma/$pkgver/plasma-nm-$pkgver.tar.xz")
+sha256sums=('c4d49e08072510ed1d2ea9e124dcf493a86458391c756d14aaac28c2c0a7e484')
+
+build() {
+	cmake -S "plasma-nm-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF -D DISABLE_MODEMMANAGER_SUPPORT=ON
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

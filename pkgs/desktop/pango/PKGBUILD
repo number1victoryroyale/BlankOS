@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=pango
+pkgver=1.58.2
+pkgrel=1
+pkgdesc="A library for layout and rendering of text"
+arch=(x86_64)
+url='https://www.pango.org/'
+license=('LGPL-2.0-or-later')
+depends=('cairo' 'fontconfig' 'freetype2' 'fribidi' 'glib2' 'harfbuzz' 'libx11')
+source=("https://download.gnome.org/sources/pango/1.58/pango-$pkgver.tar.xz")
+sha256sums=('342385b6ca3b7c73455d7c80a13b7dbe4489e00bc3bd4c5bd6ed4dce421e374a')
+
+build() {
+	meson setup build "pango-$pkgver" --prefix=/usr --buildtype=release \
+		--wrap-mode=nofallback -D introspection=disabled -D documentation=false -D man-pages=false -D build-testsuite=false -D build-examples=false -D libthai=disabled -D sysprof=disabled -D xft=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

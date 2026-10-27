@@ -1,0 +1,28 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Arch Linux's mangohud. The release "Source" tarball bundles
+# ImGui, ImPlot, spdlog and the Vulkan headers it builds against.
+
+pkgname=mangohud
+pkgver=0.8.4
+pkgrel=1
+pkgdesc="A Vulkan and OpenGL overlay for monitoring FPS, temperatures, CPU/GPU load and more"
+arch=(x86_64)
+url='https://github.com/flightlessmango/MangoHud'
+license=('MIT')
+depends=('gcc-libs' 'dbus' 'libx11' 'wayland' 'libxkbcommon' 'vulkan-icd-loader' 'libglvnd')
+makedepends=('meson' 'ninja' 'glslang' 'python-mako')
+source=("https://github.com/flightlessmango/MangoHud/releases/download/v$pkgver/MangoHud-v$pkgver-Source.tar.xz")
+sha256sums=('bbe5a2b976313c53f21dc24b98bbed03226589460a0cce20d923cb2c36c9d8b0')
+
+build() {
+	meson setup build "MangoHud-v$pkgver" --prefix=/usr --buildtype=release --wrap-mode=nodownload \
+		-D use_system_spdlog=disabled -D with_xnvctrl=disabled -D with_nvml=enabled \
+		-D mangoapp=false -D mangohudctl=false -D mangoplot=disabled -D tests=disabled \
+		-D include_doc=true
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+	install -Dm644 "MangoHud-v$pkgver/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=zxing-cpp
+pkgver=3.1.1
+pkgrel=1
+pkgdesc="Library for barcode scanning and generation"
+arch=(x86_64)
+url='https://github.com/zxing-cpp/zxing-cpp'
+license=('Apache-2.0')
+depends=('gcc-libs')
+source=("https://github.com/zxing-cpp/zxing-cpp/releases/download/v$pkgver/zxing-cpp-$pkgver.tar.gz")
+sha256sums=('c3c02c29c0b519de7bd4e25b376e606e87f0761befd1282815642a2246613d14')
+
+build() {
+	cmake -S "zxing-cpp-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D ZXING_EXAMPLES=OFF -D ZXING_BLACKBOX_TESTS=OFF -D ZXING_UNIT_TESTS=OFF -D ZXING_DEPENDENCIES=LOCAL -D ZXING_C_API=OFF -D ZXING_WRITERS=OLD
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

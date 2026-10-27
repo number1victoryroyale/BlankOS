@@ -2,7 +2,7 @@
 
 pkgname=pacman
 pkgver=7.1.0
-pkgrel=3
+pkgrel=4
 pkgdesc="A library-based package manager with dependency support"
 arch=(x86_64)
 url='https://pacman.archlinux.page/'
@@ -15,7 +15,7 @@ source=("https://gitlab.archlinux.org/pacman/pacman/-/releases/v$pkgver/download
         "makepkg.conf"
         "mirrorlist")
 sha256sums=('530e50d7edbb2a22581c6d6707d2113240276c1bec4ee39a99488e1243c32171'
-            'c2015e5d208198513e825a565ef97f7aa1ffe204c884ba5054d15b4a7e70d2cc'
+            '98a6543afeb0bc0c268f4a290718cd2f035fd9317691d60fcbe688985634ca01'
             '60c8e4f989ffc9d47fc66f36186050ad2bf9e886452fc558dbb425690e4c63c3'
             'fe29da89ff54253c117802a4a3ffcf738853e632670dba82ffa4c1ac6797819c')
 

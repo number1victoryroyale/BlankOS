@@ -6,8 +6,9 @@ self test over the serial console.
 
 Exit status is 0 only if the guest reports "SELFTEST-DONE failures=0".
 Uses KVM when /dev/kvm is usable, otherwise plain emulation (slow).
+--screenshot FILE.png saves the screen once the self test is done.
 """
-import argparse, os, re, select, shutil, subprocess, sys, tempfile, time
+import argparse, os, re, select, shutil, socket, struct, subprocess, sys, tempfile, time, zlib
 
 OVMF_CODE = ["/usr/share/OVMF/OVMF_CODE_4M.fd", "/usr/share/OVMF/OVMF_CODE.fd",
              "/usr/share/edk2/x64/OVMF_CODE.4m.fd"]
@@ -22,6 +23,52 @@ def first(paths):
     sys.exit(f"none of {paths} exist (install ovmf)")
 
 
+def ppm_to_png(ppm, png):
+    """Convert QEMU's binary PPM (P6) screendump to PNG."""
+    data = open(ppm, "rb").read()
+    fields, pos = [], 0
+    while len(fields) < 4:
+        while data[pos:pos + 1].isspace():
+            pos += 1
+        if data[pos:pos + 1] == b"#":
+            pos = data.index(b"\n", pos)
+            continue
+        end = pos
+        while not data[end:end + 1].isspace():
+            end += 1
+        fields.append(data[pos:end])
+        pos = end
+    width, height = int(fields[1]), int(fields[2])
+    pixels = data[pos + 1:]
+    stride = width * 3
+    raw = b"".join(b"\0" + pixels[y * stride:(y + 1) * stride] for y in range(height))
+
+    def chunk(kind, body):
+        return struct.pack(">I", len(body)) + kind + body + struct.pack(">I", zlib.crc32(kind + body))
+    with open(png, "wb") as f:
+        f.write(b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
+                + chunk(b"IDAT", zlib.compress(raw, 9)) + chunk(b"IEND", b""))
+
+
+def screendump(sock_path, png):
+    """Ask the QEMU monitor for a screendump and save it as PNG."""
+    ppm = png + ".ppm"
+    s = socket.socket(socket.AF_UNIX)
+    s.connect(sock_path)
+    s.settimeout(10)
+    s.sendall(f"screendump {ppm}\n".encode())
+    for _ in range(50):
+        time.sleep(0.2)
+        if os.path.exists(ppm) and os.path.getsize(ppm) > 0:
+            time.sleep(1)
+            break
+    s.close()
+    if os.path.exists(ppm):
+        ppm_to_png(ppm, png)
+        os.remove(ppm)
+        print(f"boot-test: screenshot saved to {png}", flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("image")
@@ -34,6 +81,7 @@ def main():
                     help="force software emulation (needed for --cpu to reject newer instructions)")
     ap.add_argument("--cpu", help="QEMU CPU model, e.g. core2duo to prove old laptops work "
                                   "(default: the host CPU with KVM, 'max' otherwise)")
+    ap.add_argument("--screenshot", help="save the screen as this PNG file after the self test")
     args = ap.parse_args()
 
     tmp = tempfile.mkdtemp()
@@ -50,7 +98,9 @@ def main():
     else:
         cmd += ["-drive", f"file={args.image},if=virtio,format=raw,snapshot=on"]
     cmd += ["-nic", "user,model=virtio-net-pci",
-           "-display", "none", "-monitor", "none", "-serial", "stdio", "-no-reboot"]
+           "-display", "none", "-serial", "stdio", "-no-reboot"]
+    monitor = os.path.join(tmp, "monitor.sock")
+    cmd += ["-monitor", f"unix:{monitor},server,nowait"] if args.screenshot else ["-monitor", "none"]
     cmd += ["-enable-kvm"] if kvm else []
     cmd += ["-cpu", args.cpu or ("host" if kvm else "max")]
     print(f"boot-test: {'BIOS' if args.bios else 'UEFI'}, {'cdrom' if args.cdrom else 'disk'}, "
@@ -90,6 +140,11 @@ def main():
         if stage == "shell" and m:
             result = int(m.group(1))
             stage = "done"
+            if args.screenshot:
+                try:
+                    screendump(monitor, os.path.abspath(args.screenshot))
+                except OSError as e:
+                    print(f"boot-test: screenshot failed: {e}", flush=True)
             time.sleep(1)
             send("systemctl poweroff\n")
             deadline = min(deadline, time.time() + 120)

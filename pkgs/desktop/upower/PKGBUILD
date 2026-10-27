@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=upower
+pkgver=1.91.3
+pkgrel=1
+pkgdesc="Abstraction for enumerating power devices (batteries, laptops)"
+arch=(x86_64)
+url='https://upower.freedesktop.org'
+license=('GPL-2.0-or-later')
+depends=('glib2' 'libgudev' 'polkit' 'systemd')
+source=("https://gitlab.freedesktop.org/upower/upower/-/archive/v$pkgver/upower-v$pkgver.tar.bz2")
+sha256sums=('12227b3dcd34c5097bbda25984b192ea0bd5e11dce479358d9ef70415a38e4b6')
+
+build() {
+	meson setup build "upower-v$pkgver" --prefix=/usr --buildtype=release \
+		-D gtk-doc=false -D man=false -D introspection=disabled -D idevice=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

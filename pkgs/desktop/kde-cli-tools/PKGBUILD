@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's kde-cli-tools
+
+pkgname=kde-cli-tools
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="Tools based on KDE Frameworks to better interact with the system"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('glibc' 'kcmutils' 'kcompletion' 'kconfig' 'kcoreaddons' 'kdesu' 'ki18n' 'kiconthemes' 'kio' 'kparts' 'kservice' 'kwidgetsaddons' 'kwindowsystem' 'gcc-libs' 'qt6-base' 'qt6-svg' 'sh')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'kdoctools')
+source=("https://download.kde.org/stable/plasma/$pkgver/kde-cli-tools-$pkgver.tar.xz")
+sha256sums=('9b93730cbea9eecd2b17c84603c1496d18d08749d2861f87a7552f463d7aecb0')
+
+build() {
+	cmake -S "kde-cli-tools-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

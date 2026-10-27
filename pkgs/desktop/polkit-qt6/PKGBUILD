@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's polkit-qt6
+
+pkgname=polkit-qt6
+pkgver=0.201.1
+pkgrel=1
+pkgdesc="A library that allows developers to access PolicyKit API with a nice Qt-style API"
+arch=(x86_64)
+url='https://www.kde.org/'
+license=('BSD-3-Clause' 'GPL-2.0-or-later' 'LGPL-2.0-or-later')
+depends=('glib2' 'glibc' 'gcc-libs' 'polkit' 'qt6-base')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools')
+source=("https://download.kde.org/stable/polkit-qt-1/polkit-qt-1-$pkgver.tar.xz")
+sha256sums=('95d8e2cae530c546d9437459deb8a1bea38d572f0f9772cc2860dc143637f256')
+
+build() {
+	cmake -S "polkit-qt-1-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D QT_MAJOR_VERSION=6
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

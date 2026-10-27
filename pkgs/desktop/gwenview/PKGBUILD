@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's gwenview
+
+pkgname=gwenview
+pkgver=26.04.3
+pkgrel=1
+pkgdesc="A fast and easy to use image viewer"
+arch=(x86_64)
+url='https://apps.kde.org/gwenview/'
+license=('GPL-2.0-or-later' 'LGPL-2.0-or-later')
+depends=('baloo' 'exiv2' 'glibc' 'kcolorscheme' 'kcompletion' 'kconfig' 'kconfigwidgets' 'kcoreaddons' 'kcrash' 'kfilemetadata' 'kguiaddons' 'ki18n' 'kiconthemes' 'kio' 'kitemmodels' 'kitemviews' 'kjobwidgets' 'kparts' 'kservice' 'kwidgetsaddons' 'kxmlgui' 'lcms2' 'gcc-libs' 'libjpeg-turbo' 'libpng' 'libtiff' 'libx11' 'plasma-activities' 'purpose' 'qt6-base' 'qt6-multimedia' 'qt6-svg' 'solid' 'wayland')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'kdoctools' 'wayland-protocols')
+source=("https://download.kde.org/stable/release-service/$pkgver/src/gwenview-$pkgver.tar.xz")
+sha256sums=('dabd48e172cf78f4b42de7423de56ed474d241abb080b4d2b632c5d4d4e8dbaf')
+
+build() {
+	cmake -S "gwenview-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QCH=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

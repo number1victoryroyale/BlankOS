@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's plasma-desktop
+
+pkgname=plasma-desktop
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="KDE Plasma Desktop"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('attica' 'baloo' 'glibc' 'kbookmarks' 'kcmutils' 'kcodecs' 'kcompletion' 'kconfig' 'kconfigwidgets' 'kcoreaddons' 'kcrash' 'kdbusaddons' 'kdeclarative' 'kglobalaccel' 'kguiaddons' 'ki18n' 'kiconthemes' 'kio' 'kirigami' 'kirigami-addons' 'kitemmodels' 'kjobwidgets' 'kmenuedit' 'knewstuff' 'knotifications' 'knotifyconfig' 'kpackage' 'kpipewire' 'krunner' 'kscreenlocker' 'kservice' 'ksvg' 'kwidgetsaddons' 'kwindowsystem' 'kxmlgui' 'libcanberra' 'libksysguard' 'libplasma' 'gcc-libs' 'libwacom' 'libx11' 'libxcb' 'libxkbcommon' 'libxkbfile' 'plasma-activities' 'plasma-activities-stats' 'plasma-workspace' 'plasma5support' 'polkit-kde-agent' 'powerdevil' 'qt6-5compat' 'qt6-base' 'qt6-declarative' 'solid' 'sonnet' 'systemd' 'systemsettings' 'wayland' 'xcb-util-keysyms' 'sdl2-compat' 'xdg-user-dirs' 'noto-fonts')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'kdoctools' 'wayland-protocols')
+source=("https://download.kde.org/stable/plasma/$pkgver/plasma-desktop-$pkgver.tar.xz")
+sha256sums=('c2f0c2b7ab70cbd99ef17ffad4c3117dab12ef6a71790da33e39688386474962')
+
+build() {
+	cmake -S "plasma-desktop-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

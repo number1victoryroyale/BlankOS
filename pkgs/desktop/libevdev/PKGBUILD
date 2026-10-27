@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libevdev
+pkgver=1.13.6
+pkgrel=1
+pkgdesc="Wrapper library for evdev devices"
+arch=(x86_64)
+url='https://www.freedesktop.org/wiki/Software/libevdev/'
+license=('MIT')
+depends=('glibc')
+source=("https://www.freedesktop.org/software/libevdev/libevdev-$pkgver.tar.xz")
+sha256sums=('73f215eccbd8233f414737ac06bca2687e67c44b97d2d7576091aa9718551110')
+
+build() {
+	meson setup build "libevdev-$pkgver" --prefix=/usr --buildtype=release \
+		-D documentation=disabled -D tests=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

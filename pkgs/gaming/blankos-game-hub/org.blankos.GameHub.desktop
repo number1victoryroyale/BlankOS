@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=BlankOS Game Hub
+GenericName=Game Launcher Installer
+Comment=Install Steam, Roblox (Sober), Heroic, Lutris and ProtonUp-Qt in one click
+Exec=blankos-game-hub
+Icon=applications-games
+Terminal=false
+Categories=Game;Qt;KDE;
+Keywords=steam;roblox;sober;heroic;epic;gog;lutris;proton;games;

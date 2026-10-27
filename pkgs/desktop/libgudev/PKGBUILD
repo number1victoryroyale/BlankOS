@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libgudev
+pkgver=238
+pkgrel=1
+pkgdesc="GObject bindings for libudev"
+arch=(x86_64)
+url='https://wiki.gnome.org/Projects/libgudev'
+license=('LGPL-2.1-or-later')
+depends=('glib2' 'systemd')
+source=("https://download.gnome.org/sources/libgudev/$pkgver/libgudev-$pkgver.tar.xz")
+sha256sums=('61266ab1afc9d73dbc60a8b2af73e99d2fdff47d99544d085760e4fa667b5dd1')
+
+build() {
+	meson setup build "libgudev-$pkgver" --prefix=/usr --buildtype=release \
+		-D introspection=disabled -D vapi=disabled -D tests=disabled -D gtk_doc=false
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

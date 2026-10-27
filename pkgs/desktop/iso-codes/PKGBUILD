@@ -1,0 +1,22 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=iso-codes
+pkgver=4.20.1
+pkgrel=1
+pkgdesc="Lists of the country, language, and currency names"
+arch=(any)
+url='https://salsa.debian.org/iso-codes-team/iso-codes'
+license=('LGPL-2.1-or-later')
+makedepends=('meson' 'ninja' 'python' 'gettext')
+source=("https://salsa.debian.org/iso-codes-team/iso-codes/-/archive/v$pkgver/iso-codes-v$pkgver.tar.gz")
+sha256sums=('2d7d9f6084ab9ce6c534ce71a3dd5144b6e474f3c97616459a88f73f44a64bff')
+
+build() {
+	meson setup build "iso-codes-v$pkgver" --prefix=/usr --buildtype=release
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

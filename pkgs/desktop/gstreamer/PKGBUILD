@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=gstreamer
+pkgver=1.28.6
+pkgrel=1
+pkgdesc="GStreamer open-source multimedia framework core library"
+arch=(x86_64)
+url='https://gstreamer.freedesktop.org/'
+license=('LGPL-2.1-or-later')
+depends=('glib2' 'libcap')
+source=("https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-$pkgver.tar.xz")
+sha256sums=('62b6b9f0ad3147a6dd6420ac64a91180b14e990695bddd353b96041611d052ca')
+
+build() {
+	meson setup build "gstreamer-$pkgver" --prefix=/usr --buildtype=release \
+		-D gst_debug=false -D tests=disabled -D examples=disabled -D introspection=disabled -D doc=disabled -D benchmarks=disabled -D libunwind=disabled -D libdw=disabled -D bash-completion=disabled -D ptp-helper=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

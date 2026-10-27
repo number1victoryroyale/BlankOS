@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's plasma-activities
+
+pkgname=plasma-activities
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="Core components for KDE Activities"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('glibc' 'kconfig' 'kcoreaddons' 'gcc-libs' 'qt6-base')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'qt6-declarative')
+source=("https://download.kde.org/stable/plasma/$pkgver/plasma-activities-$pkgver.tar.xz")
+sha256sums=('f990e8871586c7bafe3545609b071b14c3021105cc90f603dacf45e2e0185c2a')
+
+build() {
+	cmake -S "plasma-activities-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

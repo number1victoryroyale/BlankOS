@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's qqc2-breeze-style
+
+pkgname=qqc2-breeze-style
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="Applications useful for Plasma development"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('glibc' 'kcolorscheme' 'kconfig' 'kguiaddons' 'kiconthemes' 'kirigami' 'gcc-libs' 'qt6-base' 'qt6-declarative')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools')
+source=("https://download.kde.org/stable/plasma/$pkgver/qqc2-breeze-style-$pkgver.tar.xz")
+sha256sums=('3ae0c98d3bdbe3d1909f866e731b4a0971f90b8c274353d67e581d231474ca98')
+
+build() {
+	cmake -S "qqc2-breeze-style-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

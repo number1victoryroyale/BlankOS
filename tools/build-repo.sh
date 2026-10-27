@@ -18,6 +18,10 @@
 # pkgs/<repo>/DEPENDS lists repos whose packages must be in the builder
 # first (e.g. [extra] builds on [core]); they are brought up to date the
 # same way before this repo starts. SKIP_DEPS=1 skips that step.
+#
+# KEEP_GOING=1: a failed package does not stop the run; the rest are still
+# attempted (CI then reports every broken package in one pass) and the
+# script exits 1 at the end, listing the failures.
 set -euo pipefail
 source "$(dirname "$0")/../config/blankos.conf"
 source "$BLANKOS_ROOT/tools/lib.sh"
@@ -142,12 +146,21 @@ build_one() {
 }
 
 ensure_builder
+failed=()
 for p in "${pkgs[@]}"; do
-	build_one "$p"
+	if [[ -n ${KEEP_GOING:-} ]]; then
+		# subshell: die() ends only this package
+		(build_one "$p") || failed+=("$p")
+	else
+		build_one "$p"
+	fi
 done
 # Make sure the database lists every package (also after partial runs).
 mapfile -t all < <(cd "$outdir" && ls -- *.pkg.tar.zst 2>/dev/null)
 if ((${#all[@]})); then
 	in_chroot "$LFS" repo-add -q "/repo/$repo.db.tar.gz" "${all[@]/#//repo/}" || true
+fi
+if ((${#failed[@]})); then
+	die "[$repo] ${#failed[@]} of ${#pkgs[@]} packages failed: ${failed[*]}"
 fi
 msg "[$repo] done: ${#pkgs[@]} packages"

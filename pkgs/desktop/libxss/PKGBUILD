@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libxss
+pkgver=1.2.5
+pkgrel=1
+pkgdesc="X11 Screen Saver extension library"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+depends=('libxext')
+makedepends=('xorgproto' 'xorg-util-macros' 'xtrans')
+source=("https://www.x.org/pub/individual/lib/libXScrnSaver-$pkgver.tar.xz")
+sha256sums=('5057365f847253e0e275871441e10ff7846c8322a5d88e1e187d326de1cd8d00')
+
+build() {
+	cd "libXScrnSaver-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "libXScrnSaver-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

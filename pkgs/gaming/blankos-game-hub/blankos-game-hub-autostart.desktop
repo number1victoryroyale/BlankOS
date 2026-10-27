@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=BlankOS Game Hub (first login)
+Exec=blankos-game-hub --first-run
+Icon=applications-games
+Terminal=false
+NoDisplay=true
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=2

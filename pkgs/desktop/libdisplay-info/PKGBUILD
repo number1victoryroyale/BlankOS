@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libdisplay-info
+pkgver=0.4.0
+pkgrel=1
+pkgdesc="EDID and DisplayID library"
+arch=(x86_64)
+url='https://gitlab.freedesktop.org/emersion/libdisplay-info'
+license=('MIT')
+depends=('glibc')
+makedepends=('hwdata')
+source=("https://gitlab.freedesktop.org/emersion/libdisplay-info/-/releases/$pkgver/downloads/libdisplay-info-$pkgver.tar.xz")
+sha256sums=('43b180baa143e2035654759d84e2b2f5ee77d5fe817c423838c7fe59c0d68459')
+
+build() {
+	meson setup build "libdisplay-info-$pkgver" --prefix=/usr --buildtype=release
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

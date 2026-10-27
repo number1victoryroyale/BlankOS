@@ -1,0 +1,29 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# udev rules for game controllers (Steam Controller and Deck, Xbox,
+# PlayStation, Switch, 8BitDo, ...): desktop users get access to the
+# hidraw and uinput devices that Steam Input and browsers need.
+
+pkgname=game-devices-udev
+pkgver=1.1
+pkgrel=1
+pkgdesc="udev rules for game controllers (includes Valve's Steam device rules)"
+arch=(any)
+url='https://codeberg.org/fabiscafe/game-devices-udev'
+license=('MIT')
+depends=('systemd')
+provides=('steam-devices')
+makedepends=('meson' 'ninja')
+source=("game-devices-udev-$pkgver.tar.gz::https://codeberg.org/fabiscafe/game-devices-udev/archive/$pkgver.tar.gz")
+sha256sums=('56527bb4f6f33563c8879f0ba140a9baacf282bf6481b22737b04998dbe7f7af')
+
+build() {
+	meson setup build game-devices-udev --prefix=/usr
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install -C build
+	# Steam Input creates virtual controllers through uinput
+	install -d "$pkgdir/usr/lib/modules-load.d"
+	echo uinput > "$pkgdir/usr/lib/modules-load.d/game-devices-udev.conf"
+	install -Dm644 game-devices-udev/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

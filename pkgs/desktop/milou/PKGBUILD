@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's milou
+
+pkgname=milou
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="A dedicated search application built on top of Baloo"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('glibc' 'kconfig' 'kcoreaddons' 'kirigami' 'krunner' 'ksvg' 'libplasma' 'gcc-libs' 'qt6-base' 'qt6-declarative')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'kdoctools')
+source=("https://download.kde.org/stable/plasma/$pkgver/milou-$pkgver.tar.xz")
+sha256sums=('88ed9119b777c7107657b47b68af34a2c2de422f709d1409b7c2d7721463e247')
+
+build() {
+	cmake -S "milou-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's breeze
+
+pkgname=breeze
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="Artwork, styles and assets for the Breeze visual style for the Plasma Desktop"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('breeze-icons' 'frameworkintegration' 'glibc' 'kcmutils' 'kcolorscheme' 'kconfig' 'kcoreaddons' 'kdecoration' 'kguiaddons' 'ki18n' 'kiconthemes' 'kirigami' 'kwidgetsaddons' 'kwindowsystem' 'gcc-libs' 'qt6-base' 'qt6-declarative' 'qt6-svg')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools')
+source=("https://download.kde.org/stable/plasma/$pkgver/breeze-$pkgver.tar.xz")
+sha256sums=('31dc88f924a5f5c979f09275ccc897cb0001bda45604561c8f18eb35b2e38b5a')
+
+build() {
+	cmake -S "breeze-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

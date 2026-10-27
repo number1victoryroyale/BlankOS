@@ -1,0 +1,93 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# The MinGW-w64 cross toolchain for 64- and 32-bit Windows targets, built
+# in one go (binutils -> headers -> GCC stage 1 -> CRT -> full GCC) into a
+# staging tree. Wine's PE side (its Windows DLLs) is built with it.
+#
+# Sysroot layout as in the mingw-w64 build howto: /usr/<target> is the
+# sysroot, headers and CRT live in <sysroot>/mingw. The sysroot is inside
+# the prefix, so the staged compiler relocates and finds the staged CRT.
+# Threads use the native win32 model (no winpthreads needed).
+
+pkgname=mingw-w64-toolchain
+pkgver=14.0.0
+_binver=2.47
+_gccver=16.2.0
+pkgrel=1
+pkgdesc="MinGW-w64 cross compilers for Windows (x86_64 and i686): binutils, GCC (C, C++), headers and CRT"
+arch=(x86_64)
+url='https://www.mingw-w64.org/'
+license=('GPL-3.0-or-later' 'LGPL-3.0-or-later' 'ZPL-2.1' 'LicenseRef-mingw-w64')
+depends=('zlib' 'zstd' 'gmp' 'mpfr' 'libmpc')
+provides=('mingw-w64-binutils' 'mingw-w64-gcc' 'mingw-w64-headers' 'mingw-w64-crt')
+options=('!strip' '!lto' 'staticlibs' '!buildflags')
+source=("https://sourceware.org/pub/binutils/releases/binutils-$_binver.tar.xz"
+        "https://ftpmirror.gnu.org/gcc/gcc-$_gccver/gcc-$_gccver.tar.xz"
+        "https://downloads.sourceforge.net/project/mingw-w64/mingw-w64/mingw-w64-release/mingw-w64-v$pkgver.tar.bz2")
+sha256sums=('154ab23b60070e8f27013c22977f1129425d67d1e8acd6e13010e617811e4cff'
+            'e6738e29597f733270731aa90600f37ffdc045079dfc27ec7e8192cc81085c3e'
+            '6eaf921d9eb987d3820b364ea9775bc19b965ec81490b6fdd716526c28e1995c')
+
+_targets=('x86_64-w64-mingw32' 'i686-w64-mingw32')
+
+build() {
+	local stage=$srcdir/stage t crtlibs
+	export PATH="$stage/usr/bin:$PATH"
+	for t in "${_targets[@]}"; do
+		msg2 "binutils for $t"
+		mkdir -p "$srcdir/binutils-$t" && cd "$srcdir/binutils-$t"
+		"$srcdir/binutils-$_binver/configure" --prefix=/usr --target="$t" --with-sysroot="/usr/$t" \
+			--disable-nls --disable-multilib --disable-werror --disable-gdb --disable-gprofng \
+			--enable-lto --enable-plugins --with-system-zlib --with-zstd
+		make
+		make DESTDIR="$stage" install
+
+		msg2 "headers for $t"
+		mkdir -p "$srcdir/headers-$t" && cd "$srcdir/headers-$t"
+		"$srcdir/mingw-w64-v$pkgver/mingw-w64-headers/configure" --host="$t" --prefix="/usr/$t/mingw" \
+			--enable-sdk=all --with-default-msvcrt=ucrt
+		make DESTDIR="$stage" install
+
+		msg2 "GCC stage 1 for $t"
+		mkdir -p "$srcdir/gcc-$t" && cd "$srcdir/gcc-$t"
+		"$srcdir/gcc-$_gccver/configure" --prefix=/usr --libexecdir=/usr/lib --target="$t" \
+			--with-sysroot="/usr/$t" --with-build-sysroot="$stage/usr/$t" \
+			--enable-languages=c,c++ --enable-threads=win32 --enable-shared --enable-static \
+			--enable-lto --enable-checking=release --enable-fully-dynamic-string \
+			--disable-nls --disable-multilib --disable-libstdcxx-pch --disable-libssp \
+			--disable-libgomp --disable-win32-registry --disable-sjlj-exceptions \
+			--with-system-zlib --with-gmp=/usr --with-mpfr=/usr --with-mpc=/usr
+		make all-gcc
+		make DESTDIR="$stage" install-gcc
+
+		msg2 "CRT for $t"
+		case $t in
+			x86_64-*) crtlibs='--disable-lib32 --enable-lib64' ;;
+			i686-*)   crtlibs='--enable-lib32 --disable-lib64' ;;
+		esac
+		mkdir -p "$srcdir/crt-$t" && cd "$srcdir/crt-$t"
+		# shellcheck disable=SC2086
+		"$srcdir/mingw-w64-v$pkgver/mingw-w64-crt/configure" --host="$t" --prefix="/usr/$t/mingw" \
+			--with-sysroot="/usr/$t" --with-default-msvcrt=ucrt $crtlibs
+		make
+		make DESTDIR="$stage" install
+
+		msg2 "GCC (runtime libraries) for $t"
+		cd "$srcdir/gcc-$t"
+		make
+		make DESTDIR="$stage" install
+	done
+}
+
+package() {
+	cp -a "$srcdir/stage/usr" "$pkgdir/"
+	# documentation and files the native toolchain already ships
+	rm -rf "$pkgdir"/usr/share/{info,man,locale} "$pkgdir"/usr/lib/bfd-plugins "$pkgdir/usr/lib/libcc1"*
+	rm -f "$pkgdir"/usr/lib/libiberty.a
+	# target libraries are Windows binaries: strip them with the cross tools
+	local t
+	for t in "${_targets[@]}"; do
+		find "$pkgdir/usr/$t" "$pkgdir/usr/lib/gcc/$t" -name '*.a' -exec "$srcdir/stage/usr/bin/$t-strip" --strip-debug {} + 2>/dev/null || true
+		find "$pkgdir/usr/$t" -name '*.dll' -exec "$srcdir/stage/usr/bin/$t-strip" --strip-unneeded {} + 2>/dev/null || true
+	done
+	install -Dm644 "$srcdir/mingw-w64-v$pkgver/COPYING" "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}

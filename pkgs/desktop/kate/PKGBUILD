@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's kate
+
+pkgname=kate
+pkgver=26.04.3
+pkgrel=1
+pkgdesc="Advanced text editor"
+arch=(x86_64)
+url='https://apps.kde.org/kate/'
+license=('GPL-2.0-or-later' 'LGPL-2.0-or-later')
+depends=('glibc' 'karchive' 'kbookmarks' 'kcolorscheme' 'kcompletion' 'kconfig' 'kconfigwidgets' 'kcoreaddons' 'kcrash' 'kdbusaddons' 'kguiaddons' 'ki18n' 'kiconthemes' 'kio' 'knewstuff' 'kparts' 'kservice' 'ktexteditor' 'kuserfeedback' 'kwidgetsaddons' 'kwindowsystem' 'kxmlgui' 'gcc-libs' 'qt6-base' 'sh' 'syntax-highlighting')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'kdoctools' 'qtkeychain-qt6')
+source=("https://download.kde.org/stable/release-service/$pkgver/src/kate-$pkgver.tar.xz")
+sha256sums=('cb95426cba170f994761e509e342d523e53a62a80a252248b38efcbe8abff623')
+
+build() {
+	cmake -S "kate-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QCH=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

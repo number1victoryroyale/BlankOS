@@ -112,6 +112,43 @@ jobs:
     uses: ./.github/workflows/repo-stage.yml
     with: { repo: extra, deps: core, pass: "3", final: true }
 
+  # [desktop] (Qt, KDE Frameworks, Plasma, apps) takes ~10 build hours,
+  # so it gets several chained passes; finished passes are no-ops.
+  desktop-1:
+    needs: extra-3
+    uses: ./.github/workflows/repo-stage.yml
+    with: { repo: desktop, deps: core extra, pass: "1" }
+  desktop-2:
+    needs: desktop-1
+    uses: ./.github/workflows/repo-stage.yml
+    with: { repo: desktop, deps: core extra, pass: "2" }
+  desktop-3:
+    needs: desktop-2
+    uses: ./.github/workflows/repo-stage.yml
+    with: { repo: desktop, deps: core extra, pass: "3" }
+  desktop-4:
+    needs: desktop-3
+    uses: ./.github/workflows/repo-stage.yml
+    with: { repo: desktop, deps: core extra, pass: "4" }
+  desktop-5:
+    needs: desktop-4
+    uses: ./.github/workflows/repo-stage.yml
+    with: { repo: desktop, deps: core extra, pass: "5", final: true }
+
+  # [gaming]: mingw-w64, Wine, DXVK/VKD3D-Proton, game tools, Game Hub
+  gaming-1:
+    needs: desktop-5
+    uses: ./.github/workflows/repo-stage.yml
+    with: { repo: gaming, deps: core extra desktop, pass: "1" }
+  gaming-2:
+    needs: gaming-1
+    uses: ./.github/workflows/repo-stage.yml
+    with: { repo: gaming, deps: core extra desktop, pass: "2" }
+  gaming-3:
+    needs: gaming-2
+    uses: ./.github/workflows/repo-stage.yml
+    with: { repo: gaming, deps: core extra desktop, pass: "3", final: true }
+
   image:
     needs: core-3
     runs-on: ubuntu-24.04
@@ -164,9 +201,9 @@ jobs:
           retention-days: 7
 
   iso:
-    needs: extra-3
+    needs: gaming-3
     runs-on: ubuntu-24.04
-    timeout-minutes: 150
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
 
@@ -180,16 +217,15 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Restore builder, [core] and [extra]
+      - name: Restore builder and all repos
         run: |
           tools/ci-release.sh fetch-builder
           sudo mkdir -p "$LFS"
           sudo tar --zstd -xpf "$OUT/builder-rootfs.tar.zst" -C "$LFS"
           rm "$OUT/builder-rootfs.tar.zst"
-          tools/ci-release.sh fetch-repo core
-          tools/ci-release.sh fetch-repo extra
-          # installs both repos (already built) into the builder
-          sudo --preserve-env=LFS,SRC,OUT tools/build-repo.sh extra
+          for r in core extra desktop gaming; do tools/ci-release.sh fetch-repo "$r"; done
+          # installs every repo (already built) into the builder
+          sudo --preserve-env=LFS,SRC,OUT tools/build-repo.sh gaming
 
       - name: Build test ISO
         run: |
@@ -197,7 +233,7 @@ jobs:
           sudo mv "$(readlink -f "$OUT/blankos-live.iso")" "$OUT/blankos-test.iso"
 
       - name: Boot test - UEFI, CD/DVD
-        run: sudo python3 tests/boot-test.py "$OUT/blankos-test.iso" --cdrom --log "$OUT/boot-iso-uefi.log" --timeout 900
+        run: sudo python3 tests/boot-test.py "$OUT/blankos-test.iso" --cdrom --log "$OUT/boot-iso-uefi.log" --timeout 900 --screenshot "$OUT/boot-iso-desktop.png"
 
       - name: Boot test - legacy BIOS, USB stick
         run: sudo python3 tests/boot-test.py "$OUT/blankos-test.iso" --bios --log "$OUT/boot-iso-bios.log" --timeout 900
@@ -218,6 +254,8 @@ jobs:
         if: always()
         with:
           name: iso-boot-tests
-          path: /mnt/out/boot-iso-*.log
+          path: |
+            /mnt/out/boot-iso-*.log
+            /mnt/out/boot-iso-*.png
           if-no-files-found: ignore
           retention-days: 14

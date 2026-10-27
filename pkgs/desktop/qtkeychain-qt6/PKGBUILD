@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's qtkeychain-qt6
+
+pkgname=qtkeychain-qt6
+pkgver=0.16.0
+pkgrel=1
+pkgdesc="Platform-independent Qt API for storing passwords securely (Qt 6)"
+arch=(x86_64)
+url='https://github.com/frankosterfeld/qtkeychain'
+license=('BSD-3-Clause')
+depends=('qt6-base' 'libsecret')
+makedepends=('cmake' 'ninja' 'qt6-tools')
+source=("https://github.com/frankosterfeld/qtkeychain/archive/$pkgver/qtkeychain-$pkgver.tar.gz")
+sha256sums=('3be26ec4ae30eecf0c2ff7572ba83799791b157c76e15a05ef35f23dc25e4054')
+
+build() {
+	cmake -S "qtkeychain-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_WITH_QT6=ON -D BUILD_TEST_APPLICATION=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's xdg-desktop-portal-kde
+
+pkgname=xdg-desktop-portal-kde
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="A backend implementation for xdg-desktop-portal using Qt/KF5"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('glibc' 'kcmutils' 'kconfig' 'kcoreaddons' 'kcrash' 'kdeclarative' 'kglobalaccel' 'ki18n' 'kiconthemes' 'kio' 'kirigami' 'kirigami-addons' 'kitemviews' 'knotifications' 'kpipewire' 'kservice' 'kstatusnotifieritem' 'kwayland' 'kwindowsystem' 'gcc-libs' 'libxkbcommon' 'plasma-workspace' 'qt6-base' 'qt6-declarative' 'wayland' 'xdg-desktop-portal')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'plasma-wayland-protocols' 'wayland-protocols')
+source=("https://download.kde.org/stable/plasma/$pkgver/xdg-desktop-portal-kde-$pkgver.tar.xz")
+sha256sums=('bb4b955e2f52a832f221d3fb7182cebf920653a0ad1e3201abd29f134d4c33f3')
+
+build() {
+	cmake -S "xdg-desktop-portal-kde-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

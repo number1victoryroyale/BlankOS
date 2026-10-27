@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's kirigami-addons
+
+pkgname=kirigami-addons
+pkgver=1.13.1
+pkgrel=1
+pkgdesc="Add-ons for the Kirigami framework"
+arch=(x86_64)
+url='https://invent.kde.org/libraries/kirigami-addons'
+license=('GPL-2.0-or-later' 'LGPL-2.1-or-later')
+depends=('glibc' 'kcolorscheme' 'kconfig' 'kcoreaddons' 'kcrash' 'kglobalaccel' 'kguiaddons' 'ki18n' 'kiconthemes' 'kirigami' 'kitemmodels' 'ksvg' 'gcc-libs' 'qt6-base' 'qt6-declarative' 'qt6-multimedia' 'sonnet')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools')
+source=("https://download.kde.org/stable/kirigami-addons/kirigami-addons-$pkgver.tar.xz")
+sha256sums=('76026f0abe8c948208ce75a02a9ecac60c618ac5288ca546e09da64bc4af7050')
+
+build() {
+	cmake -S "kirigami-addons-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QCH=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

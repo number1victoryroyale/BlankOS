@@ -1,0 +1,35 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's qt6-shadertools
+
+pkgname=qt6-shadertools
+_qtver=6.11.2
+pkgver=$_qtver
+pkgrel=1
+pkgdesc="Provides functionality for the shader pipeline that allows Qt Quick to operate on Vulkan, Metal, and Direct3D, in addition to OpenGL"
+arch=(x86_64)
+url='https://www.qt.io'
+license=('GPL-3.0-only' 'LGPL-3.0-only' 'LicenseRef-Qt-Commercial' 'Qt-GPL-exception-1.0')
+depends=('glibc' 'gcc-libs' 'qt6-base')
+makedepends=('cmake' 'ninja')
+source=("https://download.qt.io/official_releases/qt/${pkgver%.*}/$pkgver/submodules/qtshadertools-everywhere-src-$pkgver.tar.xz")
+sha256sums=('805046b8b7757665586890b375940047e874ae3ab00adb6d3f2b38fc6b200b1c')
+
+build() {
+	cmake -S "qtshadertools-everywhere-src-$pkgver" -B build -G Ninja -D CMAKE_MESSAGE_LOG_LEVEL=STATUS \
+		-D CMAKE_BUILD_TYPE=Release -D QT_BUILD_TESTS=OFF -D QT_BUILD_EXAMPLES=OFF
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+	install -Dm644 "qtshadertools-everywhere-src-$pkgver/LICENSES"/* -t "$pkgdir/usr/share/licenses/$pkgname"
+
+	# user-facing tools (qmake6, qdbus6, ...) in /usr/bin
+	if [[ -f $srcdir/build/user_facing_tool_links.txt ]]; then
+		cd "$pkgdir"
+		mkdir -p usr/bin
+		while read -r _line; do
+			ln -s $_line
+		done < "$srcdir/build/user_facing_tool_links.txt"
+	fi
+}

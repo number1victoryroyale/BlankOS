@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's layer-shell-qt
+
+pkgname=layer-shell-qt
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="Qt component to allow applications to make use of the Wayland wl-layer-shell protocol"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('GPL-2.0-or-later' 'LGPL-2.0-or-later')
+depends=('glibc' 'gcc-libs' 'qt6-base' 'wayland')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'qt6-declarative' 'wayland-protocols')
+source=("https://download.kde.org/stable/plasma/$pkgver/layer-shell-qt-$pkgver.tar.xz")
+sha256sums=('6a5b064619739c6f4a2de70c56abfbadfc334dcb626152a1e8188a807ca86567')
+
+build() {
+	cmake -S "layer-shell-qt-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

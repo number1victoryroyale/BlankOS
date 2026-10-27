@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's kwin
+
+pkgname=kwin
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="An easy to use, but flexible, Wayland compositor"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('aurorae' 'breeze' 'glibc' 'kauth' 'kcmutils' 'kcolorscheme' 'kconfig' 'kcoreaddons' 'kcrash' 'kdbusaddons' 'kdeclarative' 'kdecoration' 'kglobalaccel' 'kglobalacceld' 'kguiaddons' 'ki18n' 'kidletime' 'kirigami' 'kitemmodels' 'knewstuff' 'knighttime' 'knotifications' 'kpackage' 'kquickcharts' 'krunner' 'kscreenlocker' 'kservice' 'ksvg' 'kwayland' 'kwidgetsaddons' 'kwindowsystem' 'kxmlgui' 'lcms2' 'libcanberra' 'libdisplay-info' 'libdrm' 'libepoxy' 'libevdev' 'gcc-libs' 'libinput' 'pipewire' 'libplasma' 'libxcb' 'libxcvt' 'libxkbcommon' 'mesa' 'milou' 'pipewire-session-manager' 'plasma-activities' 'qt6-5compat' 'qt6-base' 'qt6-declarative' 'qt6-svg' 'qt6-tools' 'systemd' 'vulkan-icd-loader' 'wayland' 'xcb-util-keysyms' 'xcb-util-wm')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'kdoctools' 'plasma-wayland-protocols' 'python' 'vulkan-headers' 'wayland-protocols' 'xorg-xwayland')
+source=("https://download.kde.org/stable/plasma/$pkgver/kwin-$pkgver.tar.xz")
+sha256sums=('db7a7dba71aaca1e5218733b80f90a998d84e2ab36e4d62d0e3ea00376c5802d')
+
+build() {
+	cmake -S "kwin-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF -D KWIN_BUILD_X11=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

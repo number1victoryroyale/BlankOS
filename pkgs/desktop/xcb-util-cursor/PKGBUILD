@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=xcb-util-cursor
+pkgver=0.1.6
+pkgrel=1
+pkgdesc="XCB cursor library"
+arch=(x86_64)
+url='https://xcb.freedesktop.org/'
+license=('MIT')
+depends=('xcb-util-renderutil' 'xcb-util-image')
+source=("https://xorg.freedesktop.org/archive/individual/lib/xcb-util-cursor-$pkgver.tar.xz")
+sha256sums=('fdeb8bd127873519be5cc70dcd0d3b5d33b667877200f9925a59fdcad8f7a933')
+
+build() {
+	cd "xcb-util-cursor-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "xcb-util-cursor-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

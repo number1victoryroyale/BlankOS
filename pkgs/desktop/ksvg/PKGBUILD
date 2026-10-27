@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's ksvg
+
+pkgname=ksvg
+pkgver=6.29.0
+pkgrel=1
+pkgdesc="Components for handling SVGs"
+arch=(x86_64)
+url='https://develop.kde.org/products/frameworks/'
+license=('LGPL-2.0-only' 'LGPL-3.0-only')
+depends=('glibc' 'karchive' 'kcolorscheme' 'kconfig' 'kcoreaddons' 'kguiaddons' 'gcc-libs' 'qt6-base' 'qt6-svg')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'kirigami' 'qt6-declarative')
+source=("https://download.kde.org/stable/frameworks/${pkgver%.*}/ksvg-$pkgver.tar.xz")
+sha256sums=('1c9cf9e9d286c1682cecba41d2a44898009da3d01d54c3403c40c4868d8c19dc')
+
+build() {
+	cmake -S "ksvg-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QCH=OFF -D BUILD_PYTHON_BINDINGS=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

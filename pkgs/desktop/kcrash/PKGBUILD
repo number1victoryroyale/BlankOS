@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's kcrash
+
+pkgname=kcrash
+pkgver=6.29.0
+pkgrel=1
+pkgdesc="Support for application crash analysis and bug report from apps"
+arch=(x86_64)
+url='https://develop.kde.org/products/frameworks/'
+license=('LGPL-2.0-only' 'LGPL-3.0-only')
+depends=('glibc' 'kcoreaddons' 'gcc-libs' 'libx11' 'qt6-base')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools')
+source=("https://download.kde.org/stable/frameworks/${pkgver%.*}/kcrash-$pkgver.tar.xz")
+sha256sums=('decb363261fe5f6df984fa0cfa42243aca9eea352045b18ffe1b86a0bd5b1736')
+
+build() {
+	cmake -S "kcrash-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QCH=OFF -D BUILD_PYTHON_BINDINGS=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

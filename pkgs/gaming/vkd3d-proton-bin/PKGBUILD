@@ -1,0 +1,22 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# VKD3D-Proton's official release DLLs (installed into Wine prefixes by
+# `blankos-wine-dx install`).
+
+pkgname=vkd3d-proton-bin
+pkgver=3.0.1
+pkgrel=1
+pkgdesc="Direct3D 12 implementation on top of Vulkan, for Wine"
+arch=(any)
+url='https://github.com/HansKristian-Work/vkd3d-proton'
+license=('LGPL-2.1-or-later')
+depends=('vulkan-icd-loader')
+provides=('vkd3d-proton')
+options=('!strip')
+source=("https://github.com/HansKristian-Work/vkd3d-proton/releases/download/v$pkgver/vkd3d-proton-$pkgver.tar.zst")
+sha256sums=('3cf2315522af5e43605ef6d3c41dad91387040bf97199934f3f7ab76caaa2f0c')
+
+package() {
+	install -d "$pkgdir/usr/share/vkd3d-proton"
+	cp -r "vkd3d-proton-$pkgver"/x64 "vkd3d-proton-$pkgver"/x86 "$pkgdir/usr/share/vkd3d-proton/"
+	install -Dm644 "vkd3d-proton-$pkgver/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE" 2>/dev/null || true
+}

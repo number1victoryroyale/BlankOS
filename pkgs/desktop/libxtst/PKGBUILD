@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libxtst
+pkgver=1.2.5
+pkgrel=1
+pkgdesc="X11 Testing -- Resource extension library"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+depends=('libxext' 'libxi' 'libxfixes')
+makedepends=('xorgproto' 'xorg-util-macros' 'xtrans')
+source=("https://www.x.org/pub/individual/lib/libXtst-$pkgver.tar.xz")
+sha256sums=('b50d4c25b97009a744706c1039c598f4d8e64910c9fde381994e1cae235d9242')
+
+build() {
+	cd "libXtst-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "libXtst-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

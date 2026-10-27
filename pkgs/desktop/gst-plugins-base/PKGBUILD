@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=gst-plugins-base
+pkgver=1.28.6
+pkgrel=1
+pkgdesc="GStreamer base plugins and libraries"
+arch=(x86_64)
+url='https://gstreamer.freedesktop.org/'
+license=('LGPL-2.1-or-later')
+depends=('gstreamer' 'alsa-lib' 'libogg' 'libvorbis' 'opus' 'libx11' 'libxext' 'pango')
+source=("https://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-$pkgver.tar.xz")
+sha256sums=('0ba699c7c6c66f4ba640be78cb38a24715add9683f3e3a199f5369dc5a4f04ac')
+
+build() {
+	meson setup build "gst-plugins-base-$pkgver" --prefix=/usr --buildtype=release \
+		--wrap-mode=nodownload -D introspection=disabled -D tests=disabled -D examples=disabled -D doc=disabled -D gl=disabled -D cdparanoia=disabled -D libvisual=disabled -D tremor=disabled -D theora=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

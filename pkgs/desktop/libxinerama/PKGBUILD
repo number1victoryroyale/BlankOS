@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libxinerama
+pkgver=1.1.6
+pkgrel=1
+pkgdesc="X11 Xinerama extension library"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+depends=('libxext')
+makedepends=('xorgproto' 'xorg-util-macros' 'xtrans')
+source=("https://www.x.org/pub/individual/lib/libXinerama-$pkgver.tar.xz")
+sha256sums=('d00fc1599c303dc5cbc122b8068bdc7405d6fcb19060f4597fc51bd3a8be51d7')
+
+build() {
+	cd "libXinerama-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "libXinerama-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

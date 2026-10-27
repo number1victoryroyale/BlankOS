@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=double-conversion
+pkgver=3.4.0
+pkgrel=1
+pkgdesc="Binary-decimal and decimal-binary routines for IEEE doubles"
+arch=(x86_64)
+url='https://github.com/google/double-conversion'
+license=('BSD-3-Clause')
+depends=('gcc-libs')
+source=("double-conversion-$pkgver.tar.gz::https://github.com/google/double-conversion/archive/v$pkgver/double-conversion-$pkgver.tar.gz")
+sha256sums=('42fd4d980ea86426e457b24bdfa835a6f5ad9517ddb01cdb42b99ab9c8dd5dc9')
+
+build() {
+	cmake -S "double-conversion-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_SHARED_LIBS=ON
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

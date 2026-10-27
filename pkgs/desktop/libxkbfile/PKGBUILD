@@ -1,0 +1,22 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libxkbfile
+pkgver=1.2.0
+pkgrel=1
+pkgdesc="X11 keyboard file manipulation library"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+depends=('libx11')
+source=("https://www.x.org/pub/individual/lib/libxkbfile-$pkgver.tar.xz")
+sha256sums=('7f71884e5faf56fb0e823f3848599cf9b5a9afce51c90982baeb64f635233ebf')
+
+build() {
+	meson setup build "libxkbfile-$pkgver" --prefix=/usr --buildtype=release
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

@@ -1,0 +1,35 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libvpx
+pkgver=1.16.0
+pkgrel=1
+pkgdesc="VP8 and VP9 codec"
+arch=(x86_64)
+url='https://www.webmproject.org/'
+license=('BSD-3-Clause')
+depends=('gcc-libs')
+makedepends=('nasm')
+source=("libvpx-$pkgver.tar.gz::https://github.com/webmproject/libvpx/archive/v$pkgver/libvpx-$pkgver.tar.gz"
+        "https://www.linuxfromscratch.org/patches/blfs/13.1/libvpx-$pkgver-security_fix-1.patch")
+sha256sums=('7a479a3c66b9f5d5542a4c6a1b7d3768a983b1e5c14c60a9396edc9b649e015c'
+            'd608171f1bab79d38a2aebf850869d698f7134b62067530a290bac70fae90335')
+
+prepare() {
+	cd "libvpx-$pkgver"
+	find -type f | xargs touch
+	patch -Np1 -i "../libvpx-$pkgver-security_fix-1.patch"
+	sed -i "s/cp -p/cp/" build/make/Makefile
+}
+
+build() {
+	mkdir -p build && cd build
+	../"libvpx-$pkgver"/configure --prefix=/usr --enable-shared --disable-static \
+		--disable-examples --disable-docs --disable-unit-tests --enable-vp9-highbitdepth --enable-pic
+	make
+}
+
+package() {
+	cd build
+	make DESTDIR="$pkgdir" install
+}

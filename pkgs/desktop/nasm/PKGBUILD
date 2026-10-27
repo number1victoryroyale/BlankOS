@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=nasm
+pkgver=3.02
+pkgrel=1
+pkgdesc="80x86 assembler designed for portability and modularity"
+arch=(x86_64)
+url='https://www.nasm.us'
+license=('BSD-2-Clause')
+depends=('glibc')
+source=("https://www.nasm.us/pub/nasm/releasebuilds/$pkgver/nasm-$pkgver.tar.xz")
+sha256sums=('87336eba53b4acfe917424ab5d500d2b0054d9f5148d35c2273ccf2cfb712f0d')
+
+build() {
+	cd "nasm-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "nasm-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

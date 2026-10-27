@@ -1,0 +1,37 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's qt6-multimedia
+# FFmpeg backend only (Arch splits it into qt6-multimedia-ffmpeg).
+
+pkgname=qt6-multimedia
+_qtver=6.11.2
+pkgver=$_qtver
+pkgrel=1
+pkgdesc="Classes for audio, video, radio and camera functionality"
+arch=(x86_64)
+url='https://www.qt.io'
+license=('GPL-3.0-only' 'LGPL-3.0-only' 'LicenseRef-Qt-Commercial' 'Qt-GPL-exception-1.0')
+depends=('glibc' 'gcc-libs' 'libpulse' 'pipewire' 'qt6-base' 'ffmpeg')
+makedepends=('cmake' 'ninja' 'qt6-shadertools' 'vulkan-headers')
+source=("https://download.qt.io/official_releases/qt/${pkgver%.*}/$pkgver/submodules/qtmultimedia-everywhere-src-$pkgver.tar.xz")
+sha256sums=('967b5e02ec6b793cdb360622cd6e703132836af983208d678dae4b50f109cd9f')
+
+build() {
+	cmake -S "qtmultimedia-everywhere-src-$pkgver" -B build -G Ninja -D CMAKE_MESSAGE_LOG_LEVEL=STATUS \
+		-D CMAKE_BUILD_TYPE=Release -D QT_BUILD_TESTS=OFF -D QT_BUILD_EXAMPLES=OFF \
+		-D FEATURE_gstreamer=OFF -D FEATURE_ffmpeg=ON
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+	install -Dm644 "qtmultimedia-everywhere-src-$pkgver/LICENSES"/* -t "$pkgdir/usr/share/licenses/$pkgname"
+
+	# user-facing tools (qmake6, qdbus6, ...) in /usr/bin
+	if [[ -f $srcdir/build/user_facing_tool_links.txt ]]; then
+		cd "$pkgdir"
+		mkdir -p usr/bin
+		while read -r _line; do
+			ln -s $_line
+		done < "$srcdir/build/user_facing_tool_links.txt"
+	fi
+}

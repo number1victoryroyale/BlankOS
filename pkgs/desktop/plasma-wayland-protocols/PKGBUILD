@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's plasma-wayland-protocols
+
+pkgname=plasma-wayland-protocols
+pkgver=1.21.0
+pkgrel=1
+pkgdesc="Plasma Specific Protocols for Wayland"
+arch=(any)
+url='https://kde.org/plasma-desktop'
+license=('LGPL-2.0-or-later')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules')
+source=("https://download.kde.org/stable/plasma-wayland-protocols/plasma-wayland-protocols-$pkgver.tar.xz")
+sha256sums=('698a7b28b711270314e396e248ae86087cfeaed01372009063995be6e1dc85ba')
+
+build() {
+	cmake -S "plasma-wayland-protocols-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

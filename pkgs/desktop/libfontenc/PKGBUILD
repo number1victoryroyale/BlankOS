@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libfontenc
+pkgver=1.1.9
+pkgrel=1
+pkgdesc="X11 font encoding library"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+depends=('zlib')
+makedepends=('xorgproto' 'xorg-util-macros' 'xtrans')
+source=("https://www.x.org/pub/individual/lib/libfontenc-$pkgver.tar.xz")
+sha256sums=('9d8392705cb10803d5fe1d27d236cbab3f664e26841ce01916bbbe430cf273e2')
+
+build() {
+	cd "libfontenc-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "libfontenc-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

@@ -1,0 +1,30 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=xorg-xwayland
+pkgver=24.1.13
+pkgrel=1
+pkgdesc="X server for running X11 applications on Wayland"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+depends=('pixman' 'libxfont2' 'libxkbfile' 'libxcvt' 'libdrm' 'mesa' 'libepoxy' 'libxau' 'libxdmcp' 'libxshmfence' 'nettle' 'wayland' 'xkbcomp' 'xkeyboard-config' 'systemd')
+makedepends=('xorgproto' 'xtrans' 'wayland-protocols' 'xorg-util-macros')
+source=("https://www.x.org/pub/individual/xserver/xwayland-$pkgver.tar.xz")
+sha256sums=('173aea3d6f79609164c04528e1c8e4c9b60fcd59391c3c9dad4667297d727fb6')
+
+prepare() {
+	cd "xwayland-$pkgver"
+	sed -i '/install_man/,$d' meson.build
+}
+
+build() {
+	meson setup build "xwayland-$pkgver" --prefix=/usr --buildtype=release \
+		-D xkb_output_dir=/var/lib/xkb -D xkb_dir=/usr/share/X11/xkb -D xkb_bin_dir=/usr/bin \
+		-D secure-rpc=false -D libdecor=false -D xvfb=false -D docs=false -D devel-docs=false -D xdmcp=false -D glamor=true -D sha1=libnettle -D xcsecurity=true
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's polkit-kde-agent
+
+pkgname=polkit-kde-agent
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="Daemon providing a polkit authentication UI for KDE"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('glibc' 'kcoreaddons' 'kcrash' 'kdbusaddons' 'ki18n' 'kirigami' 'knotifications' 'kwindowsystem' 'gcc-libs' 'polkit-qt6' 'qt6-base' 'qt6-declarative')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'kdoctools')
+source=("https://download.kde.org/stable/plasma/$pkgver/polkit-kde-agent-1-$pkgver.tar.xz")
+sha256sums=('d80699575c08824af81fc0e2adc1c48c5e9aa466a9b80bc296e0394936736e0a')
+
+build() {
+	cmake -S "polkit-kde-agent-1-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

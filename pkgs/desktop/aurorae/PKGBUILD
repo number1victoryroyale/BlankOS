@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's aurorae
+
+pkgname=aurorae
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="A themeable window decoration for KWin"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('glibc' 'kcmutils' 'kcolorscheme' 'kconfig' 'kcoreaddons' 'kdecoration' 'ki18n' 'kirigami' 'knewstuff' 'kpackage' 'ksvg' 'gcc-libs' 'qt6-base' 'qt6-declarative' 'qt6-tools' 'sh')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules')
+source=("https://download.kde.org/stable/plasma/$pkgver/aurorae-$pkgver.tar.xz")
+sha256sums=('b1ceea196fc95adb141917e230fb2609920d420a9db2451eb8a69039b4c96623')
+
+build() {
+	cmake -S "aurorae-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

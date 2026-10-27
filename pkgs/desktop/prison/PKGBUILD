@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's prison
+
+pkgname=prison
+pkgver=6.29.0
+pkgrel=1
+pkgdesc="A barcode API to produce QRCode barcodes and DataMatrix barcodes"
+arch=(x86_64)
+url='https://develop.kde.org/products/frameworks/'
+license=('MIT')
+depends=('glibc' 'libdmtx' 'gcc-libs' 'qt6-base' 'qt6-multimedia' 'zxing-cpp' 'libqrencode')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'qt6-declarative')
+source=("https://download.kde.org/stable/frameworks/${pkgver%.*}/prison-$pkgver.tar.xz")
+sha256sums=('8d34da7a7a55d35bcc5824245e2dbec2611977d164d57bef2dcccee6004443a7')
+
+build() {
+	cmake -S "prison-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QCH=OFF -D BUILD_PYTHON_BINDINGS=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=brotli
+pkgver=1.2.0
+pkgrel=1
+pkgdesc="Generic-purpose lossless compression algorithm"
+arch=(x86_64)
+url='https://github.com/google/brotli'
+license=('MIT')
+depends=('glibc')
+source=("brotli-$pkgver.tar.gz::https://github.com/google/brotli/archive/v$pkgver/brotli-$pkgver.tar.gz")
+sha256sums=('816c96e8e8f193b40151dad7e8ff37b1221d019dbcb9c35cd3fadbfe6477dfec')
+
+build() {
+	cmake -S "brotli-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_SHARED_LIBS=ON -D BROTLI_BUILD_TOOLS=ON
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

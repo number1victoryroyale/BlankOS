@@ -1,0 +1,19 @@
+_dir=/usr/share/xml/docbook/xsl-stylesheets-nons-1.79.2
+
+post_install() {
+	[ -e /etc/xml/catalog ] || { install -d /etc/xml; xmlcatalog --noout --create /etc/xml/catalog; }
+	for _uri in http://cdn.docbook.org/release/xsl-nons/1.79.2 https://cdn.docbook.org/release/xsl-nons/1.79.2 \
+	            http://cdn.docbook.org/release/xsl-nons/current https://cdn.docbook.org/release/xsl-nons/current \
+	            http://docbook.sourceforge.net/release/xsl/current; do
+		xmlcatalog --noout --add "rewriteSystem" "$_uri" "$_dir" /etc/xml/catalog
+		xmlcatalog --noout --add "rewriteURI" "$_uri" "$_dir" /etc/xml/catalog
+	done
+}
+
+post_upgrade() {
+	post_install
+}
+
+pre_remove() {
+	xmlcatalog --noout --del "$_dir" /etc/xml/catalog
+}

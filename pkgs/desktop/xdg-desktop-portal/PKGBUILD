@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=xdg-desktop-portal
+pkgver=1.22.1
+pkgrel=1
+pkgdesc="Desktop integration portals for sandboxed apps (Flatpak)"
+arch=(x86_64)
+url='https://flatpak.github.io/xdg-desktop-portal/'
+license=('LGPL-2.1-or-later')
+depends=('glib2' 'json-glib' 'fuse3' 'gdk-pixbuf2' 'pipewire' 'systemd' 'gst-plugins-base' 'bubblewrap')
+makedepends=('python')
+source=("https://github.com/flatpak/xdg-desktop-portal/releases/download/$pkgver/xdg-desktop-portal-$pkgver.tar.xz")
+sha256sums=('d4879ddb3d65ff1a8f19187497e6f13dc5d267bcac404a5d501218be355753d3')
+
+build() {
+	meson setup build "xdg-desktop-portal-$pkgver" --prefix=/usr --buildtype=release \
+		-D documentation=disabled -D man-pages=disabled -D tests=disabled -D geoclue=disabled -D flatpak-interfaces=enabled -D systemd=enabled -D gudev=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

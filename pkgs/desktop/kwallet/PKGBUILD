@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's kwallet
+
+pkgname=kwallet
+pkgver=6.29.0
+pkgrel=1
+pkgdesc="Secure and unified container for user passwords"
+arch=(x86_64)
+url='https://develop.kde.org/products/frameworks/'
+license=('LGPL-2.0-only' 'LGPL-3.0-only')
+depends=('glib2' 'glibc' 'kcolorscheme' 'kconfig' 'kcoreaddons' 'kcrash' 'kdbusaddons' 'ki18n' 'knotifications' 'kwidgetsaddons' 'kwindowsystem' 'gcc-libs' 'libgcrypt' 'libsecret' 'qca-qt6' 'qt6-base')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'kdoctools' 'kservice')
+source=("https://download.kde.org/stable/frameworks/${pkgver%.*}/kwallet-$pkgver.tar.xz")
+sha256sums=('66a47fc170ea074cce8b916fa313f309d7c9497bd2132e0598d4b63bbad2ac88')
+
+build() {
+	cmake -S "kwallet-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QCH=OFF -D BUILD_PYTHON_BINDINGS=OFF -D BUILD_KWALLET_QUERY=ON
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

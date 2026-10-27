@@ -7,7 +7,7 @@ warn() { printf '\033[1;33m==> WARNING:\033[0m %s\n' "$*" >&2; }
 die()  { printf '\033[1;31m==> ERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 
 # pacman repositories images are installed from, in priority order
-BLANKOS_REPOS=${BLANKOS_REPOS:-core extra}
+BLANKOS_REPOS=${BLANKOS_REPOS:-core extra desktop gaming}
 
 need_root() { [[ $EUID -eq 0 ]] || die "this script must run as root"; }
 

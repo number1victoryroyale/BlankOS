@@ -1,0 +1,31 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's extra-cmake-modules
+
+pkgname=extra-cmake-modules
+pkgver=6.29.0
+pkgrel=1
+pkgdesc="Extra modules and scripts for CMake"
+arch=(any)
+url='https://develop.kde.org/products/frameworks/'
+license=('LGPL')
+depends=('cmake')
+makedepends=('cmake' 'ninja')
+source=("https://download.kde.org/stable/frameworks/${pkgver%.*}/extra-cmake-modules-$pkgver.tar.xz")
+sha256sums=('aaf2542edd5c5af9ea56a46468892d38a7978af65f0f3518379fa8ce66cad2b8')
+
+prepare() {
+	cd "extra-cmake-modules-$pkgver"
+	sed -i '/"lib64"/s/64//' kde-modules/KDEInstallDirsCommon.cmake
+}
+
+build() {
+	cmake -S "extra-cmake-modules-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_HTML_DOCS=OFF -D BUILD_MAN_DOCS=OFF -D BUILD_QTHELP_DOCS=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

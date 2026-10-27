@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's systemsettings
+
+pkgname=systemsettings
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="KDE system manager for hardware, software, and workspaces"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('glibc' 'kauth' 'kcmutils' 'kcolorscheme' 'kconfig' 'kconfigwidgets' 'kcoreaddons' 'kcrash' 'kdbusaddons' 'ki18n' 'kio' 'kirigami' 'kitemmodels' 'kitemviews' 'kjobwidgets' 'krunner' 'kservice' 'kwidgetsaddons' 'kwindowsystem' 'kxmlgui' 'gcc-libs' 'plasma-activities' 'qt6-base' 'qt6-declarative')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'kdoctools')
+source=("https://download.kde.org/stable/plasma/$pkgver/systemsettings-$pkgver.tar.xz")
+sha256sums=('5a254bcf7cbeed04ee3f407b5e86609992f978d8734e76fa24b4afafbd66383c')
+
+build() {
+	cmake -S "systemsettings-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

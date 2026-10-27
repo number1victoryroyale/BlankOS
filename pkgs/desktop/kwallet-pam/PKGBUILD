@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's kwallet-pam
+
+pkgname=kwallet-pam
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="KWallet PAM integration"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('glibc' 'kwallet' 'libgcrypt' 'sh' 'linux-pam')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools')
+source=("https://download.kde.org/stable/plasma/$pkgver/kwallet-pam-$pkgver.tar.xz")
+sha256sums=('24430ef5bef8b7c06b8f6770058afaab8fbbc166392535408b4e1d9e99a1ca9c')
+
+build() {
+	cmake -S "kwallet-pam-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

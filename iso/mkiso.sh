@@ -2,7 +2,7 @@
 # Build the BlankOS live ISO: a hybrid image that boots from CD/DVD and USB
 # sticks on both BIOS and UEFI machines.
 #
-#   sudo iso/mkiso.sh [--test] [--pkgs "base linux grub blankos-system"]
+#   sudo iso/mkiso.sh [--test] [--pkgs "base linux grub blankos-system blankos-desktop blankos-gaming"]
 #
 # Layout of the ISO:
 #   /boot/vmlinuz-linux, /boot/initramfs-live.img     kernel + live initramfs
@@ -19,7 +19,7 @@ source "$BLANKOS_ROOT/tools/lib.sh"
 need_root
 
 test_iso=0
-packages="base linux grub blankos-system"
+packages="base linux grub blankos-system blankos-desktop blankos-gaming"
 while (($#)); do
 	case $1 in
 		--test) test_iso=1 ;;
@@ -53,6 +53,23 @@ if [[ -x $root/usr/bin/pipewire ]]; then
 	chroot "$root" /usr/bin/passwd -d live > /dev/null
 	install -d "$root/var/lib/systemd/linger"
 	touch "$root/var/lib/systemd/linger/live"
+fi
+# Desktop: SDDM logs the live user straight into Plasma (Wayland); no
+# screen locking, and admin actions (Discover, Flatpak) need no password.
+if [[ -x $root/usr/bin/sddm ]]; then
+	install -d "$root/etc/sddm.conf.d" "$root/etc/polkit-1/rules.d"
+	printf '%s\n' '[Autologin]' 'User=live' 'Session=plasma' > "$root/etc/sddm.conf.d/50-live.conf"
+	cat > "$root/etc/polkit-1/rules.d/49-live.rules" << "EOF"
+// BlankOS live session: the live user may do admin tasks without a password
+polkit.addRule(function(action, subject) {
+	if (subject.user == "live") {
+		return polkit.Result.YES;
+	}
+});
+EOF
+	install -d "$root/home/live/.config"
+	printf '%s\n' '[Daemon]' 'Autolock=false' 'LockOnResume=false' > "$root/home/live/.config/kscreenlockerrc"
+	chown -R --reference="$root/home/live" "$root/home/live/.config"
 fi
 systemctl_preset_root "$root"
 ((test_iso)) && add_test_hooks "$root"

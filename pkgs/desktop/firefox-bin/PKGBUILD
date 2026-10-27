@@ -1,0 +1,33 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Mozilla's official Firefox build (compiling Firefox does not fit in a CI
+# job). Updates come through pacman, so Firefox's own updater is off.
+
+pkgname=firefox-bin
+pkgver=158.0.1
+pkgrel=1
+pkgdesc="Fast, private and safe web browser (Mozilla's official build)"
+arch=(x86_64)
+url='https://www.mozilla.org/firefox/'
+license=('MPL-2.0')
+depends=('gtk3' 'libxt' 'dbus' 'alsa-lib' 'libpulse' 'ffmpeg' 'hicolor-icon-theme')
+provides=("firefox=$pkgver")
+conflicts=('firefox')
+options=(!strip)
+source=("https://archive.mozilla.org/pub/firefox/releases/$pkgver/linux-x86_64/en-US/firefox-$pkgver.tar.xz"
+        "firefox.desktop"
+        "policies.json")
+sha256sums=('dce45470139242cf294eb6ada3d192a9bb334696842b02b71ade448a139eb41a'
+            'd44733005c9381b29309a08ab0631378d1b38d1112f43aaaab99f29c29712bc7'
+            '8fdfdb96a9de8fb89e6553955a61503c485a54d388dd61a13bdd15a0a7dea8dd')
+
+package() {
+	install -d "$pkgdir/usr/lib" "$pkgdir/usr/bin"
+	cp -a firefox "$pkgdir/usr/lib/firefox"
+	ln -s /usr/lib/firefox/firefox "$pkgdir/usr/bin/firefox"
+	install -Dm644 policies.json "$pkgdir/usr/lib/firefox/distribution/policies.json"
+	install -Dm644 firefox.desktop "$pkgdir/usr/share/applications/firefox.desktop"
+	for _s in 16 32 48 64 128; do
+		install -Dm644 "firefox/browser/chrome/icons/default/default$_s.png" \
+			"$pkgdir/usr/share/icons/hicolor/${_s}x$_s/apps/firefox.png"
+	done
+}

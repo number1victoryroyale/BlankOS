@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=xcb-util
+pkgver=0.4.1
+pkgrel=1
+pkgdesc="Utility libraries for XC Binding"
+arch=(x86_64)
+url='https://xcb.freedesktop.org/'
+license=('MIT')
+depends=('libxcb')
+source=("https://xcb.freedesktop.org/dist/xcb-util-$pkgver.tar.xz")
+sha256sums=('5abe3bbbd8e54f0fa3ec945291b7e8fa8cfd3cccc43718f8758430f94126e512')
+
+build() {
+	cd "xcb-util-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "xcb-util-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

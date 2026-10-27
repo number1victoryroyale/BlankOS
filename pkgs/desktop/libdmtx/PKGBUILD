@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libdmtx
+pkgver=0.7.8
+pkgrel=1
+pkgdesc="Library for reading and writing Data Matrix 2D barcodes"
+arch=(x86_64)
+url='https://github.com/dmtx/libdmtx'
+license=('BSD-2-Clause')
+depends=('glibc')
+source=("libdmtx-$pkgver.tar.gz::https://github.com/dmtx/libdmtx/archive/v$pkgver/libdmtx-$pkgver.tar.gz")
+sha256sums=('2394bf1d1d693a5a4ca3cfcc1bb28a4d878bdb831ea9ca8f3d5c995d274bdc39')
+
+build() {
+	cd "libdmtx-$pkgver"
+	./autogen.sh
+	./configure --prefix=/usr --disable-static
+	make
+}
+
+package() {
+	cd "libdmtx-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

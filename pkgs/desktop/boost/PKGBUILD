@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=boost
+pkgver=1.92.0
+pkgrel=1
+pkgdesc="Free peer-reviewed portable C++ source libraries"
+arch=(x86_64)
+url='https://www.boost.org/'
+license=('BSL-1.0')
+depends=('bzip2' 'zlib' 'xz' 'zstd' 'icu')
+makedepends=('python')
+source=("https://github.com/boostorg/boost/releases/download/boost-$pkgver/boost-$pkgver-b2-nodocs.tar.xz")
+sha256sums=('ea7b982002cc9dfbe59b0b217b206f470dc75f3de0bb2973d844118934d82411')
+
+build() {
+	cd "boost-$pkgver"
+	./bootstrap.sh --prefix=/usr --without-libraries=python,mpi,graph_parallel
+	./b2 stage -j"$(nproc)" threading=multi link=shared variant=release
+}
+
+package() {
+	cd "boost-$pkgver"
+	./b2 install -j"$(nproc)" threading=multi link=shared variant=release --prefix="$pkgdir/usr"
+	install -Dm644 LICENSE_1_0.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE_1_0.txt"
+}

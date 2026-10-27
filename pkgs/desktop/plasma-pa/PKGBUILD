@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's plasma-pa
+
+pkgname=plasma-pa
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="Plasma applet for audio volume management using PulseAudio"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('glib2' 'glibc' 'kcmutils' 'kconfig' 'kcoreaddons' 'kdbusaddons' 'kdeclarative' 'kglobalaccel' 'ki18n' 'kirigami' 'kirigami-addons' 'kitemmodels' 'kstatusnotifieritem' 'ksvg' 'libcanberra' 'libplasma' 'libpulse' 'gcc-libs' 'plasma-workspace' 'pulse-native-provider' 'pulseaudio-qt' 'qt6-base' 'qt6-declarative')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'kdoctools')
+source=("https://download.kde.org/stable/plasma/$pkgver/plasma-pa-$pkgver.tar.xz")
+sha256sums=('419c3cfe15f2f3093c4255d84a24708dd7ad28da2ce80cfee3521f761ba6937e')
+
+build() {
+	cmake -S "plasma-pa-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

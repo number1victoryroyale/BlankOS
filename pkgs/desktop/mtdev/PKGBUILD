@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=mtdev
+pkgver=1.1.7
+pkgrel=1
+pkgdesc="A stand-alone library which transforms all variants of kernel MT events to the slotted type B protocol"
+arch=(x86_64)
+url='https://bitmath.org/code/mtdev/'
+license=('MIT')
+depends=('glibc')
+source=("https://bitmath.org/code/mtdev/mtdev-$pkgver.tar.bz2")
+sha256sums=('a107adad2101fecac54ac7f9f0e0a0dd155d954193da55c2340c97f2ff1d814e')
+
+build() {
+	cd "mtdev-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "mtdev-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

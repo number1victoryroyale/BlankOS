@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libxi
+pkgver=1.8.3
+pkgrel=1
+pkgdesc="X11 Input extension library"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+depends=('libxext' 'libxfixes')
+makedepends=('xorgproto' 'xorg-util-macros' 'xtrans')
+source=("https://www.x.org/pub/individual/lib/libXi-$pkgver.tar.xz")
+sha256sums=('7ad60056f01af4f786cfe93b3a7707447711626fc8da2637bec71a90409babe5')
+
+build() {
+	cd "libXi-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "libXi-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

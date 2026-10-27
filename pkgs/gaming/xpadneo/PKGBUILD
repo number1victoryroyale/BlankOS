@@ -1,0 +1,35 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Advanced Linux driver for Xbox One/Series wireless controllers over
+# Bluetooth (rumble, battery level, correct button mapping).
+#
+# Built against the BlankOS kernel in linux-headers: bump _kernver (and
+# pkgrel) whenever the linux package changes.
+
+pkgname=xpadneo
+pkgver=0.10.5
+pkgrel=1
+_kernver=7.3-2
+_kver=7.3.0-blankos
+pkgdesc="Driver for Xbox wireless controllers over Bluetooth (for the BlankOS kernel)"
+arch=(x86_64)
+url='https://atar-axis.github.io/xpadneo/'
+license=('GPL-3.0-or-later')
+depends=("linux=$_kernver" 'bluez')
+makedepends=("linux-headers=$_kernver")
+install=xpadneo.install
+source=("https://github.com/atar-axis/xpadneo/archive/v$pkgver/xpadneo-$pkgver.tar.gz")
+sha256sums=('084c1ef57b4567c54cb4e4c01c9ae47b180c59a001457ad1e0ed574fdd09b59b')
+
+build() {
+	cd "xpadneo-$pkgver/hid-xpadneo"
+	make -C "/usr/lib/modules/$_kver/build" M="$PWD/src" VERSION="v$pkgver" modules
+}
+
+package() {
+	cd "xpadneo-$pkgver/hid-xpadneo"
+	install -Dm644 src/hid-xpadneo.ko "$pkgdir/usr/lib/modules/$_kver/updates/hid-xpadneo.ko"
+	zstd -q --rm -19 "$pkgdir/usr/lib/modules/$_kver/updates/hid-xpadneo.ko"
+	install -Dm644 etc-modprobe.d/xpadneo.conf "$pkgdir/usr/lib/modprobe.d/xpadneo.conf"
+	install -Dm644 -t "$pkgdir/usr/lib/udev/rules.d" etc-udev-rules.d/*.rules
+	install -Dm644 ../LICENSE.md "$pkgdir/usr/share/licenses/$pkgname/LICENSE.md"
+}

@@ -1,0 +1,21 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Debian's fonts-hack package (binary font files)
+
+pkgname=ttf-hack
+pkgver=3.003
+pkgrel=1
+pkgdesc="A typeface designed for source code (KDE's default monospace font)"
+arch=(any)
+url='https://sourcefoundry.org/hack/'
+license=('MIT AND Bitstream-Vera')
+noextract=('fonts-hack_3.003-5_all.deb')
+source=("https://deb.debian.org/debian/pool/main/f/fonts-hack/fonts-hack_3.003-5_all.deb")
+sha256sums=('22fcb5e78cf04438ee1596a8d2cc1de562a587b0a9345a17fe26069d6b4d7f02')
+
+package() {
+	mkdir -p x
+	bsdtar -xOf fonts-hack_3.003-5_all.deb 'data.tar.*' | bsdtar -xf - -C x
+	install -d "$pkgdir/usr/share/fonts/hack"
+	find x -name 'Hack-*.ttf' -exec install -m644 {} "$pkgdir/usr/share/fonts/hack/" \;
+	test -n "$(ls "$pkgdir/usr/share/fonts/hack")"
+}

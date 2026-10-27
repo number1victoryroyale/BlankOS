@@ -1,0 +1,44 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+#
+# The BlankOS desktop: KDE Plasma 6 on Wayland, logged in through SDDM,
+# with the core KDE apps and Firefox. Dark (Breeze Dark) with the BlankOS
+# violet accent until the full theme lands.
+
+pkgname=blankos-desktop
+pkgver=0.4.0
+pkgrel=1
+pkgdesc="BlankOS desktop: KDE Plasma 6 (Wayland), SDDM, KDE apps and Firefox"
+arch=(any)
+url='https://github.com/number1victoryroyale/BlankOS'
+license=('GPL-3.0-or-later')
+depends=('blankos-system'
+         # session
+         'sddm' 'kwin' 'plasma-workspace' 'plasma-desktop' 'plasma-integration' 'kscreen' 'kscreenlocker'
+         'kwallet-pam' 'polkit-kde-agent' 'kactivitymanagerd' 'kglobalacceld' 'powerdevil' 'xorg-xwayland'
+         'xdg-desktop-portal' 'xdg-desktop-portal-kde' 'xdg-user-dirs'
+         # Plasma widgets and settings
+         'plasma-nm' 'plasma-pa' 'bluedevil' 'systemsettings' 'kinfocenter' 'kde-cli-tools' 'kmenuedit'
+         'sddm-kcm' 'plasma-systemmonitor' 'ksystemstats' 'milou' 'plasma-welcome' 'discover'
+         # look and sound
+         'breeze' 'breeze-icons' 'qqc2-breeze-style' 'qqc2-desktop-style' 'ocean-sound-theme'
+         'noto-fonts' 'ttf-hack'
+         # apps
+         'dolphin' 'konsole' 'kate' 'spectacle' 'ark' 'gwenview' 'blankos-default-browser'
+         # Qt runtime pieces apps load as plugins
+         'qt6-wayland' 'qt6-svg' 'qt6-imageformats' 'kimageformats' 'qt6-multimedia')
+backup=('etc/xdg/kdeglobals')
+source=("70-blankos-desktop.preset"
+        "10-blankos.conf"
+        "kdeglobals")
+sha256sums=('1a026633127464691ea7b7cfcfbed34168ba72722333200fc7f187e443e67f7c'
+            'f6f1e4a3521e4c7564ff8f141574d7ee6e64f924d71bab67e8ae279312f48aa7'
+            '11415964b3ab63799c45a5d2ef7eeb127d5b828606875f1435eae3a66beafbc2')
+
+package() {
+	install -Dm644 70-blankos-desktop.preset "$pkgdir/usr/lib/systemd/system-preset/70-blankos-desktop.preset"
+	# boot to the login screen
+	install -d "$pkgdir/etc/systemd/system"
+	ln -s /usr/lib/systemd/system/graphical.target "$pkgdir/etc/systemd/system/default.target"
+	install -Dm644 10-blankos.conf "$pkgdir/usr/lib/sddm/sddm.conf.d/10-blankos.conf"
+	install -Dm644 kdeglobals "$pkgdir/etc/xdg/kdeglobals"
+}

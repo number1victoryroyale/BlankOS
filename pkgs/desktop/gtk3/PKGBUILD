@@ -1,0 +1,52 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=gtk3
+pkgver=3.24.52
+pkgrel=1
+pkgdesc="GObject-based multi-platform GUI toolkit (needed by Firefox and GTK apps)"
+arch=(x86_64)
+url='https://www.gtk.org/'
+license=('LGPL-2.1-or-later')
+depends=('at-spi2-core' 'cairo' 'pango' 'gdk-pixbuf2' 'libepoxy' 'libxkbcommon' 'wayland' 'libxi' 'libxrandr' 'libxcursor' 'libxinerama' 'libxcomposite' 'libxdamage' 'libxfixes' 'libxext' 'fribidi' 'harfbuzz' 'hicolor-icon-theme' 'shared-mime-info')
+makedepends=('wayland-protocols')
+source=("https://download.gnome.org/sources/gtk/3.24/gtk-$pkgver.tar.xz")
+sha256sums=('80931fa472a77b9a164f6740e3c0b444fac6770054632d35a7ff9d679e5e7b9f')
+
+build() {
+	meson setup build "gtk-$pkgver" --prefix=/usr --buildtype=release \
+		-D man=false -D introspection=false -D gtk_doc=false -D examples=false -D tests=false -D demos=false \
+		-D broadway_backend=false -D wayland_backend=true -D x11_backend=true -D colord=no -D cloudproviders=false \
+		-D tracker3=false -D print_backends=file
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+	install -Dm644 /dev/stdin "$pkgdir/usr/share/libalpm/hooks/gtk-update-icon-cache.hook" <<- EOF
+		[Trigger]
+		Type = Path
+		Operation = Install
+		Operation = Upgrade
+		Operation = Remove
+		Target = usr/share/icons/*/
+
+		[Action]
+		Description = Updating icon theme caches...
+		When = PostTransaction
+		Exec = /bin/sh -c 'for d in /usr/share/icons/*/; do [ -e "\$d/index.theme" ] && /usr/bin/gtk-update-icon-cache -q -t -f "\$d"; done; true'
+		EOF
+	install -Dm644 /dev/stdin "$pkgdir/usr/share/libalpm/hooks/gtk-query-immodules-3.0.hook" <<- EOF
+		[Trigger]
+		Type = Path
+		Operation = Install
+		Operation = Upgrade
+		Operation = Remove
+		Target = usr/lib/gtk-3.0/3.0.0/immodules/*.so
+
+		[Action]
+		Description = Probing GTK3 input method modules...
+		When = PostTransaction
+		Exec = /usr/bin/gtk-query-immodules-3.0 --update-cache
+		EOF
+}

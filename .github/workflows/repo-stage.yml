@@ -62,7 +62,8 @@ jobs:
         id: build
         run: |
           set +e
-          sudo --preserve-env=LFS,SRC,OUT timeout --signal=INT 320m \
+          # KEEP_GOING: report every failing package in one pass
+          sudo --preserve-env=LFS,SRC,OUT KEEP_GOING=1 timeout --signal=INT 320m \
             tools/build-repo.sh "${{ inputs.repo }}"
           rc=$?
           echo "rc=$rc" >> "$GITHUB_OUTPUT"

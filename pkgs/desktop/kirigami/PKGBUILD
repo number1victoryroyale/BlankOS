@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's kirigami
+
+pkgname=kirigami
+pkgver=6.29.0
+pkgrel=1
+pkgdesc="A QtQuick based components set"
+arch=(x86_64)
+url='https://develop.kde.org/products/frameworks/'
+license=('LGPL-2.0-only' 'LGPL-3.0-only')
+depends=('glibc' 'gcc-libs' 'qt6-base' 'qt6-declarative' 'qt6-svg')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'qt6-shadertools')
+source=("https://download.kde.org/stable/frameworks/${pkgver%.*}/kirigami-$pkgver.tar.xz")
+sha256sums=('ec5943b4d7efdc18c506ea0db543acdcd5313452615c66d72a1d5ff8d428296a')
+
+build() {
+	cmake -S "kirigami-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QCH=OFF -D BUILD_PYTHON_BINDINGS=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

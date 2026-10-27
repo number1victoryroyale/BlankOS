@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's libksysguard
+
+pkgname=libksysguard
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="Library to retrieve information on the current status of computer hardware"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('glibc' 'kauth' 'kconfig' 'kcoreaddons' 'kdeclarative' 'ki18n' 'kirigami' 'kitemmodels' 'knewstuff' 'kpackage' 'kquickcharts' 'kservice' 'libdrm' 'gcc-libs' 'libnl' 'qt6-5compat' 'qt6-base' 'qt6-declarative' 'solid' 'systemd')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools')
+source=("https://download.kde.org/stable/plasma/$pkgver/libksysguard-$pkgver.tar.xz")
+sha256sums=('3882fe735a00113d6fc754d5d425703bab42b6bbbff16788e95adb4ef11bb04c')
+
+build() {
+	cmake -S "libksysguard-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

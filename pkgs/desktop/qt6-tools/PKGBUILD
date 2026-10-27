@@ -1,0 +1,37 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's qt6-tools
+# Without the clang-based tools (qdoc and the C++ parser of lupdate).
+
+pkgname=qt6-tools
+_qtver=6.11.2
+pkgver=$_qtver
+pkgrel=1
+pkgdesc="A cross-platform application and UI framework (Development Tools, QtHelp)"
+arch=(x86_64)
+url='https://www.qt.io'
+license=('GPL-3.0-only' 'LGPL-3.0-only' 'LicenseRef-Qt-Commercial' 'Qt-GPL-exception-1.0')
+depends=('glibc' 'gcc-libs' 'qt6-base' 'zstd')
+makedepends=('cmake' 'ninja' 'qt6-declarative')
+source=("https://download.qt.io/official_releases/qt/${pkgver%.*}/$pkgver/submodules/qttools-everywhere-src-$pkgver.tar.xz")
+sha256sums=('9ea75af35c512f7e09e61c8c3af3997f13b4d43bb099cf43fcec470126b4041e')
+
+build() {
+	cmake -S "qttools-everywhere-src-$pkgver" -B build -G Ninja -D CMAKE_MESSAGE_LOG_LEVEL=STATUS \
+		-D CMAKE_BUILD_TYPE=Release -D QT_BUILD_TESTS=OFF -D QT_BUILD_EXAMPLES=OFF \
+		-D FEATURE_clang=OFF -D FEATURE_clangcpp=OFF -D FEATURE_qdoc=OFF -D FEATURE_assistant=OFF
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+	install -Dm644 "qttools-everywhere-src-$pkgver/LICENSES"/* -t "$pkgdir/usr/share/licenses/$pkgname"
+
+	# user-facing tools (qmake6, qdbus6, ...) in /usr/bin
+	if [[ -f $srcdir/build/user_facing_tool_links.txt ]]; then
+		cd "$pkgdir"
+		mkdir -p usr/bin
+		while read -r _line; do
+			ln -s $_line
+		done < "$srcdir/build/user_facing_tool_links.txt"
+	fi
+}

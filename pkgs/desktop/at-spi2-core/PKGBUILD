@@ -1,0 +1,24 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=at-spi2-core
+pkgver=2.60.6
+pkgrel=1
+pkgdesc="Accessibility toolkit core (includes ATK and the ATK bridge)"
+arch=(x86_64)
+url='https://gitlab.gnome.org/GNOME/at-spi2-core'
+license=('LGPL-2.1-or-later')
+depends=('dbus' 'glib2' 'libx11' 'libxi' 'libxtst' 'systemd')
+provides=('atk' 'at-spi2-atk')
+source=("https://download.gnome.org/sources/at-spi2-core/2.60/at-spi2-core-$pkgver.tar.xz")
+sha256sums=('a89b64a8b217a8042bdf0e35cbfab629ceee35640dba75df578afde9aa789d57')
+
+build() {
+	meson setup build "at-spi2-core-$pkgver" --prefix=/usr --buildtype=release \
+		-D gtk2_atk_adaptor=false -D introspection=disabled -D docs=false -D x11=enabled -D use_systemd=true
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

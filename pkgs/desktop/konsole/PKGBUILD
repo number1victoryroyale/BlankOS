@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's konsole
+
+pkgname=konsole
+pkgver=26.04.3
+pkgrel=1
+pkgdesc="KDE terminal emulator"
+arch=(x86_64)
+url='https://apps.kde.org/konsole/'
+license=('GPL-2.0-or-later' 'LGPL-2.0-or-later')
+depends=('glibc' 'icu' 'kbookmarks' 'kcolorscheme' 'kconfig' 'kconfigwidgets' 'kcoreaddons' 'kcrash' 'kdbusaddons' 'kglobalaccel' 'kguiaddons' 'ki18n' 'kiconthemes' 'kio' 'knewstuff' 'knotifications' 'knotifyconfig' 'kparts' 'kpty' 'kservice' 'ktextwidgets' 'kwidgetsaddons' 'kwindowsystem' 'kxmlgui' 'gcc-libs' 'libxkbcommon' 'qt6-base' 'qt6-multimedia' 'sh')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'kdoctools')
+source=("https://download.kde.org/stable/release-service/$pkgver/src/konsole-$pkgver.tar.xz")
+sha256sums=('fe54d0297c24a52b2ec8ebf45bf75b22736f65301663846b8f3539044943e1ac')
+
+build() {
+	cmake -S "konsole-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QCH=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

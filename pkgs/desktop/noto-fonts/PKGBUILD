@@ -1,0 +1,29 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Debian's fonts-noto packages (binary font files)
+
+pkgname=noto-fonts
+pkgver=20201225
+pkgrel=1
+pkgdesc="Google Noto fonts: Sans, Serif, Sans Mono and Color Emoji (the KDE default fonts)"
+arch=(any)
+url='https://fonts.google.com/noto'
+license=('OFL-1.1')
+provides=('ttf-font' 'emoji-font')
+noextract=('fonts-noto-core_20201225-6_all.deb' 'fonts-noto-color-emoji_2.051-1_all.deb')
+source=("https://deb.debian.org/debian/pool/main/f/fonts-noto/fonts-noto-core_20201225-6_all.deb"
+        "https://deb.debian.org/debian/pool/main/f/fonts-noto-color-emoji/fonts-noto-color-emoji_2.051-1_all.deb")
+sha256sums=('377bbf625c0db815703ada0a4efc79e20af87104488c0368f529e2d05919b9ff'
+            'fd24bbdf01db0e146682eea6d9f10448260fa77da579a6cc0aa336912f143638')
+
+package() {
+	local d
+	for d in fonts-noto-core_20201225-6_all.deb fonts-noto-color-emoji_2.051-1_all.deb; do
+		mkdir -p "x-$d"
+		bsdtar -xOf "$d" 'data.tar.*' | bsdtar -xf - -C "x-$d"
+	done
+	install -d "$pkgdir/usr/share/fonts/noto"
+	# Latin/Greek/Cyrillic text faces (the full set is several hundred MB)
+	find x-* -name 'NotoSans-*.ttf' -o -name 'NotoSerif-*.ttf' -o -name 'NotoSansMono-*.ttf' \
+		-o -name 'NotoColorEmoji.ttf' | xargs -I{} install -m644 {} "$pkgdir/usr/share/fonts/noto/"
+	test -n "$(ls "$pkgdir/usr/share/fonts/noto")"
+}

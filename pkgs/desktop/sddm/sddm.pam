@@ -1,0 +1,17 @@
+# Begin /usr/lib/pam.d/sddm
+
+auth     requisite      pam_nologin.so
+auth     required       pam_env.so
+
+auth     required       pam_succeed_if.so uid >= 1000 quiet
+auth     include        system-auth
+-auth    optional       pam_kwallet5.so
+
+account  include        system-account
+password include        system-password
+
+session  required       pam_limits.so
+session  include        system-session
+-session optional       pam_kwallet5.so auto_start
+
+# End /usr/lib/pam.d/sddm

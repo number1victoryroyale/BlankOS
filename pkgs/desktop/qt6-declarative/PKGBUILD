@@ -1,0 +1,35 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's qt6-declarative
+
+pkgname=qt6-declarative
+_qtver=6.11.2
+pkgver=$_qtver
+pkgrel=1
+pkgdesc="Classes for QML and JavaScript languages"
+arch=(x86_64)
+url='https://www.qt.io'
+license=('GPL-3.0-only' 'LGPL-3.0-only' 'LicenseRef-Qt-Commercial' 'Qt-GPL-exception-1.0')
+depends=('glibc' 'gcc-libs' 'qt6-base')
+makedepends=('cmake' 'ninja' 'python' 'qt6-shadertools')
+source=("https://download.qt.io/official_releases/qt/${pkgver%.*}/$pkgver/submodules/qtdeclarative-everywhere-src-$pkgver.tar.xz")
+sha256sums=('215b7b70517e380123eabc6b92243f3c47b6f016a91d126057dbe53551c6b430')
+
+build() {
+	cmake -S "qtdeclarative-everywhere-src-$pkgver" -B build -G Ninja -D CMAKE_MESSAGE_LOG_LEVEL=STATUS \
+		-D CMAKE_BUILD_TYPE=Release -D QT_BUILD_TESTS=OFF -D QT_BUILD_EXAMPLES=OFF
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+	install -Dm644 "qtdeclarative-everywhere-src-$pkgver/LICENSES"/* -t "$pkgdir/usr/share/licenses/$pkgname"
+
+	# user-facing tools (qmake6, qdbus6, ...) in /usr/bin
+	if [[ -f $srcdir/build/user_facing_tool_links.txt ]]; then
+		cd "$pkgdir"
+		mkdir -p usr/bin
+		while read -r _line; do
+			ln -s $_line
+		done < "$srcdir/build/user_facing_tool_links.txt"
+	fi
+}

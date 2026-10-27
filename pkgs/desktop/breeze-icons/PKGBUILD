@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's breeze-icons
+
+pkgname=breeze-icons
+pkgver=6.29.0
+pkgrel=1
+pkgdesc="Breeze icon theme"
+arch=(x86_64)
+url='https://develop.kde.org/products/frameworks/'
+license=('LGPL-2.1-only' 'LGPL-3.0-or-later')
+depends=('glibc' 'qt6-base')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'python-lxml')
+source=("https://download.kde.org/stable/frameworks/${pkgver%.*}/breeze-icons-$pkgver.tar.xz")
+sha256sums=('2948a313ffe35895b846dde5a93302a1fcd587ad8dfb860b8757629209586fe4')
+
+build() {
+	cmake -S "breeze-icons-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BINARY_ICONS_RESOURCE=ON
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

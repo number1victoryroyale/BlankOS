@@ -1,0 +1,27 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=harfbuzz
+pkgver=14.3.1
+pkgrel=1
+pkgdesc="OpenType text shaping engine"
+arch=(x86_64)
+url='https://harfbuzz.github.io/'
+license=('MIT')
+depends=('freetype2' 'glib2' 'graphite' 'icu')
+source=("https://github.com/harfbuzz/harfbuzz/releases/download/$pkgver/harfbuzz-$pkgver.tar.xz")
+sha256sums=('9dae9538aae2ffdf70cec31f2c27bf68e2aaeeae3112688467697d5faf6194f7')
+
+build() {
+	# HarfBuzz is C++ without exceptions and links with cc; our default
+	# -fexceptions would pull in libstdc++'s personality routine
+	export CXXFLAGS="${CXXFLAGS/-fexceptions/}"
+	meson setup build "harfbuzz-$pkgver" --prefix=/usr --buildtype=release \
+		-D graphite2=enabled -D icu=enabled -D freetype=enabled -D glib=enabled -D gobject=enabled \
+		-D cairo=disabled -D introspection=disabled -D docs=disabled -D tests=disabled -D benchmark=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

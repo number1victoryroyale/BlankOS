@@ -1,0 +1,27 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Arch Linux's gamemode. Games (or `gamemoderun %command%` in
+# Steam) ask the daemon to switch the CPU governor, I/O and process
+# priorities to performance while they run.
+
+pkgname=gamemode
+pkgver=1.8.2
+pkgrel=1
+pkgdesc="A daemon/lib combo that allows games to request a set of optimisations be temporarily applied"
+arch=(x86_64)
+url='https://github.com/FeralInteractive/gamemode'
+license=('BSD-3-Clause')
+depends=('systemd' 'dbus' 'polkit' 'inih')
+makedepends=('meson' 'ninja')
+source=("https://github.com/FeralInteractive/gamemode/releases/download/$pkgver/gamemode-$pkgver.tar.xz")
+sha256sums=('98cd1bcf6101c92fe87f974c7776af23c7e18f29ce6ecfe572b1c39dcde5c181')
+
+build() {
+	meson setup build "gamemode-$pkgver" --prefix=/usr --buildtype=release --libexecdir=lib/gamemode \
+		-D with-sd-bus-provider=systemd -D with-examples=false -D with-util=true
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+	install -Dm644 "gamemode-$pkgver/LICENSE.txt" "$pkgdir/usr/share/licenses/$pkgname/LICENSE.txt"
+}

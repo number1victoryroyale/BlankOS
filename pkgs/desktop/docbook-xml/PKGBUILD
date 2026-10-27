@@ -1,0 +1,32 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=docbook-xml
+pkgver=4.5
+pkgrel=1
+pkgdesc="A widely used XML scheme for writing documentation and help"
+arch=(any)
+url='https://docbook.org/'
+license=('MIT')
+depends=('libxml2')
+install=docbook-xml.install
+noextract=("docbook-xml-$pkgver.zip")
+source=("https://archive.docbook.org/xml/$pkgver/docbook-xml-$pkgver.zip")
+sha256sums=('4e4e037a2b83c98c6c94818390d4bdd3f6e10f6ec62dd79188594e26190dc7b4')
+
+package() {
+	_d=/usr/share/xml/docbook/xml-dtd-$pkgver
+	install -d "$pkgdir$_d"
+	bsdtar -xf "$srcdir/docbook-xml-$pkgver.zip" -C "$pkgdir$_d"
+	chmod -R u=rwX,go=rX "$pkgdir$_d"
+	_cat=$pkgdir$_d/catalog.xml
+	for _uri in System URI; do
+		xmlcatalog --noout --add "rewrite$_uri" "http://www.oasis-open.org/docbook/xml/$pkgver" "file://$_d" "$_cat"
+	done
+	for _v in 4.1.2 4.2 4.3 4.4; do
+		xmlcatalog --noout --add "public" "-//OASIS//DTD DocBook XML V$_v//EN" "http://www.oasis-open.org/docbook/xml/$_v/docbookx.dtd" "$_cat"
+		for _uri in System URI; do
+			xmlcatalog --noout --add "rewrite$_uri" "http://www.oasis-open.org/docbook/xml/$_v" "file://$_d" "$_cat"
+		done
+	done
+}

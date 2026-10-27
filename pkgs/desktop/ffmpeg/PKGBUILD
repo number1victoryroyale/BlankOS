@@ -1,0 +1,27 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=ffmpeg
+pkgver=9.0.1
+pkgrel=1
+pkgdesc="Complete solution to record, convert and stream audio and video"
+arch=(x86_64)
+url='https://ffmpeg.org/'
+license=('GPL-3.0-or-later')
+depends=('alsa-lib' 'bzip2' 'freetype2' 'fontconfig' 'libdrm' 'libpulse' 'libvorbis' 'libvpx' 'libwebp' 'opus' 'xz' 'zlib' 'libx11' 'libxcb' 'libxext' 'gnutls' 'vulkan-icd-loader')
+makedepends=('nasm' 'vulkan-headers')
+source=("https://ffmpeg.org/releases/ffmpeg-$pkgver.tar.xz")
+sha256sums=('cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635')
+
+build() {
+	cd "ffmpeg-$pkgver"
+	./configure --prefix=/usr --enable-gpl --enable-version3 --disable-static --enable-shared \
+		--disable-debug --disable-doc --enable-gnutls --enable-libdrm --enable-libfreetype --enable-libfontconfig \
+		--enable-libopus --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libpulse --enable-vulkan
+	make
+}
+
+package() {
+	cd "ffmpeg-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

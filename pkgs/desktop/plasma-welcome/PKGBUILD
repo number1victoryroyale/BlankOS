@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's plasma-welcome
+
+pkgname=plasma-welcome
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="A friendly onboarding wizard for Plasma"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('glibc' 'kcmutils' 'kconfig' 'kcoreaddons' 'kcrash' 'kdbusaddons' 'kglobalaccel' 'ki18n' 'kio' 'kirigami' 'kirigami-addons' 'kjobwidgets' 'knewstuff' 'kservice' 'ksvg' 'kuserfeedback' 'kwindowsystem' 'libplasma' 'gcc-libs' 'plasma-nm' 'plasma5support' 'qt6-5compat' 'qt6-base' 'qt6-declarative')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools')
+source=("https://download.kde.org/stable/plasma/$pkgver/plasma-welcome-$pkgver.tar.xz")
+sha256sums=('d9862440a16820ca00abb22363be57e9b156adc76db692d4d04cabd3e862ab3d')
+
+build() {
+	cmake -S "plasma-welcome-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

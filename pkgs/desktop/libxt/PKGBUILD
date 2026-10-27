@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libxt
+pkgver=1.3.1
+pkgrel=1
+pkgdesc="X11 toolkit intrinsics library"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+depends=('libsm' 'libx11')
+makedepends=('xorgproto' 'xorg-util-macros' 'xtrans')
+source=("https://www.x.org/pub/individual/lib/libXt-$pkgver.tar.xz")
+sha256sums=('e0a774b33324f4d4c05b199ea45050f87206586d81655f8bef4dba434d931288')
+
+build() {
+	cd "libXt-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static \
+		--with-appdefaultdir=/etc/X11/app-defaults
+	make
+}
+
+package() {
+	cd "libXt-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

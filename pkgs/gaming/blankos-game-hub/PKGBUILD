@@ -1,0 +1,31 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# The BlankOS Game Hub (source in this directory): opens on the first
+# login and installs the game launchers from Flathub with one click.
+
+pkgname=blankos-game-hub
+pkgver=1.0
+pkgrel=1
+pkgdesc="BlankOS Game Hub: one-click installs of Steam, Sober (Roblox), Heroic, Lutris and ProtonUp-Qt"
+arch=(x86_64)
+url='https://github.com/number1victoryroyale/BlankOS'
+license=('GPL-3.0-or-later')
+depends=('qt6-base' 'qt6-declarative' 'kirigami' 'flatpak' 'polkit-kde-agent')
+makedepends=('cmake' 'ninja')
+source=("CMakeLists.txt" "main.cpp" "flatpak.cpp" "flatpak.h" "Main.qml"
+        "org.blankos.GameHub.desktop" "blankos-game-hub-autostart.desktop")
+sha256sums=('1eb8d473f7a269aeebdbf6c613603acbd8e6a5b19f349c044d554252f5ee5cee'
+            'd003d582acaee338f8f3e70b0ab0723821438c9cac728605a7e0827bc45157cd'
+            'f5492b15af58b2414178c883330512041b5aeda4f6264f71098600d7f42a0e13'
+            'cf5ec9927778cb465cc78909209e16e10b4d221efeaa42f2dfd1972ff4b1d54d'
+            'c6809cd926c3fc8b35dfd0417826d2f772b8a411f3700f97e69a03fb1b3b2ba5'
+            '0e6926c612ec6ef3cf48ca56feab4a42332b120d66e12b7f418fa7add33bf343'
+            '86c983b458b61878dff2a509774dec908b7c6f56bcec566ffbf04d4309b90cd8')
+
+build() {
+	cmake -S . -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_BUILD_TYPE=Release
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}

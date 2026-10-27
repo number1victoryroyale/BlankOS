@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libwacom
+pkgver=2.19.1
+pkgrel=1
+pkgdesc="Library to identify Wacom tablets and their features"
+arch=(x86_64)
+url='https://github.com/linuxwacom/libwacom'
+license=('MIT')
+depends=('glib2' 'libgudev' 'libevdev')
+source=("https://github.com/linuxwacom/libwacom/releases/download/libwacom-$pkgver/libwacom-$pkgver.tar.xz")
+sha256sums=('a1e5b1e7ef60fa70ed05b55d888d980ec7e86bd15594857f3c48c529b661bf32')
+
+build() {
+	meson setup build "libwacom-$pkgver" --prefix=/usr --buildtype=release \
+		-D tests=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

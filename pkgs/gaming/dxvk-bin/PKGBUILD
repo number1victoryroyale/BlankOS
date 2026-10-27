@@ -1,0 +1,22 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# DXVK's official release DLLs. `blankos-wine-dx install` copies them into
+# a Wine prefix (Steam's Proton and Lutris bring their own copies).
+
+pkgname=dxvk-bin
+pkgver=3.1.1
+pkgrel=1
+pkgdesc="Vulkan-based implementation of Direct3D 8, 9, 10 and 11 for Wine"
+arch=(any)
+url='https://github.com/doitsujin/dxvk'
+license=('Zlib')
+depends=('vulkan-icd-loader')
+provides=('dxvk')
+options=('!strip')
+source=("https://github.com/doitsujin/dxvk/releases/download/v$pkgver/dxvk-$pkgver.tar.gz")
+sha256sums=('40565b4a724aadc4433fa4e010b4b23916d9b1f1baeee64e17186db94f54e608')
+
+package() {
+	install -d "$pkgdir/usr/share/dxvk"
+	cp -r "dxvk-$pkgver"/x64 "dxvk-$pkgver"/x32 "$pkgdir/usr/share/dxvk/"
+	install -Dm644 "dxvk-$pkgver/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE" 2>/dev/null || true
+}

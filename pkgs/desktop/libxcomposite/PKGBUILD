@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=libxcomposite
+pkgver=0.4.7
+pkgrel=1
+pkgdesc="X11 Composite extension library"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('MIT')
+depends=('libxfixes')
+makedepends=('xorgproto' 'xorg-util-macros' 'xtrans')
+source=("https://www.x.org/pub/individual/lib/libXcomposite-$pkgver.tar.xz")
+sha256sums=('8bdf310967f484503fa51714cf97bff0723d9b673e0eecbf92b3f97c060c8ccb')
+
+build() {
+	cd "libXcomposite-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "libXcomposite-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

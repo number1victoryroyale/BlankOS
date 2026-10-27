@@ -1,0 +1,18 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Which browser opens links. Swap this package to change the default
+# (a package for your own browser would provide and conflict with it).
+
+pkgname=blankos-default-browser
+pkgver=1
+pkgrel=1
+pkgdesc="BlankOS default web browser (Firefox)"
+arch=(any)
+url='https://github.com/number1victoryroyale/BlankOS'
+license=('GPL-3.0-or-later')
+depends=('firefox')
+source=("mimeapps.list")
+sha256sums=('37b06df558182d12a02a0f69f37cfe4c8aeb006e52d85e264feb6148f94ba57d')
+
+package() {
+	install -Dm644 mimeapps.list "$pkgdir/etc/xdg/mimeapps.list"
+}

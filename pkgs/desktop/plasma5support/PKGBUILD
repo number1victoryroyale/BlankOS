@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's plasma5support
+
+pkgname=plasma5support
+pkgver=6.7.4
+pkgrel=1
+pkgdesc="Support components for porting from KF5/Qt5 to KF6/Qt6"
+arch=(x86_64)
+url='https://kde.org/plasma-desktop/'
+license=('LGPL-2.0-or-later')
+depends=('glibc' 'kconfig' 'kcoreaddons' 'kguiaddons' 'kholidays' 'ki18n' 'kidletime' 'kio' 'kjobwidgets' 'knotifications' 'kservice' 'kunitconversion' 'libksysguard' 'gcc-libs' 'qt6-base' 'qt6-declarative' 'solid')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'networkmanager-qt' 'plasma-activities')
+source=("https://download.kde.org/stable/plasma/$pkgver/plasma5support-$pkgver.tar.xz")
+sha256sums=('793fd67604547f34c6ecc89104c9d39c56d388b6b73181302e5c8d775782e6dd')
+
+build() {
+	cmake -S "plasma5support-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QT5=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

@@ -1,0 +1,50 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=sddm
+pkgver=0.21.0
+pkgrel=1
+pkgdesc="QML based X11 and Wayland display manager"
+arch=(x86_64)
+url='https://github.com/sddm/sddm'
+license=('GPL-2.0-or-later')
+depends=('qt6-base' 'qt6-declarative' 'linux-pam' 'systemd' 'libxcb' 'libxau' 'ttf-font')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools')
+backup=('usr/share/sddm/scripts/Xsetup' 'usr/share/sddm/scripts/Xstop' 'usr/share/sddm/scripts/wayland-session')
+source=("https://github.com/sddm/sddm/archive/v$pkgver/sddm-$pkgver.tar.gz"
+        "sddm.pam"
+        "sddm-autologin.pam"
+        "sddm-greeter.pam"
+        "sddm.sysusers"
+        "sddm.tmpfiles")
+sha256sums=('f895de2683627e969e4849dbfbbb2b500787481ca5ba0de6d6dfdae5f1549abf'
+            '8e137d02226ae199265854910b2552cf11c41996d358412d71ed069a1f42a73b'
+            '7946ba53398c9efb37f9bb095fc77963bd83d668b9fc22c1e80b8a41b0c36cb2'
+            '24456f0c8480316f719cc8ac1a37827d79fbb42db12d7eb086a1bc400fd0fe39'
+            '1d91cea2ce28621ca3adeb1d158dca2c95e980f005fa0beb60d4851e82055b49'
+            '6b5d3d8990fa038bfc85341c3dbf669840a44fd029518247c614047afe77c284')
+
+build() {
+	cmake -S "sddm-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D CMAKE_POLICY_VERSION_MINIMUM=3.5 -D RUNTIME_DIR=/run/sddm -D BUILD_MAN_PAGES=OFF -D BUILD_WITH_QT6=ON \
+		-D DATA_INSTALL_DIR=/usr/share/sddm -D DBUS_CONFIG_FILENAME=sddm_org.freedesktop.DisplayManager.conf \
+		-D SYSTEMD_TMPFILES_DIR=/usr/lib/tmpfiles.d -D SYSTEMD_SYSUSERS_DIR=/usr/lib/sysusers.d -D UID_MIN=1000 -D UID_MAX=60513
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+	# BLFS's PAM services, in the vendor directory (see linux-pam)
+	rm -rf "$pkgdir/etc/pam.d"
+	for _p in sddm sddm-autologin sddm-greeter; do
+		install -Dm644 "$srcdir/$_p.pam" "$pkgdir/usr/lib/pam.d/$_p"
+	done
+	install -Dm644 "$srcdir/sddm.sysusers" "$pkgdir/usr/lib/sysusers.d/sddm.conf"
+	install -Dm644 "$srcdir/sddm.tmpfiles" "$pkgdir/usr/lib/tmpfiles.d/sddm.conf"
+	# the default configuration (/usr/lib/sddm/sddm.conf.d), overridden in /etc/sddm.conf.d
+	install -d "$pkgdir/usr/lib/sddm/sddm.conf.d"
+	"$pkgdir/usr/bin/sddm" --example-config > "$pkgdir/usr/lib/sddm/sddm.conf.d/default.conf"
+	sed -i -e 's|^DefaultSession=.*|DefaultSession=plasma.desktop|' "$pkgdir/usr/lib/sddm/sddm.conf.d/default.conf"
+}

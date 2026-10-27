@@ -1,0 +1,23 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=pixman
+pkgver=0.46.4
+pkgrel=1
+pkgdesc="The pixel-manipulation library for X and cairo"
+arch=(x86_64)
+url='https://cairographics.org/'
+license=('MIT')
+depends=('glibc')
+source=("https://www.cairographics.org/releases/pixman-$pkgver.tar.gz")
+sha256sums=('d09c44ebc3bd5bee7021c79f922fe8fb2fb57f7320f55e97ff9914d2346a591c')
+
+build() {
+	meson setup build "pixman-$pkgver" --prefix=/usr --buildtype=release \
+		-D tests=disabled -D demos=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

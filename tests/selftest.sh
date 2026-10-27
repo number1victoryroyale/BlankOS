@@ -71,5 +71,43 @@ if pacman -Q blankos-system > /dev/null 2>&1; then
 	check "lspci and lsusb"            bash -c 'lspci | grep -qi "host bridge" && command -v lsusb'
 fi
 
+# The desktop (milestone 4), when installed: SDDM logs the live user into
+# Plasma on Wayland.
+if pacman -Q blankos-desktop > /dev/null 2>&1; then
+	check "boots to graphical.target"  bash -c '[[ $(systemctl get-default) == graphical.target ]] && systemctl is-active -q graphical.target'
+	check "SDDM running"               systemctl is-active -q sddm.service
+	check "Plasma session for live"    bash -c 'for i in $(seq 120); do
+			loginctl list-sessions --no-legend | grep -q " live " &&
+				s=$(loginctl list-sessions --no-legend | awk "\$3 == \"live\" { print \$1; exit }") &&
+				[[ $(loginctl show-session "$s" -p Type --value) == wayland ]] && exit 0
+			sleep 1
+		done; loginctl list-sessions; journalctl -b -u sddm --no-pager | tail -n 30; exit 1'
+	check "KWin (Wayland) running"     bash -c 'for i in $(seq 120); do pgrep -u live -x kwin_wayland > /dev/null && exit 0; sleep 1; done; ps -u live -o pid,args; exit 1'
+	check "Plasma shell running"       bash -c 'for i in $(seq 180); do pgrep -u live -x plasmashell > /dev/null && exit 0; sleep 1; done; ps -u live -o pid,args; journalctl -b --user-unit plasma-plasmashell --no-pager 2>/dev/null | tail -n 30; exit 1'
+	check "KDE apps start"             bash -c 'su live -s /bin/bash -c "QT_QPA_PLATFORM=offscreen dolphin --version && QT_QPA_PLATFORM=offscreen konsole --version && QT_QPA_PLATFORM=offscreen kate --version"'
+	check "Firefox installed"          bash -c '/usr/lib/firefox/firefox --version'
+	check "default browser is Firefox" bash -c 'grep -qx "x-scheme-handler/https=firefox.desktop" /etc/xdg/mimeapps.list'
+	check "xdg-desktop-portal-kde"     test -x /usr/lib/xdg-desktop-portal-kde
+fi
+
+# The gaming layer (milestone 5), when installed.
+if pacman -Q blankos-gaming > /dev/null 2>&1; then
+	check "Wine 64-bit WoW64 build"    bash -c 'wine --version | grep -q "^wine-" && test -d /usr/lib/wine/x86_64-windows && test -d /usr/lib/wine/i386-windows'
+	check "NTSYNC device for Wine"     bash -c 'test -c /dev/ntsync && [[ $(stat -c %a /dev/ntsync) == 666 ]]'
+	# starting a Wine prefix takes too long under plain emulation (no KVM)
+	if [[ $(systemd-detect-virt) != qemu ]]; then
+		check "Wine runs 64- and 32-bit"   bash -c 'su live -s /bin/bash -c "export WINEPREFIX=/tmp/wine-test WINEDEBUG=-all
+			timeout 300 wineboot -i > /dev/null 2>&1
+			timeout 120 wine cmd /c echo wine64-ok && timeout 120 wine C:/windows/syswow64/cmd.exe /c echo wine32-ok" 2>&1 | tee /tmp/wine.txt | grep -q wine32-ok || { cat /tmp/wine.txt; exit 1; }'
+	else
+		skip "Wine runs 64- and 32-bit (no KVM)"
+	fi
+	check "DXVK and VKD3D-Proton"      bash -c 'test -f /usr/share/dxvk/x64/d3d11.dll && test -f /usr/share/dxvk/x32/d3d9.dll && test -f /usr/share/vkd3d-proton/x64/d3d12.dll && command -v blankos-wine-dx'
+	check "winetricks and cabextract"  bash -c 'winetricks --version && cabextract --version && 7z i > /dev/null'
+	check "GameMode and MangoHud"      bash -c 'gamemoded --version && command -v gamemoderun && command -v mangohud && ls /usr/share/vulkan/implicit_layer.d/MangoHud*.json'
+	check "controller drivers and rules" bash -c 'modinfo hid_xpadneo > /dev/null && ls /usr/lib/udev/rules.d/71-valve-gdu.rules && modinfo uinput > /dev/null'
+	check "Game Hub self test"         bash -c 'su live -s /bin/bash -c "QT_QPA_PLATFORM=offscreen blankos-game-hub --self-test"'
+fi
+
 echo "SELFTEST-DONE failures=$fails"
 exit $((fails > 0))

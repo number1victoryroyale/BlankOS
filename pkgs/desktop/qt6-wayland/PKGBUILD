@@ -1,0 +1,35 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's qt6-wayland
+
+pkgname=qt6-wayland
+_qtver=6.11.2
+pkgver=$_qtver
+pkgrel=1
+pkgdesc="Provides APIs for Wayland"
+arch=(x86_64)
+url='https://www.qt.io'
+license=('GPL-3.0-only' 'LGPL-3.0-only' 'LicenseRef-Qt-Commercial' 'Qt-GPL-exception-1.0')
+depends=('glibc' 'libglvnd' 'gcc-libs' 'libxkbcommon' 'qt6-base' 'qt6-declarative' 'qt6-svg' 'wayland')
+makedepends=('cmake' 'ninja' 'wayland-protocols')
+source=("https://download.qt.io/official_releases/qt/${pkgver%.*}/$pkgver/submodules/qtwayland-everywhere-src-$pkgver.tar.xz")
+sha256sums=('8eb7615e39332a10f506e8dd70f02d5954bb5949ff54f6dcbf8bd6168222f9df')
+
+build() {
+	cmake -S "qtwayland-everywhere-src-$pkgver" -B build -G Ninja -D CMAKE_MESSAGE_LOG_LEVEL=STATUS \
+		-D CMAKE_BUILD_TYPE=Release -D QT_BUILD_TESTS=OFF -D QT_BUILD_EXAMPLES=OFF
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+	install -Dm644 "qtwayland-everywhere-src-$pkgver/LICENSES"/* -t "$pkgdir/usr/share/licenses/$pkgname"
+
+	# user-facing tools (qmake6, qdbus6, ...) in /usr/bin
+	if [[ -f $srcdir/build/user_facing_tool_links.txt ]]; then
+		cd "$pkgdir"
+		mkdir -p usr/bin
+		while read -r _line; do
+			ln -s $_line
+		done < "$srcdir/build/user_facing_tool_links.txt"
+	fi
+}

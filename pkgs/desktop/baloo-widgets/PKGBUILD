@@ -1,0 +1,26 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd) and Arch Linux's baloo-widgets
+
+pkgname=baloo-widgets
+pkgver=26.04.3
+pkgrel=1
+pkgdesc="Widgets for Baloo"
+arch=(x86_64)
+url='https://www.kde.org/'
+license=('LGPL-2.0-or-later')
+depends=('baloo' 'glibc' 'kconfig' 'kcoreaddons' 'kfilemetadata' 'ki18n' 'kio' 'kservice' 'kwidgetsaddons' 'gcc-libs' 'qt6-base')
+makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'kdoctools')
+source=("https://download.kde.org/stable/release-service/$pkgver/src/baloo-widgets-$pkgver.tar.xz")
+sha256sums=('fa5288d216d3ed9ed0926385dbc0b266b60317a60c231a6dccaff4bcd810d9fc')
+
+build() {
+	cmake -S "baloo-widgets-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
+		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
+		-D CMAKE_SKIP_INSTALL_RPATH=ON -D BUILD_TESTING=OFF -W no-dev \
+		-D BUILD_QCH=OFF
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

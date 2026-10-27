@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=xkbcomp
+pkgver=1.5.0
+pkgrel=1
+pkgdesc="X Keyboard description compiler (used by Xwayland)"
+arch=(x86_64)
+url='https://xorg.freedesktop.org/'
+license=('HPND')
+depends=('libxkbfile' 'libx11')
+makedepends=('xorgproto')
+source=("https://www.x.org/pub/individual/app/xkbcomp-$pkgver.tar.xz")
+sha256sums=('2ac31f26600776db6d9cd79b3fcd272263faebac7eb85fb2f33c7141b8486060')
+
+build() {
+	cd "xkbcomp-$pkgver"
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+	make
+}
+
+package() {
+	cd "xkbcomp-$pkgver"
+	make DESTDIR="$pkgdir" install
+}
