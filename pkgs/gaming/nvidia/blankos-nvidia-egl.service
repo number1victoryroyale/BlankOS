@@ -1,0 +1,17 @@
+# The live ISO's "NVIDIA" boot entry: register NVIDIA's EGL driver with
+# libglvnd before the desktop starts (installed systems get it from
+# blankos-nvidia-setup).
+[Unit]
+Description=Use NVIDIA's EGL driver (NVIDIA boot entry)
+DefaultDependencies=no
+ConditionKernelCommandLine=modprobe.blacklist=nouveau
+After=local-fs.target
+Before=sysinit.target display-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/mkdir -p /etc/glvnd/egl_vendor.d
+ExecStart=/usr/bin/ln -sf /usr/share/nvidia/10_nvidia.json /etc/glvnd/egl_vendor.d/10_nvidia.json
+
+[Install]
+WantedBy=sysinit.target

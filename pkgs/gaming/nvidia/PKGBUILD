@@ -16,7 +16,7 @@
 pkgbase=nvidia
 pkgname=('nvidia-open' 'nvidia-utils' 'nvidia-utils-cuda')
 pkgver=595.104.02
-pkgrel=2
+pkgrel=3
 _kernver=7.3-2
 _kver=7.3.0-blankos
 arch=(x86_64)
@@ -26,12 +26,14 @@ makedepends=("linux-headers=$_kernver")
 options=('!strip' '!lto' '!debug')
 _pkg=NVIDIA-Linux-x86_64-$pkgver
 source=("https://download.nvidia.com/XFree86/Linux-x86_64/$pkgver/$_pkg.run"
-        "nvidia.conf" "nvidia-blankos.install" "prime-run" "blankos-nvidia-setup")
+        "nvidia.conf" "nvidia-blankos.install" "prime-run" "blankos-nvidia-setup"
+        "blankos-nvidia-egl.service")
 sha256sums=('e421c202e4c79f58c3c7f3161bbe71454ebb3d88936f88205a0e327cd04c59ca'
             '322bae622a2e7908d5479c877f6b3bac9e39cb6c39247b7f86b8f1bea20e58e7'
             '9cf0a5f3aa86428e79dba6e4a6f9a18a624d8f7a6c3e162fc7a2e5b1baa959ee'
             '546e1166c0600cea668ea8c808ef79f250c372efaa93743ecf658d17e424a292'
-            '71a489624e2c6ab265c31352fa72f66514d58df084896af36da75fa4a76b79c8')
+            '3a141d9d9550b20e96d718944957ee5644733ac4771c3c74665808786477a85f'
+            '12056f86b9de8112b491c1858780ebc1dc43375856eafbcf6888b8a13645634a')
 
 prepare() {
 	rm -rf "$_pkg"
@@ -92,7 +94,13 @@ package_nvidia-utils() {
 		_lib "$f"
 	done
 	_lib "libvdpau_nvidia.so.$pkgver" usr/lib/vdpau
-	install -Dm644 10_nvidia.json "$pkgdir/usr/share/glvnd/egl_vendor.d/10_nvidia.json"
+	# EGL vendor file: registered in /etc/glvnd only while the NVIDIA driver
+	# is chosen (blankos-nvidia-setup, blankos-nvidia-egl.service); loaded
+	# on machines without it, NVIDIA's EGL GBM platform crashes Xwayland
+	install -Dm644 10_nvidia.json "$pkgdir/usr/share/nvidia/10_nvidia.json"
+	install -Dm644 "$srcdir/blankos-nvidia-egl.service" "$pkgdir/usr/lib/systemd/system/blankos-nvidia-egl.service"
+	install -d "$pkgdir/usr/lib/systemd/system/sysinit.target.wants"
+	ln -s ../blankos-nvidia-egl.service "$pkgdir/usr/lib/systemd/system/sysinit.target.wants/blankos-nvidia-egl.service"
 	install -Dm644 -t "$pkgdir/usr/share/egl/egl_external_platform.d" \
 		09_nvidia_wayland2.json 10_nvidia_wayland.json 15_nvidia_gbm.json 20_nvidia_xcb.json 20_nvidia_xlib.json
 	# GBM backend for KWin and other Wayland compositors

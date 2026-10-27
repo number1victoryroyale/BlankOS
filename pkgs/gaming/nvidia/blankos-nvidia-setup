@@ -8,8 +8,12 @@
 # Without an argument it follows how the live system was started: the
 # boot menu's "NVIDIA" entry means nvidia. The installer runs it once;
 # run it again (as root) to switch, then reboot.
+#
+# NVIDIA's EGL driver is only registered with libglvnd while the NVIDIA
+# driver is chosen: loaded without an NVIDIA GPU it crashes Xwayland.
 set -e
 conf=/etc/modprobe.d/blankos-gpu.conf
+egl=/etc/glvnd/egl_vendor.d/10_nvidia.json
 choice=$1
 if [ -z "$choice" ]; then
 	case " $(cat /proc/cmdline) " in
@@ -21,6 +25,8 @@ units="nvidia-suspend.service nvidia-resume.service nvidia-hibernate.service nvi
 case $choice in
 	nvidia)
 		printf '# written by blankos-nvidia-setup: NVIDIA driver\nblacklist nouveau\n' > "$conf"
+		mkdir -p "${egl%/*}"
+		ln -sf /usr/share/nvidia/10_nvidia.json "$egl"
 		# shellcheck disable=SC2086
 		systemctl enable $units nvidia-powerd.service > /dev/null 2>&1 || true
 		;;
@@ -29,6 +35,7 @@ case $choice in
 		for m in nvidia nvidia_drm nvidia_modeset nvidia_uvm nvidia_peermem; do
 			echo "blacklist $m" >> "$conf"
 		done
+		rm -f "$egl"
 		# shellcheck disable=SC2086
 		systemctl disable $units nvidia-powerd.service > /dev/null 2>&1 || true
 		;;

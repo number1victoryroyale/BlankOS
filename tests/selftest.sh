@@ -82,7 +82,11 @@ if pacman -Q blankos-desktop > /dev/null 2>&1; then
 				[[ $(loginctl show-session "$s" -p Type --value) == wayland ]] && exit 0
 			sleep 1
 		done; loginctl list-sessions; journalctl -b -u sddm --no-pager | tail -n 30; exit 1'
-	check "KWin (Wayland) running"     bash -c 'for i in $(seq 120); do pgrep -u live -x kwin_wayland > /dev/null && exit 0; sleep 1; done; ps -u live -o pid,args; exit 1'
+	check "KWin (Wayland) running"     bash -c 'for i in $(seq 120); do pgrep -u live -x kwin_wayland > /dev/null && exit 0; sleep 1; done; ps -u live -o pid,args
+		coredumpctl --no-pager list 2>/dev/null | tail -n 8
+		coredumpctl --no-pager info kwin_wayland 2>/dev/null | grep -E "Signal|Executable|^ +#[0-9]+ " | head -n 25
+		journalctl -b --no-pager _UID=1000 2>/dev/null | grep -iE "kwin|wayland|drm|egl|startplasma" | tail -n 40
+		tail -n 30 /home/live/.local/share/sddm/wayland-session.log 2>/dev/null; exit 1'
 	check "Plasma shell running"       bash -c 'for i in $(seq 180); do pgrep -u live -x plasmashell > /dev/null && exit 0; sleep 1; done; ps -u live -o pid,args; journalctl -b --user-unit plasma-plasmashell --no-pager 2>/dev/null | tail -n 30; exit 1'
 	check "KDE apps start"             bash -c 'su live -s /bin/bash -c "QT_QPA_PLATFORM=offscreen dolphin --version && QT_QPA_PLATFORM=offscreen konsole --version && QT_QPA_PLATFORM=offscreen kate --version"'
 	check "Firefox installed"          bash -c '/usr/lib/firefox/firefox --version'
@@ -112,7 +116,7 @@ if pacman -Q blankos-gaming > /dev/null 2>&1; then
 	check "winetricks and cabextract"  bash -c 'winetricks --version && cabextract --version && 7z i > /dev/null'
 	check "GameMode and MangoHud"      bash -c 'gamemoded --version && command -v gamemoderun && command -v mangohud && ls /usr/share/vulkan/implicit_layer.d/MangoHud*.json'
 	check "controller drivers and rules" bash -c 'modinfo hid_xpadneo > /dev/null && ls /usr/lib/udev/rules.d/71-valve-gdu.rules && modinfo uinput > /dev/null'
-	check "NVIDIA driver ready (off unless chosen)" bash -c 'modinfo -n nvidia && modinfo -n nvidia_drm && test -x /usr/bin/nvidia-smi && test -f /usr/share/vulkan/icd.d/nvidia_icd.json && ! lsmod | grep -q "^nvidia " && command -v prime-run blankos-nvidia-setup'
+	check "NVIDIA driver ready (off unless chosen)" bash -c 'modinfo -n nvidia && modinfo -n nvidia_drm && test -x /usr/bin/nvidia-smi && test -f /usr/share/vulkan/icd.d/nvidia_icd.json && ! lsmod | grep -q "^nvidia " && test -f /usr/share/nvidia/10_nvidia.json && ! test -e /etc/glvnd/egl_vendor.d/10_nvidia.json && command -v prime-run blankos-nvidia-setup'
 	check "power profiles and GPU switching" bash -c 'systemctl is-active -q power-profiles-daemon.service && systemctl is-active -q switcheroo-control.service'
 	check "Game Hub self test"         bash -c 'su live -s /bin/bash -c "QT_QPA_PLATFORM=offscreen blankos-game-hub --self-test"'
 fi
