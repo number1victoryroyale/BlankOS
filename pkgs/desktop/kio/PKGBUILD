@@ -3,12 +3,12 @@
 
 pkgname=kio
 pkgver=6.29.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Resource and network access abstraction"
 arch=(x86_64)
 url='https://develop.kde.org/products/frameworks/'
 license=('LGPL-2.0-only' 'LGPL-3.0-only')
-depends=('acl' 'glibc' 'karchive' 'kbookmarks' 'kcolorscheme' 'kcompletion' 'kconfig' 'kcoreaddons' 'kcrash' 'kdbusaddons' 'kguiaddons' 'ki18n' 'kiconthemes' 'kitemviews' 'kjobwidgets' 'kservice' 'kwallet' 'kwidgetsaddons' 'kwindowsystem' 'gcc-libs' 'libxml2' 'libxslt' 'qt6-base' 'solid' 'util-linux')
+depends=('acl' 'glibc' 'karchive' 'kdoctools' 'kbookmarks' 'kcolorscheme' 'kcompletion' 'kconfig' 'kcoreaddons' 'kcrash' 'kdbusaddons' 'kguiaddons' 'ki18n' 'kiconthemes' 'kitemviews' 'kjobwidgets' 'kservice' 'kwallet' 'kwidgetsaddons' 'kwindowsystem' 'gcc-libs' 'libxml2' 'libxslt' 'qt6-base' 'solid' 'util-linux')
 makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'kdoctools')
 source=("https://download.kde.org/stable/frameworks/${pkgver%.*}/kio-$pkgver.tar.xz")
 sha256sums=('9f06313cd7d6cdde8db43067126d650fc5cc904b6f0b89159274a03e4805a91a')
