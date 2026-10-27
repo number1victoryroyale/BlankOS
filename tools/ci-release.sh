@@ -93,6 +93,9 @@ case ${1:-} in
 	publish-iso)
 		iso=${2:?iso file}
 		[[ -f $iso ]] || die "no such file: $iso"
+		# GitHub refuses release files of 2 GiB and more
+		(($(stat -c %s "$iso") < 2 * 1024 * 1024 * 1024)) ||
+			die "${iso##*/} is $(du -h "$iso" | cut -f1), over GitHub's 2 GiB release file limit"
 		ensure_release live "BlankOS live ISO (latest build)"
 		sumfile=$(mktemp -d)/${iso##*/}.sha256
 		(cd "$(dirname "$iso")" && sha256sum "${iso##*/}") > "$sumfile"

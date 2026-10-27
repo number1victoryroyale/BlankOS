@@ -147,8 +147,14 @@ mcopy -i "$stage/efi.img" "$LFS/tmp/BOOTX64.EFI" ::/EFI/BOOT/BOOTX64.EFI
 
 msg "Compressing the live root"
 umount_vkfs "$LFS"
-mksquashfs "$root" "$stage/blankos/x86_64/rootfs.sfs" \
-	-comp zstd -Xcompression-level 15 -b 1M -noappend -no-progress -quiet
+sfs=$stage/blankos/x86_64/rootfs.sfs
+mksquashfs "$root" "$sfs" -comp zstd -Xcompression-level 15 -b 1M -noappend -no-progress -quiet
+# GitHub release files must stay under 2 GiB: if zstd is too big, xz
+# (with the x86 filter) packs about 15% tighter at some boot speed
+if (($(stat -c %s "$sfs") > 1900 * 1024 * 1024)); then
+	msg2 "rootfs.sfs is over 1.9 GiB with zstd; using xz"
+	mksquashfs "$root" "$sfs" -comp xz -Xbcj x86 -b 1M -noappend -no-progress -quiet
+fi
 du -h "$stage/blankos/x86_64/rootfs.sfs" | cut -f1 | xargs printf '  -> rootfs.sfs: %s\n'
 
 msg "Writing $iso"
