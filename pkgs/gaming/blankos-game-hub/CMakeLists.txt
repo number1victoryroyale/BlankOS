@@ -9,7 +9,6 @@ qt_add_qml_module(blankos-game-hub
     URI BlankOS.GameHub
     VERSION 1.0
     QML_FILES Main.qml
-    NO_RESOURCE_TARGET_PATH
 )
 target_link_libraries(blankos-game-hub PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick)
 

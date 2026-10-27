@@ -77,9 +77,10 @@ if pacman -Q blankos-desktop > /dev/null 2>&1; then
 	check "boots to graphical.target"  bash -c '[[ $(systemctl get-default) == graphical.target ]] && systemctl is-active -q graphical.target'
 	check "SDDM running"               systemctl is-active -q sddm.service
 	check "Plasma session for live"    bash -c 'for i in $(seq 120); do
-			loginctl list-sessions --no-legend | grep -q " live " &&
-				s=$(loginctl list-sessions --no-legend | awk "\$3 == \"live\" { print \$1; exit }") &&
+			# any of live'"'"'s sessions (the first one is its user manager)
+			for s in $(loginctl list-sessions --no-legend | awk "\$3 == \"live\" { print \$1 }"); do
 				[[ $(loginctl show-session "$s" -p Type --value) == wayland ]] && exit 0
+			done
 			sleep 1
 		done; loginctl list-sessions; journalctl -b -u sddm --no-pager | tail -n 30; exit 1'
 	check "KWin (Wayland) running"     bash -c 'for i in $(seq 120); do pgrep -u live -x kwin_wayland > /dev/null && exit 0; sleep 1; done; ps -u live -o pid,args

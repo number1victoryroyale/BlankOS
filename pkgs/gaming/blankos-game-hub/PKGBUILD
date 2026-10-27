@@ -4,7 +4,7 @@
 
 pkgname=blankos-game-hub
 pkgver=1.0
-pkgrel=1
+pkgrel=2
 pkgdesc="BlankOS Game Hub: one-click installs of Steam, Sober (Roblox), Heroic, Lutris and ProtonUp-Qt"
 arch=(x86_64)
 url='https://github.com/number1victoryroyale/BlankOS'
@@ -13,7 +13,7 @@ depends=('qt6-base' 'qt6-declarative' 'kirigami' 'flatpak' 'polkit-kde-agent')
 makedepends=('cmake' 'ninja')
 source=("CMakeLists.txt" "main.cpp" "flatpak.cpp" "flatpak.h" "Main.qml"
         "org.blankos.GameHub.desktop" "blankos-game-hub-autostart.desktop")
-sha256sums=('1eb8d473f7a269aeebdbf6c613603acbd8e6a5b19f349c044d554252f5ee5cee'
+sha256sums=('0925e7781a5b45b3defdbc0a9d1bf237bdd14df06eb8cdb01957800ceea8597c'
             'd003d582acaee338f8f3e70b0ab0723821438c9cac728605a7e0827bc45157cd'
             'f5492b15af58b2414178c883330512041b5aeda4f6264f71098600d7f42a0e13'
             'cf5ec9927778cb465cc78909209e16e10b4d221efeaa42f2dfd1972ff4b1d54d'
