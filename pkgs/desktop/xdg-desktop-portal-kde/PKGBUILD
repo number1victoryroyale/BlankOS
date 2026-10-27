@@ -15,9 +15,11 @@ sha256sums=('bb4b955e2f52a832f221d3fb7182cebf920653a0ad1e3201abd29f134d4c33f3')
 
 prepare() {
 	cd "xdg-desktop-portal-kde-$pkgver"
-	# Qt is built without CUPS (no printing yet), so its private qcups_p.h is
-	# not installed; the portal only needs this one property key from it
-	sed -i 's|#include <QtPrintSupport/private/qcups_p.h>|#define PPK_CupsOptions QPrintEngine::PrintEnginePropertyKey(0xfe00)|' src/print.cpp
+	# No printing stack yet (CUPS): leave out the print portal, which is
+	# written against Qt's CUPS support. Every other portal is built.
+	sed -i '/^    print\.cpp$/d; /^    print\.h$/d' src/CMakeLists.txt
+	sed -i '/#include "print.h"/d; /m_print(new PrintPortal(this))/d' src/desktopportal.cpp
+	sed -i '/PrintPortal \*const m_print;/d' src/desktopportal.h
 }
 
 build() {
