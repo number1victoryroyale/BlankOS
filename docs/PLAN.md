@@ -290,6 +290,11 @@ Bluetooth, 4K OLED touch screen.
     platform crashed Xwayland: the file is now linked into /etc/glvnd only while the NVIDIA
     driver is chosen (blankos-nvidia-setup; blankos-nvidia-egl.service for the NVIDIA boot entry).
   - The Game Hub's QML module path; the self test's session check; no idle dimming/suspend live.
-- Open: under slow emulation plasmashell and plasma-welcome crashed once (SIGSEGV) about two
-  minutes into the session and plasmashell restarted; the self test now lists crashes. Needs a
-  backtrace (systemd-coredump has no libdw yet: elfutils' libdw would add stack traces).
+  - The Game Hub's menu entry and autostart were links into the build tree (CMake installed
+    makepkg's source links); build-repo.sh now rejects packages with links into /build.
+  - Discover lost its RPATH to its private libraries; Wine's self test prefix moved out of /tmp.
+- With KVM in CI the desktop ISO reaches the Plasma desktop (screenshot: BlankOS wallpaper, panel,
+  Install BlankOS icon, Welcome Center) and every desktop check passes.
+- Under slow emulation without KVM, plasmashell and plasma-welcome crash in llvmpipe's JIT-compiled
+  shader code (libgallium worker threads; systemd-coredump now has libdw for backtraces) and
+  plasmashell restarts. Not seen with KVM; real machines use their GPU driver, not llvmpipe.
