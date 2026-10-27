@@ -1,0 +1,156 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# NVIDIA's driver from the official .run, packaged like Arch Linux's
+# nvidia-open + nvidia-utils:
+#   nvidia-open        the open kernel modules (Turing / GTX 16 and newer),
+#                      built against linux-headers: bump _kernver (and
+#                      pkgrel) whenever the linux package changes
+#   nvidia-utils       OpenGL, Vulkan, EGL (Wayland, GBM), VDPAU, the GSP
+#                      firmware, nvidia-smi, nvidia-settings, DLSS (NGX),
+#                      power management and suspend services
+#   nvidia-utils-cuda  CUDA, NVENC/NVDEC, OpenCL, OptiX (kept off the ISO)
+#
+# Nothing loads by default: the boot menu's "NVIDIA" entry (and the
+# installer, on NVIDIA machines) turn the driver on and nouveau off.
+
+pkgbase=nvidia
+pkgname=('nvidia-open' 'nvidia-utils' 'nvidia-utils-cuda')
+pkgver=595.104.02
+pkgrel=1
+_kernver=7.3-2
+_kver=7.3.0-blankos
+arch=(x86_64)
+url='https://www.nvidia.com/'
+license=('LicenseRef-NVIDIA' 'MIT OR GPL-2.0-only')
+makedepends=("linux-headers=$_kernver")
+options=('!strip' '!lto' '!debug')
+_pkg=NVIDIA-Linux-x86_64-$pkgver
+source=("https://download.nvidia.com/XFree86/Linux-x86_64/$pkgver/$_pkg.run"
+        "nvidia.conf" "nvidia-blankos.install" "prime-run" "blankos-nvidia-setup")
+sha256sums=('e421c202e4c79f58c3c7f3161bbe71454ebb3d88936f88205a0e327cd04c59ca'
+            '322bae622a2e7908d5479c877f6b3bac9e39cb6c39247b7f86b8f1bea20e58e7'
+            '9cf0a5f3aa86428e79dba6e4a6f9a18a624d8f7a6c3e162fc7a2e5b1baa959ee'
+            '546e1166c0600cea668ea8c808ef79f250c372efaa93743ecf658d17e424a292'
+            '71a489624e2c6ab265c31352fa72f66514d58df084896af36da75fa4a76b79c8')
+
+prepare() {
+	rm -rf "$_pkg"
+	sh "$_pkg.run" --extract-only > /dev/null
+}
+
+build() {
+	cd "$_pkg/kernel-open"
+	make SYSSRC="/usr/lib/modules/$_kver/build" modules
+}
+
+# _lib FILE [DIR]: install a library and its SONAME and .so links
+_lib() {
+	local f=$1 dir=${2:-usr/lib} soname
+	install -Dm755 "$srcdir/$_pkg/$f" "$pkgdir/$dir/$f"
+	soname=$(readelf -d "$srcdir/$_pkg/$f" | sed -n 's/.*SONAME.*\[\(.*\)\]/\1/p')
+	if [[ -n $soname && $soname != "$f" ]]; then
+		ln -sf "$f" "$pkgdir/$dir/$soname"
+	fi
+	if [[ -n $soname && ${soname%%.so*}.so != "$soname" ]]; then
+		ln -sf "${soname:-$f}" "$pkgdir/$dir/${f%%.so*}.so"
+	fi
+}
+
+package_nvidia-open() {
+	pkgdesc="NVIDIA open GPU kernel modules (for the BlankOS kernel)"
+	depends=("linux=$_kernver" "nvidia-utils=$pkgver")
+	install=nvidia-blankos.install
+	local m dest="$pkgdir/usr/lib/modules/$_kver/updates/nvidia"
+	install -d "$dest"
+	for m in nvidia nvidia-modeset nvidia-drm nvidia-uvm nvidia-peermem; do
+		install -m644 "$_pkg/kernel-open/$m.ko" "$dest/$m.ko"
+		zstd -q --rm -19 "$dest/$m.ko"
+	done
+	install -Dm644 "$_pkg/kernel-open/COPYING" "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}
+
+package_nvidia-utils() {
+	pkgdesc="NVIDIA driver user space: OpenGL, Vulkan, EGL/GBM for Wayland, firmware, nvidia-smi, PRIME offload"
+	depends=('libglvnd' 'libdrm' 'wayland' 'libx11' 'libxext')
+	optdepends=('nvidia-open: the kernel modules'
+	            'nvidia-utils-cuda: CUDA, video encoding/decoding (NVENC/NVDEC), OpenCL'
+	            'gtk3: nvidia-settings')
+	provides=('vulkan-driver' 'opengl-driver' 'nvidia-libgl')
+	cd "$_pkg"
+	local f
+
+	# OpenGL, GLES, EGL through libglvnd; GLX and EGL vendor files
+	for f in libGLX_nvidia.so.$pkgver libEGL_nvidia.so.$pkgver libGLESv1_CM_nvidia.so.$pkgver \
+	         libGLESv2_nvidia.so.$pkgver libnvidia-glcore.so.$pkgver libnvidia-eglcore.so.$pkgver \
+	         libnvidia-glsi.so.$pkgver libnvidia-tls.so.$pkgver libnvidia-glvkspirv.so.$pkgver \
+	         libnvidia-gpucomp.so.$pkgver libnvidia-rtcore.so.$pkgver libnvidia-allocator.so.$pkgver \
+	         libnvidia-cfg.so.$pkgver libnvidia-ml.so.$pkgver libnvidia-ngx.so.$pkgver \
+	         libnvidia-present.so.$pkgver libnvidia-wayland-client.so.$pkgver \
+	         libnvidia-sandboxutils.so.$pkgver libnvidia-api.so.1 libnvidia-fbc.so.$pkgver \
+	         libnvidia-egl-wayland.so.1.1.20 libnvidia-egl-wayland2.so.1.0.1 libnvidia-egl-gbm.so.1.1.3 \
+	         libnvidia-egl-xcb.so.1.0.5 libnvidia-egl-xlib.so.1.0.5 libnvidia-gtk3.so.$pkgver; do
+		_lib "$f"
+	done
+	_lib "libvdpau_nvidia.so.$pkgver" usr/lib/vdpau
+	install -Dm644 10_nvidia.json "$pkgdir/usr/share/glvnd/egl_vendor.d/10_nvidia.json"
+	install -Dm644 -t "$pkgdir/usr/share/egl/egl_external_platform.d" \
+		09_nvidia_wayland2.json 10_nvidia_wayland.json 15_nvidia_gbm.json 20_nvidia_xcb.json 20_nvidia_xlib.json
+	# GBM backend for KWin and other Wayland compositors
+	install -d "$pkgdir/usr/lib/gbm"
+	ln -s ../libnvidia-allocator.so.$pkgver "$pkgdir/usr/lib/gbm/nvidia-drm_gbm.so"
+
+	# Vulkan
+	install -Dm644 nvidia_icd.json "$pkgdir/usr/share/vulkan/icd.d/nvidia_icd.json"
+	install -Dm644 nvidia_layers.json "$pkgdir/usr/share/vulkan/implicit_layer.d/nvidia_layers.json"
+
+	# DLSS for Proton/Wine games
+	install -Dm644 -t "$pkgdir/usr/lib/nvidia/wine" nvngx.dll _nvngx.dll nvngx_dlssg.dll
+
+	# GSP firmware (needed by the open modules)
+	install -Dm644 -t "$pkgdir/usr/lib/firmware/nvidia/$pkgver" firmware/*.bin
+
+	# tools
+	install -Dm755 -t "$pkgdir/usr/bin" nvidia-smi nvidia-settings nvidia-debugdump nvidia-persistenced \
+		nvidia-powerd nvidia-bug-report.sh nvidia-ngx-updater
+	install -Dm4755 nvidia-modprobe "$pkgdir/usr/bin/nvidia-modprobe"
+	install -Dm644 nvidia-settings.desktop "$pkgdir/usr/share/applications/nvidia-settings.desktop"
+	sed -i 's|__UTILS_PATH__|/usr/bin|; s|__PIXMAP_PATH__|/usr/share/pixmaps|' \
+		"$pkgdir/usr/share/applications/nvidia-settings.desktop"
+	install -Dm644 nvidia-settings.png "$pkgdir/usr/share/pixmaps/nvidia-settings.png"
+	install -Dm644 nvidia-dbus.conf "$pkgdir/usr/share/dbus-1/system.d/nvidia-dbus.conf"
+	install -Dm644 nvidia-application-profiles-$pkgver-rc "$pkgdir/usr/share/nvidia/nvidia-application-profiles-$pkgver-rc"
+	install -Dm644 nvidia-application-profiles-$pkgver-key-documentation \
+		"$pkgdir/usr/share/nvidia/nvidia-application-profiles-$pkgver-key-documentation"
+
+	# suspend/resume (video memory is saved across sleep) and dynamic boost
+	install -Dm644 -t "$pkgdir/usr/lib/systemd/system" systemd/system/*.service
+	cp -r systemd/system/*.service.d "$pkgdir/usr/lib/systemd/system/"
+	install -Dm755 systemd/system-sleep/nvidia "$pkgdir/usr/lib/systemd/system-sleep/nvidia"
+	install -Dm755 systemd/nvidia-sleep.sh "$pkgdir/usr/bin/nvidia-sleep.sh"
+
+	# module options (DRM modeset for Wayland, video memory preserved
+	# across suspend, runtime power management for laptops)
+	install -Dm644 "$srcdir/nvidia.conf" "$pkgdir/usr/lib/modprobe.d/nvidia.conf"
+	# PRIME render offload: prime-run GAME runs it on the NVIDIA GPU
+	install -Dm755 "$srcdir/prime-run" "$pkgdir/usr/bin/prime-run"
+	# NVIDIA driver or nouveau (the installer runs it; users can switch)
+	install -Dm755 "$srcdir/blankos-nvidia-setup" "$pkgdir/usr/bin/blankos-nvidia-setup"
+
+	install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
+
+package_nvidia-utils-cuda() {
+	pkgdesc="NVIDIA CUDA, NVENC/NVDEC video encoding and decoding, OpenCL and OptiX"
+	depends=("nvidia-utils=$pkgver")
+	provides=('cuda-driver' 'opencl-driver' 'libnvcuvid.so' 'libnvidia-encode.so')
+	cd "$_pkg"
+	local f
+	for f in libcuda.so.$pkgver libnvidia-nvvm.so.$pkgver libnvidia-nvvm70.so.4 \
+	         libnvidia-ptxjitcompiler.so.$pkgver libnvcuvid.so.$pkgver libnvidia-encode.so.$pkgver \
+	         libnvidia-opencl.so.$pkgver libnvidia-opticalflow.so.$pkgver libnvoptix.so.$pkgver \
+	         libnvidia-tileiras.so.$pkgver libcudadebugger.so.$pkgver; do
+		_lib "$f"
+	done
+	install -Dm644 nvidia.icd "$pkgdir/etc/OpenCL/vendors/nvidia.icd"
+	install -Dm755 -t "$pkgdir/usr/bin" nvidia-cuda-mps-control nvidia-cuda-mps-server
+	install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

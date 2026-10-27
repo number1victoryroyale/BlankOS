@@ -1,0 +1,40 @@
+#!/bin/sh
+# blankos-nvidia-setup [nvidia|open]: pick the GPU driver for NVIDIA cards.
+#
+#   nvidia  NVIDIA's driver (nvidia-open): best gaming performance on
+#           GTX 16 / RTX cards and newer; nouveau is switched off
+#   open    the open nouveau driver (older cards, or if NVIDIA's misbehaves)
+#
+# Without an argument it follows how the live system was started: the
+# boot menu's "NVIDIA" entry means nvidia. The installer runs it once;
+# run it again (as root) to switch, then reboot.
+set -e
+conf=/etc/modprobe.d/blankos-gpu.conf
+choice=$1
+if [ -z "$choice" ]; then
+	case " $(cat /proc/cmdline) " in
+		*modprobe.blacklist=nouveau*) choice=nvidia ;;
+		*) choice=open ;;
+	esac
+fi
+units="nvidia-suspend.service nvidia-resume.service nvidia-hibernate.service nvidia-suspend-then-hibernate.service"
+case $choice in
+	nvidia)
+		printf '# written by blankos-nvidia-setup: NVIDIA driver\nblacklist nouveau\n' > "$conf"
+		# shellcheck disable=SC2086
+		systemctl enable $units nvidia-powerd.service > /dev/null 2>&1 || true
+		;;
+	open)
+		printf '# written by blankos-nvidia-setup: open driver (nouveau)\n' > "$conf"
+		for m in nvidia nvidia_drm nvidia_modeset nvidia_uvm nvidia_peermem; do
+			echo "blacklist $m" >> "$conf"
+		done
+		# shellcheck disable=SC2086
+		systemctl disable $units nvidia-powerd.service > /dev/null 2>&1 || true
+		;;
+	*)
+		echo "usage: blankos-nvidia-setup [nvidia|open]" >&2
+		exit 2
+		;;
+esac
+echo "GPU driver for NVIDIA cards: $choice (takes effect after a reboot)"

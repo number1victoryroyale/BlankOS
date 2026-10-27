@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd): Plasma's battery applet switches between
+# Power Saver, Balanced and Performance through it.
+
+pkgname=power-profiles-daemon
+pkgver=0.30
+pkgrel=1
+pkgdesc="Makes power profiles handling available over D-Bus"
+arch=(x86_64)
+url='https://gitlab.freedesktop.org/upower/power-profiles-daemon'
+license=('GPL-3.0-or-later')
+depends=('glib2' 'libgudev' 'polkit' 'upower' 'systemd')
+makedepends=('meson' 'ninja' 'python')
+source=("https://gitlab.freedesktop.org/upower/power-profiles-daemon/-/archive/$pkgver/power-profiles-daemon-$pkgver.tar.gz")
+sha256sums=('90f2c95024861d9f4062abedd514084939224e7a49edd468f001af7260ec8e6c')
+
+build() {
+	meson setup build "power-profiles-daemon-$pkgver" --prefix=/usr --buildtype=release \
+		-D gtk_doc=false -D tests=false -D pylint=disabled -D manpage=disabled -D bashcomp=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

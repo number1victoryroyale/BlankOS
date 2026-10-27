@@ -15,6 +15,11 @@ inih
 gamemode
 mangohud
 
+# NVIDIA driver and laptop GPU/power services
+nvidia
+switcheroo-control
+power-profiles-daemon
+
 # controllers
 game-devices-udev
 xpadneo

@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Arch Linux's switcheroo-control: on laptops with two GPUs,
+# Plasma's "Run on dedicated graphics card" menu entry uses it.
+
+pkgname=switcheroo-control
+pkgver=3.0
+pkgrel=1
+pkgdesc="D-Bus service to check the availability of dual-GPU"
+arch=(x86_64)
+url='https://gitlab.freedesktop.org/hadess/switcheroo-control'
+license=('GPL-3.0-or-later')
+depends=('glib2' 'libgudev' 'libdrm' 'systemd')
+makedepends=('meson' 'ninja')
+source=("https://gitlab.freedesktop.org/hadess/switcheroo-control/-/archive/$pkgver/switcheroo-control-$pkgver.tar.gz")
+sha256sums=('7c690b8e01a88493c43f760f6ab317ea7200e87d17cdeb796a6f4ce81f323537')
+
+build() {
+	meson setup build "switcheroo-control-$pkgver" --prefix=/usr --buildtype=release \
+		-D gtk_doc=false -D tests=false -D libdrm=enabled -D libdrm_nouveau=enabled -D libdrm_amdgpu=enabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+}

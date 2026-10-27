@@ -15,11 +15,14 @@ depends=('blankos-desktop'
          'wine' 'winetricks' 'dxvk-bin' 'vkd3d-proton-bin' 'cabextract' '7zip'
          'gamemode' 'mangohud'
          'game-devices-udev' 'xpadneo' 'sdl2-compat'
+         # NVIDIA (switched on from the boot menu / installer) and laptops
+         'nvidia-open' 'nvidia-utils' 'switcheroo-control' 'power-profiles-daemon'
          'blankos-game-hub')
-source=("ntsync.conf" "70-ntsync.rules" "blankos-wine-dx")
+source=("ntsync.conf" "70-ntsync.rules" "blankos-wine-dx" "70-blankos-gaming.preset")
 sha256sums=('c19771ae86e7df179f6b2f4a2837d3f0cbbbba7b32baef41a3c27120c760d78f'
             '945d8d1fff8f9eb9eadbf86b4c48b8dc89c8ee3139a53043dabecb594870f1c2'
-            'b8593293d2858470aeb4358fd1903bb2f602281d048f8b61706d4feb48170fb3')
+            'b8593293d2858470aeb4358fd1903bb2f602281d048f8b61706d4feb48170fb3'
+            '5eadaf44f071913820f139a8cdaca802200c7bd2f1b6c63ecfb6c91844bec4a7')
 
 package() {
 	# NTSYNC: Wine's fast synchronization driver, loaded at boot and
@@ -27,4 +30,6 @@ package() {
 	install -Dm644 ntsync.conf "$pkgdir/usr/lib/modules-load.d/ntsync.conf"
 	install -Dm644 70-ntsync.rules "$pkgdir/usr/lib/udev/rules.d/70-ntsync.rules"
 	install -Dm755 blankos-wine-dx "$pkgdir/usr/bin/blankos-wine-dx"
+	# power profiles (Plasma's battery applet) and dual-GPU switching
+	install -Dm644 70-blankos-gaming.preset "$pkgdir/usr/lib/systemd/system-preset/70-blankos-gaming.preset"
 }

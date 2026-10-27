@@ -1,0 +1,2 @@
+enable power-profiles-daemon.service
+enable switcheroo-control.service

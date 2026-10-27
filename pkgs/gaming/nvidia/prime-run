@@ -1,0 +1,9 @@
+#!/bin/sh
+# prime-run COMMAND...: run COMMAND on the NVIDIA GPU of a hybrid-graphics
+# laptop (PRIME render offload); the desktop stays on the integrated GPU.
+# In Steam: prime-run %command%
+export __NV_PRIME_RENDER_OFFLOAD=1
+export __VK_LAYER_NV_optimus=NVIDIA_only
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/10_nvidia.json
+exec "$@"

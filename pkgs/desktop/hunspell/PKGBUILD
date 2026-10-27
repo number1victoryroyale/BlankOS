@@ -1,0 +1,41 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Arch Linux's hunspell (+ hunspell-en_us): Sonnet's spell checker
+
+pkgbase=hunspell
+pkgname=('hunspell' 'hunspell-en_us')
+pkgver=1.7.2
+pkgrel=1
+_dictdeb=hunspell-en-us_2020.12.07-4_all.deb
+arch=(x86_64)
+url='https://hunspell.github.io/'
+license=('GPL-2.0-or-later OR LGPL-2.1-or-later OR MPL-1.1')
+makedepends=('gettext')
+noextract=("$_dictdeb")
+source=("https://github.com/hunspell/hunspell/releases/download/v$pkgver/hunspell-$pkgver.tar.gz"
+        "https://deb.debian.org/debian/pool/main/s/scowl/$_dictdeb")
+sha256sums=('11ddfa39afe28c28539fe65fc4f1592d410c1e9b6dd7d8a91ca25d85e9ec65b8'
+            '962d774fd74f94ea8e781291319706fc5172d7d02c806e4c3a0c6af3ec9ccdc7')
+
+build() {
+	cd "hunspell-$pkgver"
+	./configure --prefix=/usr --disable-static --with-ui --with-readline
+	make
+}
+
+package_hunspell() {
+	pkgdesc="Spell checker and morphological analyzer library and program"
+	depends=('gcc-libs' 'readline' 'ncurses')
+	cd "hunspell-$pkgver"
+	make DESTDIR="$pkgdir" install
+}
+
+package_hunspell-en_us() {
+	pkgdesc="US English dictionary for Hunspell"
+	arch=(any)
+	license=('LicenseRef-SCOWL')
+	mkdir -p deb
+	bsdtar -xOf "$_dictdeb" 'data.tar.*' | bsdtar -xf - -C deb
+	install -Dm644 -t "$pkgdir/usr/share/hunspell" deb/usr/share/hunspell/en_US.dic deb/usr/share/hunspell/en_US.aff
+	install -d "$pkgdir/usr/share/myspell"
+	ln -s ../hunspell "$pkgdir/usr/share/myspell/dicts"
+}

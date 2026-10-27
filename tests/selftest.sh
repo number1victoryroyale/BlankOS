@@ -92,7 +92,7 @@ fi
 
 # The installer (milestone 6), on the live ISO
 if pacman -Q blankos-installer > /dev/null 2>&1; then
-	check "installer ready"            bash -c 'calamares --version && test -f /etc/calamares/settings.conf && test -f /etc/calamares/branding/blankos/branding.desc && test -e /run/live/medium/blankos/x86_64/rootfs.sfs && command -v rsync efibootmgr mkfs.fat'
+	check "installer ready"            bash -c 'QT_QPA_PLATFORM=offscreen calamares --version && test -f /etc/calamares/settings.conf && test -f /etc/calamares/branding/blankos/branding.desc && test -e /run/live/medium/blankos/x86_64/rootfs.sfs && command -v rsync efibootmgr mkfs.fat'
 	check "GRUB theme installed"       test -f /usr/share/grub/themes/blankos/theme.txt
 fi
 
@@ -112,6 +112,8 @@ if pacman -Q blankos-gaming > /dev/null 2>&1; then
 	check "winetricks and cabextract"  bash -c 'winetricks --version && cabextract --version && 7z i > /dev/null'
 	check "GameMode and MangoHud"      bash -c 'gamemoded --version && command -v gamemoderun && command -v mangohud && ls /usr/share/vulkan/implicit_layer.d/MangoHud*.json'
 	check "controller drivers and rules" bash -c 'modinfo hid_xpadneo > /dev/null && ls /usr/lib/udev/rules.d/71-valve-gdu.rules && modinfo uinput > /dev/null'
+	check "NVIDIA driver ready (off unless chosen)" bash -c 'modinfo -n nvidia && modinfo -n nvidia_drm && test -x /usr/bin/nvidia-smi && test -f /usr/share/vulkan/icd.d/nvidia_icd.json && ! lsmod | grep -q "^nvidia " && command -v prime-run blankos-nvidia-setup'
+	check "power profiles and GPU switching" bash -c 'systemctl is-active -q power-profiles-daemon.service && systemctl is-active -q switcheroo-control.service'
 	check "Game Hub self test"         bash -c 'su live -s /bin/bash -c "QT_QPA_PLATFORM=offscreen blankos-game-hub --self-test"'
 fi
 

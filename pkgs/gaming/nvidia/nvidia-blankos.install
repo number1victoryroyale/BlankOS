@@ -1,0 +1,13 @@
+_kver=7.3.0-blankos
+
+post_install() {
+	depmod "$_kver"
+}
+
+post_upgrade() {
+	post_install
+}
+
+post_remove() {
+	depmod "$_kver"
+}
