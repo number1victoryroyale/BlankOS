@@ -1,0 +1,42 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on Arch Linux's plymouth
+#
+# The graphical boot splash. It starts from systemd once the root file
+# system is up (the BlankOS initramfs has no splash of its own) and only
+# when "splash" is on the kernel command line. The default theme is the
+# BlankOS one from blankos-plymouth-theme.
+
+pkgname=plymouth
+pkgver=26.134.222
+pkgrel=1
+pkgdesc="Graphical boot splash screen"
+arch=(x86_64)
+url='https://www.freedesktop.org/wiki/Software/Plymouth/'
+license=('GPL-2.0-or-later')
+depends=('cairo' 'freetype2' 'libdrm' 'libevdev' 'libpng' 'libxkbcommon' 'pango' 'systemd' 'xkeyboard-config')
+optdepends=('blankos-plymouth-theme: the BlankOS splash (the default theme)')
+backup=('etc/plymouth/plymouthd.conf')
+source=("https://www.freedesktop.org/software/plymouth/releases/plymouth-$pkgver.tar.xz")
+sha256sums=('6ee1068216c5047923fabf0f6aa583e9d77cab383077358df3fc22f2ee398bb0')
+
+prepare() {
+	cd "plymouth-$pkgver"
+	sed -i 's/^Theme=.*/Theme=blankos/' src/plymouthd.defaults
+}
+
+build() {
+	meson setup build "plymouth-$pkgver" --prefix=/usr --sbindir=bin --libexecdir=lib --localstatedir=/var \
+		--buildtype=release \
+		-D gtk=disabled -D docs=false -D tracing=false \
+		-D logo=/usr/share/plymouth/blankos-logo.png \
+		-D background-color=0x0b0b10 \
+		-D background-start-color-stop=0x0b0b10 \
+		-D background-end-color-stop=0x0b0b10 \
+		-D release-file=/etc/os-release
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+	rm -rf "$pkgdir/run" "$pkgdir/var/run"
+}

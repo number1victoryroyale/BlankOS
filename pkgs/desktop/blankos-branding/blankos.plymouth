@@ -1,0 +1,47 @@
+[Plymouth Theme]
+Name=BlankOS
+Description=The BlankOS mark with a violet spinner on near-black
+ModuleName=two-step
+
+[two-step]
+Font=Noto Sans 12
+TitleFont=Noto Sans Light 28
+ImageDir=/usr/share/plymouth/themes/blankos
+DialogHorizontalAlignment=.5
+DialogVerticalAlignment=.62
+TitleHorizontalAlignment=.5
+TitleVerticalAlignment=.62
+HorizontalAlignment=.5
+VerticalAlignment=.72
+WatermarkHorizontalAlignment=.5
+WatermarkVerticalAlignment=.42
+Transition=none
+TransitionDuration=0.0
+BackgroundStartColor=0x0b0b10
+BackgroundEndColor=0x0b0b10
+ProgressBarBackgroundColor=0x2a2540
+ProgressBarForegroundColor=0x8b5cf6
+MessageBelowAnimation=true
+
+[boot-up]
+UseEndAnimation=false
+
+[shutdown]
+UseEndAnimation=false
+
+[reboot]
+UseEndAnimation=false
+
+[updates]
+SuppressMessages=true
+ProgressBarShowPercentComplete=true
+UseProgressBar=true
+Title=Installing updates...
+SubTitle=Do not turn off your computer
+
+[system-upgrade]
+SuppressMessages=true
+ProgressBarShowPercentComplete=true
+UseProgressBar=true
+Title=Upgrading BlankOS...
+SubTitle=Do not turn off your computer

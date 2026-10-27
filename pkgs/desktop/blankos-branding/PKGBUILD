@@ -4,20 +4,21 @@
 # breeze-dark icons and Plasma style), the wallpaper (drawn at build time
 # by mkwallpaper.py), the SDDM background and a Konsole profile; and the
 # graphical GRUB theme (fonts made with grub-mkfont, built here from the
-# GRUB sources because the core grub package has no FreeType).
+# GRUB sources because the core grub package has no FreeType); and the
+# Plymouth boot splash theme.
 
 pkgbase=blankos-branding
-pkgname=('blankos-branding' 'blankos-grub-theme')
+pkgname=('blankos-branding' 'blankos-grub-theme' 'blankos-plymouth-theme')
 pkgver=1.0
-pkgrel=1
+pkgrel=2
 _grubver=2.14
 arch=(any)
 url='https://github.com/number1victoryroyale/BlankOS'
 license=('GPL-3.0-or-later' 'CC-BY-SA-4.0')
-makedepends=('python' 'freetype2' 'noto-fonts' 'ttf-hack')
+makedepends=('python' 'freetype2' 'noto-fonts' 'ttf-hack' 'plymouth')
 source=("BlankOS.colors" "lnf-metadata.json" "lnf-defaults" "wallpaper-metadata.json" "mkwallpaper.py"
         "sddm-theme.conf.user" "BlankOS.colorscheme" "BlankOS.profile" "konsolerc"
-        "mkpng.py" "grub-theme.txt"
+        "mkpng.py" "grub-theme.txt" "mklogo.py" "mkthrobber.py" "blankos.plymouth"
         "https://ftpmirror.gnu.org/grub/grub-$_grubver.tar.xz")
 sha256sums=('a0e1faaad367f839146874056d896e0118401cdd8e8a748fa1010d4a311e6690'
             '9415cfd32be30aeeb657029546fe4526410776d511185cc619f4bde647366a8a'
@@ -30,6 +31,9 @@ sha256sums=('a0e1faaad367f839146874056d896e0118401cdd8e8a748fa1010d4a311e6690'
             'beb41eef8773c17a780cbefc802170f0e00e3271e3d213f8f610ada08b2f4419'
             '24ebed6e31dc635ee50a28b9048f97bc37446651237f0695213b7e8ec06cecac'
             'e7277cd6b1ee0b9da4264eb4986196193b44cb87ce5400d2fbfa1549c0b35ed2'
+            'a2486e9ca65599ba28d251b95744e72ab283f4511fcdcaf48bc03ae17015df96'
+            '800efe0f8d6f20d7261b8ca324a50d9a6ff777653510798c1347f664c81b2c0c'
+            '506b0168749a03868f374a0df9828c6438ac2cde318855d681efbdcb61269752'
             'bc8d3c73535b8838d8c8e2654d73edc4e6ae8c8acdb45d5df5dc9a1547446d43')
 
 build() {
@@ -54,6 +58,14 @@ build() {
 	python3 mkpng.py 8B5CF6 8 8 theme/select_c.png
 	python3 mkpng.py 0B0B10E6 8 8 theme/terminal_c.png
 	cp grub-theme.txt theme/theme.txt
+
+	# Plymouth: the mark, the spinner frames, and the password prompt
+	# images of the stock spinner theme
+	mkdir -p plymouth
+	python3 mklogo.py 160 plymouth/watermark.png
+	python3 mkthrobber.py 48 36 plymouth
+	cp /usr/share/plymouth/themes/spinner/{bullet,capslock,entry,keyboard,keymap-render,lock}.png plymouth/
+	cp blankos.plymouth plymouth/
 }
 
 package_blankos-branding() {
@@ -83,4 +95,11 @@ package_blankos-grub-theme() {
 	depends=('grub')
 	install -d "$pkgdir/usr/share/grub/themes/blankos"
 	cp theme/* "$pkgdir/usr/share/grub/themes/blankos/"
+}
+
+package_blankos-plymouth-theme() {
+	pkgdesc="BlankOS theme for the Plymouth boot splash"
+	depends=('plymouth')
+	install -Dm644 plymouth/* -t "$pkgdir/usr/share/plymouth/themes/blankos"
+	install -Dm644 plymouth/watermark.png "$pkgdir/usr/share/plymouth/blankos-logo.png"
 }
