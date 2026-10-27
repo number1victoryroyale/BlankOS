@@ -41,6 +41,7 @@ build() {
 	# grub-mkfont only
 	cd "grub-$_grubver"
 	./configure --prefix=/usr --enable-grub-mkfont --disable-werror > /dev/null
+	make -C grub-core/lib/gnulib
 	make grub-mkfont
 	cd ..
 	local fonts=/usr/share/fonts/noto mkfont="grub-$_grubver/grub-mkfont"
