@@ -128,7 +128,7 @@ if command -v coredumpctl > /dev/null && coredumpctl --no-pager --no-legend list
 	echo "INFO crashes during the boot:"
 	sed 's/^/     | /' /tmp/crashes
 	for exe in $(awk '{ print $NF }' /tmp/crashes | sort -u); do
-		coredumpctl --no-pager info "$exe" 2>/dev/null | grep -E "Signal:|^ +#[0-9]+ " | head -n 15 | sed "s|^|     | ${exe##*/}: |"
+		coredumpctl --no-pager info "$exe" 2>/dev/null | grep -E "Signal:|^ +#[0-9]+ " | head -n 15 | sed "s#^#     | ${exe##*/}: #"
 	done
 fi
 
