@@ -13,6 +13,13 @@ makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools' 'plasma-wayland-p
 source=("https://download.kde.org/stable/plasma/$pkgver/xdg-desktop-portal-kde-$pkgver.tar.xz")
 sha256sums=('bb4b955e2f52a832f221d3fb7182cebf920653a0ad1e3201abd29f134d4c33f3')
 
+prepare() {
+	cd "xdg-desktop-portal-kde-$pkgver"
+	# Qt is built without CUPS (no printing yet), so its private qcups_p.h is
+	# not installed; the portal only needs this one property key from it
+	sed -i 's|#include <QtPrintSupport/private/qcups_p.h>|#define PPK_CupsOptions QPrintEngine::PrintEnginePropertyKey(0xfe00)|' src/print.cpp
+}
+
 build() {
 	cmake -S "xdg-desktop-portal-kde-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
 		-D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_LIBEXECDIR=lib \
