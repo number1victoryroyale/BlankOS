@@ -8,10 +8,10 @@ pkgdesc="Plasma applet written in QML for managing network connections"
 arch=(x86_64)
 url='https://kde.org/plasma-desktop/'
 license=('GPL-2.0-or-later')
-depends=('modemmanager-qt' glib2' 'glibc' 'kcmutils' 'kcolorscheme' 'kcompletion' 'kconfig' 'kcoreaddons' 'kdbusaddons' 'kdeclarative' 'ki18n' 'kio' 'kirigami' 'kirigami-addons' 'kjobwidgets' 'knotifications' 'kquickcharts' 'kservice' 'kwidgetsaddons' 'kwindowsystem' 'libplasma' 'gcc-libs' 'networkmanager-qt' 'openssl' 'plasma-workspace' 'prison' 'qcoro' 'qt6-base' 'qt6-declarative' 'solid' 'networkmanager' 'qtkeychain-qt6')
+depends=('modemmanager-qt' 'glib2' 'glibc' 'kcmutils' 'kcolorscheme' 'kcompletion' 'kconfig' 'kcoreaddons' 'kdbusaddons' 'kdeclarative' 'ki18n' 'kio' 'kirigami' 'kirigami-addons' 'kjobwidgets' 'knotifications' 'kquickcharts' 'kservice' 'kwidgetsaddons' 'kwindowsystem' 'libplasma' 'gcc-libs' 'networkmanager-qt' 'openssl' 'plasma-workspace' 'prison' 'qcoro' 'qt6-base' 'qt6-declarative' 'solid' 'networkmanager' 'qtkeychain-qt6')
 makedepends=('cmake' 'ninja' 'extra-cmake-modules' 'qt6-tools')
 source=("https://download.kde.org/stable/plasma/$pkgver/plasma-nm-$pkgver.tar.xz")
-sha256sums=()
+sha256sums=('c4d49e08072510ed1d2ea9e124dcf493a86458391c756d14aaac28c2c0a7e484')
 
 build() {
 	cmake -S "plasma-nm-$pkgver" -B build -G Ninja -D CMAKE_INSTALL_PREFIX=/usr \
