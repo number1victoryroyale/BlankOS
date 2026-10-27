@@ -71,6 +71,12 @@ polkit.addRule(function(action, subject) {
 EOF
 	install -d "$root/home/live/.config"
 	printf '%s\n' '[Daemon]' 'Autolock=false' 'LockOnResume=false' > "$root/home/live/.config/kscreenlockerrc"
+	# no dimming, screen off or suspend while the live system runs (and
+	# while the boot test looks at the screen)
+	for p in AC Battery LowBattery; do
+		printf '[%s][Display]\nDimDisplayWhenIdle=false\nTurnOffDisplayWhenIdle=false\n' "$p"
+		printf '[%s][SuspendAndShutdown]\nAutoSuspendAction=0\n' "$p"
+	done > "$root/home/live/.config/powerdevilrc"
 	# "Install BlankOS" on the live desktop
 	if [[ -f $root/usr/share/applications/blankos-install.desktop ]]; then
 		install -d "$root/home/live/Desktop"
