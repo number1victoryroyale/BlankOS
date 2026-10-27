@@ -41,6 +41,8 @@ cleanup() { umount_vkfs "$LFS"; }
 trap cleanup EXIT
 # shellcheck disable=SC2086
 pacstrap_root "$root" $packages
+msg "Checking that every shared library the image needs is installed"
+"$BLANKOS_ROOT/tools/check-libs.sh" "$root" || die "missing runtime dependencies (see above)"
 
 msg "Configuring the live system"
 cp -a "$BLANKOS_ROOT/iso/airootfs/." "$root/"
