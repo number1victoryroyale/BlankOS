@@ -75,6 +75,11 @@ build() {
 		cd "$srcdir/gcc-$t"
 		make
 		make DESTDIR="$stage" install
+
+		# the build trees are several GB per target; only the staged
+		# install is packaged
+		cd "$srcdir"
+		rm -rf "binutils-$t" "headers-$t" "gcc-$t" "crt-$t"
 	done
 }
 
