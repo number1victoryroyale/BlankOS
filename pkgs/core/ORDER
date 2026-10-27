@@ -29,6 +29,8 @@ attr
 acl
 libcap
 libxcrypt
+pambase
+linux-pam
 shadow
 gawk
 gcc

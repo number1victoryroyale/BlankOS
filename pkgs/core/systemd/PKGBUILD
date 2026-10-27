@@ -3,12 +3,12 @@
 
 pkgname=systemd
 pkgver=261.2
-pkgrel=2
+pkgrel=3
 pkgdesc="System and service manager"
 arch=(x86_64)
 url='https://systemd.io'
 license=('GPL-2.0-or-later' 'LGPL-2.1-or-later')
-depends=('glibc' 'acl' 'bash' 'kbd' 'kmod' 'libcap' 'libxcrypt' 'openssl' 'util-linux' 'xz' 'zstd' 'lz4' 'pcre2')
+depends=('glibc' 'acl' 'bash' 'kbd' 'kmod' 'libcap' 'libxcrypt' 'openssl' 'util-linux' 'xz' 'zstd' 'lz4' 'pcre2' 'linux-pam')
 makedepends=('meson' 'ninja' 'gperf' 'python-jinja')
 provides=('systemd-libs' 'udev' 'libudev' 'libsystemd')
 backup=('etc/systemd/journald.conf' 'etc/systemd/logind.conf' 'etc/systemd/networkd.conf' 'etc/systemd/resolved.conf' 'etc/systemd/sleep.conf' 'etc/systemd/system.conf' 'etc/systemd/timesyncd.conf' 'etc/systemd/user.conf' 'etc/udev/udev.conf')
@@ -47,7 +47,8 @@ build() {
 		-D homed=disabled \
 		-D man=disabled \
 		-D mode=release \
-		-D pamconfdir=no \
+		-D pam=enabled \
+		-D pamconfdir=/usr/lib/pam.d \
 		-D dev-kvm-mode=0660 \
 		-D nobody-group=nogroup \
 		-D sysupdate=disabled \

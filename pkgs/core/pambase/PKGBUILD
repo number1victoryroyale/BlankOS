@@ -1,0 +1,67 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# The system-wide PAM stacks (BLFS 13.1, with pam_systemd so logins get
+# logind sessions). Services include these; shadow ships login/su/passwd.
+
+pkgname=pambase
+pkgver=20261027
+pkgrel=1
+pkgdesc="Base PAM configuration for BlankOS"
+arch=(any)
+url='https://github.com/number1victoryroyale/BlankOS'
+license=('GPL-3.0-or-later')
+backup=('etc/pam.d/system-auth' 'etc/pam.d/system-account' 'etc/pam.d/system-session'
+        'etc/pam.d/system-password' 'etc/pam.d/other')
+source=()
+sha256sums=()
+
+package() {
+	install -d "$pkgdir/etc/pam.d"
+	cd "$pkgdir/etc/pam.d"
+	cat > system-auth << "EOF2"
+# Begin /etc/pam.d/system-auth
+
+auth      required    pam_unix.so try_first_pass nullok
+
+# End /etc/pam.d/system-auth
+EOF2
+	cat > system-account << "EOF2"
+# Begin /etc/pam.d/system-account
+
+account   required    pam_unix.so
+
+# End /etc/pam.d/system-account
+EOF2
+	cat > system-session << "EOF2"
+# Begin /etc/pam.d/system-session
+
+session   required    pam_unix.so
+session   required    pam_loginuid.so
+# logind session (seat access, XDG_RUNTIME_DIR, user services); the dash
+# keeps logins working while systemd is not installed yet
+-session  optional    pam_systemd.so
+
+# End /etc/pam.d/system-session
+EOF2
+	cat > system-password << "EOF2"
+# Begin /etc/pam.d/system-password
+
+# yescrypt hashes in /etc/shadow; reuse a password a module before asked for
+password  required    pam_unix.so       yescrypt shadow try_first_pass
+
+# End /etc/pam.d/system-password
+EOF2
+	cat > other << "EOF2"
+# Begin /etc/pam.d/other
+
+auth        required        pam_warn.so
+auth        required        pam_deny.so
+account     required        pam_warn.so
+account     required        pam_deny.so
+password    required        pam_warn.so
+password    required        pam_deny.so
+session     required        pam_warn.so
+session     required        pam_deny.so
+
+# End /etc/pam.d/other
+EOF2
+}

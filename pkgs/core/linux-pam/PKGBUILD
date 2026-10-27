@@ -1,0 +1,32 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd)
+
+pkgname=linux-pam
+pkgver=1.7.2
+pkgrel=1
+pkgdesc="Pluggable Authentication Modules for Linux"
+arch=(x86_64)
+url='https://github.com/linux-pam/linux-pam'
+license=('BSD-3-Clause OR GPL-2.0-or-later')
+depends=('glibc' 'libxcrypt' 'pambase')
+makedepends=('meson' 'ninja')
+provides=('pam')
+source=("https://github.com/linux-pam/linux-pam/releases/download/v$pkgver/Linux-PAM-$pkgver.tar.xz")
+sha256sums=('3d86b6383fb5fd9eb9578d2cd47d92801191f4bf3f9bc61419bfefc8aa1e531a')
+
+build() {
+	# vendordir=/usr/lib: services in /usr/lib/pam.d (systemd-user, polkit-1,
+	# sddm), module defaults in /usr/lib/security; /etc overrides both
+	meson setup build "Linux-PAM-$pkgver" --prefix=/usr --buildtype=release \
+		-D vendordir=/usr/lib \
+		-D docs=disabled -D xtests=false -D examples=false \
+		-D nis=disabled -D audit=disabled -D econf=disabled -D selinux=disabled \
+		-D logind=disabled -D elogind=disabled -D pam_userdb=disabled -D openssl=disabled -D pwaccess=disabled
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+	chmod 4755 "$pkgdir/usr/sbin/unix_chkpwd"
+	install -Dm644 "Linux-PAM-$pkgver/COPYING" "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}

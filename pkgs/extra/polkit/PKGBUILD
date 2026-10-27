@@ -3,19 +3,18 @@
 
 pkgname=polkit
 pkgver=127
-pkgrel=1
+pkgrel=2
 pkgdesc="Application development toolkit for controlling system-wide privileges"
 arch=(x86_64)
 url='https://github.com/polkit-org/polkit'
 license=('LGPL-2.0-or-later')
-depends=('glib2' 'duktape' 'expat' 'systemd' 'shadow')
+depends=('glib2' 'duktape' 'expat' 'systemd' 'linux-pam')
 source=("polkit-$pkgver.tar.gz::https://github.com/polkit-org/polkit/archive/$pkgver/polkit-$pkgver.tar.gz")
 sha256sums=('9b7bc16f086479dcc626c575976568ba4a85d34297a750d8ab3d2e57f6d8b988')
 
 build() {
-	# authfw=shadow until Linux-PAM arrives with the desktop (milestone 4)
-	meson setup build "$pkgname-$pkgver" --prefix=/usr --buildtype=release \
-		-D authfw=shadow -D session_tracking=logind -D os_type=lfs \
+		meson setup build "$pkgname-$pkgver" --prefix=/usr --buildtype=release \
+		-D authfw=pam -D pam_prefix=/usr/lib/pam.d -D session_tracking=logind -D os_type=lfs \
 		-D introspection=false -D man=false -D tests=false -D examples=false -D gtk_doc=false
 	ninja -C build
 }

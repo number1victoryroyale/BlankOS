@@ -3,13 +3,13 @@
 
 pkgname=shadow
 pkgver=4.20.2
-pkgrel=3
+pkgrel=4
 pkgdesc="Password and account management tool suite"
 arch=(x86_64)
 url='https://github.com/shadow-maint/shadow'
 license=('BSD-3-Clause')
-depends=('glibc' 'bash' 'acl' 'attr' 'libxcrypt')
-backup=('etc/login.defs' 'etc/default/useradd' 'etc/subuid' 'etc/subgid')
+depends=('glibc' 'bash' 'acl' 'attr' 'libxcrypt' 'linux-pam' 'pambase')
+backup=('etc/login.defs' 'etc/default/useradd' 'etc/subuid' 'etc/subgid' 'etc/pam.d/login' 'etc/pam.d/passwd' 'etc/pam.d/su')
 install=shadow.install
 source=("https://github.com/shadow-maint/shadow/releases/download/$pkgver/shadow-$pkgver.tar.xz"
         "useradd.defaults")
@@ -41,8 +41,76 @@ build() {
 
 package() {
 	cd "$pkgname-$pkgver"
-	make exec_prefix=/usr DESTDIR="$pkgdir" install
+	# PAM service files are written below (BLFS 13.1), not shadow's own
+	make exec_prefix=/usr pamddir= DESTDIR="$pkgdir" install
 	make -C man DESTDIR="$pkgdir" install-man
+
+	# with PAM, these login.defs settings are handled by PAM modules
+	for opt in FAIL_DELAY FAILLOG_ENAB LASTLOG_ENAB MAIL_CHECK_ENAB OBSCURE_CHECKS_ENAB \
+		PORTTIME_CHECKS_ENAB QUOTAS_ENAB CONSOLE MOTD_FILE FTMP_FILE NOLOGINS_FILE \
+		ENV_HZ PASS_MIN_LEN SU_WHEEL_ONLY PASS_CHANGE_TRIES PASS_ALWAYS_WARN \
+		CHFN_AUTH ENCRYPT_METHOD ENVIRON_FILE; do
+		sed -i "s/^${opt}/# &/" "$pkgdir/etc/login.defs"
+	done
+
+	local d="$pkgdir/etc/pam.d" prog
+	install -d "$d"
+	cat > "$d/login" << "EOF"
+# Begin /etc/pam.d/login
+
+auth      optional    pam_faildelay.so  delay=3000000
+auth      requisite   pam_nologin.so
+auth      include     system-auth
+account   required    pam_access.so
+account   include     system-account
+session   required    pam_env.so
+session   required    pam_limits.so
+session   include     system-session
+password  include     system-password
+
+# End /etc/pam.d/login
+EOF
+	cat > "$d/passwd" << "EOF"
+# Begin /etc/pam.d/passwd
+
+password  include     system-password
+
+# End /etc/pam.d/passwd
+EOF
+	cat > "$d/su" << "EOF"
+# Begin /etc/pam.d/su
+
+auth      sufficient  pam_rootok.so
+auth      include     system-auth
+account   include     system-account
+session   required    pam_env.so
+session   include     system-session
+
+# End /etc/pam.d/su
+EOF
+	cat > "$d/chpasswd" << "EOF"
+# Begin /etc/pam.d/chpasswd
+
+auth      sufficient  pam_rootok.so
+auth      include     system-auth
+account   include     system-account
+password  include     system-password
+
+# End /etc/pam.d/chpasswd
+EOF
+	sed -e s/chpasswd/newusers/ "$d/chpasswd" > "$d/newusers"
+	cat > "$d/chage" << "EOF"
+# Begin /etc/pam.d/chage
+
+auth      sufficient  pam_rootok.so
+auth      include     system-auth
+account   include     system-account
+
+# End /etc/pam.d/chage
+EOF
+	for prog in chfn chgpasswd chsh groupadd groupdel groupmems groupmod useradd userdel usermod; do
+		sed "s/chage/$prog/" "$d/chage" > "$d/$prog"
+	done
 	install -Dm600 "$srcdir/useradd.defaults" "$pkgdir/etc/default/useradd"
 	touch "$pkgdir"/etc/sub{u,g}id
 }
