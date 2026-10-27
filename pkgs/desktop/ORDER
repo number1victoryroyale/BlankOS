@@ -60,6 +60,7 @@ gtk3
 
 # multimedia
 nasm
+libva
 libvpx
 libpulse
 ffmpeg

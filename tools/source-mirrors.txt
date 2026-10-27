@@ -27,3 +27,4 @@ yaml-cpp-0.8.0.tar.gz  git https://github.com/jbeder/yaml-cpp 0.8.0 yaml-cpp-0.8
 opencv-4.13.0.tar.gz  git https://github.com/opencv/opencv 4.13.0 opencv-4.13.0/
 tesseract-5.5.3.tar.gz  git https://github.com/tesseract-ocr/tesseract 5.5.3 tesseract-5.5.3/
 lm-sensors-3-6-2.tar.gz  git https://github.com/hramrach/lm-sensors V3-6-2 lm-sensors-3-6-2/
+libva-2.24.1.tar.gz  git https://github.com/intel/libva 2.24.1 libva-2.24.1/

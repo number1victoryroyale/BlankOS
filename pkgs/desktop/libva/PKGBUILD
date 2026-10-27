@@ -1,0 +1,25 @@
+# Maintainer: BlankOS <builds@blankos.invalid>
+# Based on BLFS 13.1 (systemd): the VA-API library (KPipeWire's hardware
+# video encoding for screen recording)
+
+pkgname=libva
+pkgver=2.24.1
+pkgrel=1
+pkgdesc="Video Acceleration (VA) API for Linux"
+arch=(x86_64)
+url='https://github.com/intel/libva'
+license=('MIT')
+depends=('libdrm' 'libglvnd' 'libx11' 'libxext' 'libxfixes' 'wayland')
+makedepends=('meson' 'ninja')
+source=("https://github.com/intel/libva/archive/$pkgver/libva-$pkgver.tar.gz")
+sha256sums=('0b4a3649ee8d683b9cce2ef094df4fb039d276c0cef7e49337c43d3b297b9f42')
+
+build() {
+	meson setup build "libva-$pkgver" --prefix=/usr --buildtype=release
+	ninja -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" ninja -C build install
+	install -Dm644 "libva-$pkgver/COPYING" "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}
