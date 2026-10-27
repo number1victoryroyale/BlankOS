@@ -33,6 +33,7 @@ package() {
 		cd "$pkgdir"
 		mkdir -p usr/bin
 		while read -r _line; do
+			[[ -n $_line ]] || continue
 			ln -s $_line
 		done < "$srcdir/build/user_facing_tool_links.txt"
 	fi
