@@ -107,7 +107,7 @@ if pacman -Q blankos-gaming > /dev/null 2>&1; then
 	check "NTSYNC device for Wine"     bash -c 'test -c /dev/ntsync && [[ $(stat -c %a /dev/ntsync) == 666 ]]'
 	# starting a Wine prefix takes too long under plain emulation (no KVM)
 	if [[ $(systemd-detect-virt) != qemu ]]; then
-		check "Wine runs 64- and 32-bit"   bash -c 'su live -s /bin/bash -c "export WINEPREFIX=/tmp/wine-test WINEDEBUG=-all
+		check "Wine runs 64- and 32-bit"   bash -c 'su live -s /bin/bash -c "export WINEPREFIX=\$HOME/.wine-test WINEDEBUG=-all
 			timeout 300 wineboot -i > /dev/null 2>&1
 			timeout 120 wine cmd /c echo wine64-ok && timeout 120 wine C:/windows/syswow64/cmd.exe /c echo wine32-ok" 2>&1 | tee /tmp/wine.txt | grep -q wine32-ok || { cat /tmp/wine.txt; exit 1; }'
 	else
